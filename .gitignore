@@ -1,0 +1,27 @@
+#Ignore:
+#Build system's dependencies
+.deps/
+
+#Object files
+.objs/
+
+#Binary output
+bin/
+
+#All created .so files
+*.so
+*.o
+
+#Documentation output
+docs/
+
+#Link to binary output in src
+src/chiplib
+
+#Link to documentation output in build
+build/buildsystem.html
+src/*.html
+
+# Random "service" files
+core
+tags
