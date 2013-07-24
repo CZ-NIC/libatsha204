@@ -10,7 +10,6 @@ bool check_crc(unsigned char length, unsigned char *data, unsigned char *crc) {
 	unsigned char rcrc[2];
 
 	calculate_crc(length, data, rcrc);
-
 	if ((crc[0] != rcrc[0]) || (crc[1] != rcrc[1])) {
 		return false;
 	}

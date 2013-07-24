@@ -11,6 +11,10 @@ const char *error_name(int err) {
 		return "Couldn't read packet";
 	} else if (err == ERR_WAKE_NOT_CONFIRMED) {
 		return "Wake not confirmed";
+	} else if (err == ERR_ALLOCATION) {
+		return "Memory allocation error";
+	} else if (err == ERR_USBCMD_NOT_CONFIRMED) {
+		return "USB chip not sent confirmation";
 	} else {
 		return "Error code is not in the list";
 	}

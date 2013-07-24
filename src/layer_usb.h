@@ -3,6 +3,7 @@
 
 #include<stdbool.h>
 
-bool usb_wake(int dev);
+int usb_wake(int dev);
+int usb_idle(int dev);
 
 #endif //LAYER_USB_H

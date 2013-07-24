@@ -23,8 +23,10 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//device_comm_talk(fd);
-	int status = usb_wake(fd);
+	int status;
+	status = usb_wake(fd);
+	fprintf(stderr, "Status %s\n", error_name(status));
+	status = usb_idle(fd);
 	fprintf(stderr, "Status %s\n", error_name(status));
 
 	close(fd);

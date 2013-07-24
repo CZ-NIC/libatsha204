@@ -24,8 +24,3 @@ bool check_packet(unsigned char *packet) {
 
 	return true;
 }
-
-bool wake_chip() {
-
-	return true;
-}
