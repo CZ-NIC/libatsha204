@@ -1,0 +1,18 @@
+User:
+Dava pouze promenliva data
+Pozaduje uz cisty vysledek
+----------------------------------------------------------- API knihovny
+
+Vrstva abstrakce:
+Zjisti co lezi dole (USB / I2C / emulace)
+Vygeneruje packet podle znamych dat (= vi jak ho podle dat vytvorit)
+Prijme obdrzeny packet (= vi jak porozumet cistemu packetu dane ulohy)
+
+----------------------------------------------------------- USB / I2C layer
+
+Fyzicka vrstva:
+Fakticke send a recv. 
+Dostane packet, nemusi mu rozumet.
+Realizuje wake, sleep, command(packet)
+Dostane raw packet a musi s nim udelat nutne veci pro odeslani
+Prijme v danem "dialektu" rozhrani a vrati raw packet

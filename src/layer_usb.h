@@ -5,5 +5,6 @@
 
 int usb_wake(int dev);
 int usb_idle(int dev);
+int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer);
 
 #endif //LAYER_USB_H

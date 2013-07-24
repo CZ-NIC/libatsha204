@@ -1,20 +1,16 @@
 #include "error.h"
 
 const char *error_name(int err) {
+
+static const int ERR_WAKE_NOT_CONFIRMED = 4;
 	if (err == ERR_OK) {
 		return "OK";
-	} else if (err == ERR_CRC) {
-		return  "CRC doesn't match";
-	} else if (err == ERR_SEND) {
-		return "Couldn't send packet";
-	} else if (err == ERR_SEND) {
-		return "Couldn't read packet";
+	} else if (err == ERR_MEMORY_ALLOCATION_ERROR) {
+		return "Memory allocation error. Some memory allocation failed.";
+	} else if (err == ERR_COMMUNICATION) {
+		return "Communication error: is not possible to send packet to the device, receive packet from the device, or multiple times was delivered/received malformed packet.";
 	} else if (err == ERR_WAKE_NOT_CONFIRMED) {
-		return "Wake not confirmed";
-	} else if (err == ERR_ALLOCATION) {
-		return "Memory allocation error";
-	} else if (err == ERR_USBCMD_NOT_CONFIRMED) {
-		return "USB chip not sent confirmation";
+		return "Is not confirmed if device is wake up or not";
 	} else {
 		return "Error code is not in the list";
 	}

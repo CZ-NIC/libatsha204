@@ -11,52 +11,44 @@
 #include "tools.h"
 #include "configuration.h"
 #include "atsha204.h"
+#include "error.h"
+#include "layer_usb.h"
 
-bool check_packet(unsigned char *packet) {
-	unsigned char packet_size;
-	unsigned char crc[2];
+int wake(int dev) {
+	int status;
+	int tries = TRY_SEND_RECV_ON_COMM_ERROR;
 
-	packet_size = packet[0];
-	crc[0] = packet[packet_size-2];
-	crc[1] = packet[packet_size-1];
-
-	if (!check_crc(packet_size-2, packet, crc)) {
-		return false;
+	while (true) {
+#ifdef USE_LAYER_USB
+		status = usb_wake(dev);
+#endif
+		if (status == ERR_OK) return status;
+		if (tries < 0) return status;
 	}
-
-	return true;
 }
 
-static unsigned char *generate_command_packet(unsigned char opcode, unsigned char param1, uint16_t param2, unsigned char *data, unsigned char data_count) {
-	unsigned char packet_size =
-		1 + //count item
-		1 + //opcode
-		1 + //param1
-		2 + //param2
-		data_count + //data count
-		2; //CRC
+int idle(int dev) {
+	int status;
+	int tries = TRY_SEND_RECV_ON_COMM_ERROR;
 
-	unsigned char crc[2];
-	unsigned char *packet = calloc(packet_size, sizeof(unsigned char));
-	if (packet == NULL) {
-		return NULL;
+	while (true) {
+#ifdef USE_LAYER_USB
+		status = usb_idle(dev);
+#endif
+		if (status == ERR_OK) return status;
+		if (tries < 0) return status;
 	}
-
-	packet[0] = packet_size;
-	packet[1] = opcode;
-	packet[2] = param1;
-	packet[3] = (param2 & 0x00FF);
-	packet[4] = ((param2 & 0xFF00) >> 8);
-	memcpy((packet + 5), data, data_count);
-	calculate_crc(packet_size - 2, packet, crc); //skip crc slot
-	packet[5 + data_count] = crc[0];
-	packet[5 + data_count + 1] = crc[1];
-
-	return packet;
 }
 
-//Should receive: 07 00 00 00 04 C0 2D
-void op_dev_rev() {
-	unsigned char *packet = generate_command_packet(ATSHA204_OPCODE_DEV_REV, 0, 00, NULL, 0);
-	print_buffer_content(packet, packet[0]);
+int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
+	int status;
+	int tries = TRY_SEND_RECV_ON_COMM_ERROR;
+
+	while (true) {
+#ifdef USE_LAYER_USB
+		status = usb_command(dev, raw_packet, answer);
+#endif
+		if (status == ERR_OK) return status;
+		if (tries < 0) return status;
+	}
 }

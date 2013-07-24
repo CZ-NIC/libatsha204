@@ -5,6 +5,7 @@ chiplib_MODULES := main \
 	communication \
 	tools \
 	layer_usb \
+	operations \
 	error
 
 #nuci_PKG_CONFIGS := $(LUA_NAME) libnetconf

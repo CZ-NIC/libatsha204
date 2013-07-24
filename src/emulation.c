@@ -10,10 +10,6 @@
 
 #include "tools.h"
 
-uint64_t dev_rev() {
-	return 0;
-}
-
 bool wake_emul() {
 	return true;
 }

@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool check_packet(unsigned char *packet);
-void op_dev_rev();
+int wake(int dev);
+int idle(int dev);
+int command(int dev, unsigned char *raw_packet, unsigned char **answer);
 
 #endif //COMMUNICATION_H

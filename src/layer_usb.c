@@ -58,26 +58,26 @@ int usb_wake(int dev) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
-		return ERR_SEND;
+		return ERR_COMMUNICATION;
 	}
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
 	cnt = read(dev, buff, BUFFSIZE);
 	if (cnt <= 0) {
-		return ERR_READ;
+		return ERR_COMMUNICATION;
 	}
 
 	//"Parse" packet from recieved message
 	packet = usb_get_raw_packet(buff);
 	if (packet == NULL) {
-		return ERR_ALLOCATION;
+		return ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
 	//Check packet consistency and check wake confirmation
 	if (!check_packet(packet)) {
 		free(packet);
-		return ERR_CRC;
+		return ERR_COMMUNICATION;
 	}
 
 	if (packet[1] != ATSHA204_STATUS_WAKE_OK) {
@@ -101,18 +101,61 @@ int usb_idle(int dev) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
-		return ERR_SEND;
+		return ERR_COMMUNICATION;
 	}
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
 	cnt = read(dev, buff, BUFFSIZE);
 	if (cnt <= 0) {
-		return ERR_READ;
+		return ERR_COMMUNICATION;
 	}
 
 	if (strcmp(buff, "00()\n") != 0) {
 		return ERR_USBCMD_NOT_CONFIRMED;
+	}
+
+	return ERR_OK;
+}
+
+int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
+	char buff[BUFFSIZE];
+	clear_buffer((unsigned char *)buff, BUFFSIZE);
+	size_t len, cnt;
+
+	//Create messge
+	strcpy(buff, "sha:talk(");
+	int offset = 9;
+	for (unsigned char i = 0; i < raw_packet[0]; i++) {
+		sprintf((buff + offset), "%02x", raw_packet[i]);
+		offset += 2;
+	}
+	strcpy((buff+offset), ")\n");
+
+	//Send message
+	len = strlen(buff);
+	cnt = write(dev, buff, len);
+	if (cnt != len) {
+		return ERR_COMMUNICATION;
+	}
+
+	//Read answer
+	clear_buffer((unsigned char *)buff, len);
+	cnt = read(dev, buff, BUFFSIZE);
+	if (cnt <= 0) {
+		return ERR_COMMUNICATION;
+	}
+
+	//"Parse" packet from recieved message
+	*answer = usb_get_raw_packet(buff);
+	if (answer == NULL) {
+		return ERR_MEMORY_ALLOCATION_ERROR;
+	}
+
+	//Check packet consistency and check wake confirmation
+	if (!check_packet(*answer)) {
+		free(answer);
+		return ERR_COMMUNICATION;
 	}
 
 	return ERR_OK;
