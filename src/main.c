@@ -10,6 +10,8 @@
 #include "main.h"
 #include "error.h"
 #include "communication.h"
+#include "tools.h"
+#include "operations.h"
 
 static int device_fd;
 static void (*warn_callback)(const char* msg) = NULL;
@@ -25,26 +27,33 @@ void set_war_callback(void (*clb)(const char* msg)) {
 }
 
 int dev_rev(uint32_t *revision) {
+	(void) revision;
 	int status;
 	unsigned char *packet;
-	unsigned char **answer;
+	unsigned char *answer = NULL;
 
 	//Wakeup device
 	status = wake(device_fd);
 	if (status != ERR_OK) return status;
-/*
+
 	packet = op_dev_rev();
 	if (!packet) return ERR_MEMORY_ALLOCATION_ERROR;
 
-	status = usb_command(device_fd, packet, answer);
+	status = command(device_fd, packet, &answer);
 	if (status != ERR_OK) {
-		free(send);
+		free(packet);
+		free(answer);
 		return status;
 	}
-*/
+
 	//Let device sleep
 	status = idle(device_fd);
-	if (status != ERR_OK) return status;
+	if (status != ERR_OK) {
+		log_warning(WARN_MSG_IDLE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
 
 	return ERR_OK;
 }
@@ -64,16 +73,17 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	int device_fd = open(argv[1], O_RDWR);
+	device_fd = open(argv[1], O_RDWR);
 	if (device_fd == -1) {
 		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
 		return 1;
 	}
 
-
+	set_war_callback(testing_warn_callback);
 
 	int status;
-
+	status = dev_rev(NULL);
+	fprintf(stderr, "Status: %s\n", error_name(status));
 
 	close(device_fd);
 

@@ -18,8 +18,8 @@ static const int USB_PACKET_SKIP_PREFIX = 3;
  * return real byte value.
  */
 static unsigned char get_number_from_hex_char(char high, char low) {
-	char str[2];
-	str[0] = high; str[1] = low;
+	char str[3];
+	str[0] = high; str[1] = low; str[2] = '\0';
 
 	return (unsigned char)strtol(str, NULL, 16);
 }
@@ -45,11 +45,10 @@ static unsigned char *usb_get_raw_packet(char* data) {
 	return packet;
 }
 
-int usb_wake(int dev) {
+int usb_wake(int dev, unsigned char **answer) {
 	char buff[BUFFSIZE];
 	clear_buffer((unsigned char *)buff, BUFFSIZE);
 	size_t len, cnt;
-	unsigned char *packet;
 
 	//Create messge
 	strcpy(buff, "sha:wake()\n");
@@ -69,23 +68,11 @@ int usb_wake(int dev) {
 	}
 
 	//"Parse" packet from recieved message
-	packet = usb_get_raw_packet(buff);
-	if (packet == NULL) {
+	*answer = usb_get_raw_packet(buff);
+	if (*answer == NULL) {
 		return ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
-	//Check packet consistency and check wake confirmation
-	if (!check_packet(packet)) {
-		free(packet);
-		return ERR_COMMUNICATION;
-	}
-
-	if (packet[1] != ATSHA204_STATUS_WAKE_OK) {
-		free(packet);
-		return ERR_WAKE_NOT_CONFIRMED;
-	}
-
-	free(packet);
 	return ERR_OK;
 }
 
@@ -150,12 +137,6 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	*answer = usb_get_raw_packet(buff);
 	if (answer == NULL) {
 		return ERR_MEMORY_ALLOCATION_ERROR;
-	}
-
-	//Check packet consistency and check wake confirmation
-	if (!check_packet(*answer)) {
-		free(answer);
-		return ERR_COMMUNICATION;
 	}
 
 	return ERR_OK;
