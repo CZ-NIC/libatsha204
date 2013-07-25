@@ -74,17 +74,19 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 		if (status == ERR_OK) {
 			//Check packet consistency and status code
 			if (!check_packet(*answer)) {
+				free(*answer);
+				*answer = NULL;
 				status = ERR_COMMUNICATION;
 				continue;
 			}
-
+/*
 			if ((*answer)[1] != ATSHA204_STATUS_SUCCES) {
 				//Parse error is really bad and it isn't user's or device fail
 				assert(!((*answer)[1] == ATSHA204_STATUS_PARSE_ERROR));
 				status = ERR_COMMUNICATION;
 				continue;
 			}
-
+*/
 			break;
 		}
 	}
