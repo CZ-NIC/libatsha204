@@ -45,10 +45,34 @@ static unsigned char *usb_get_raw_packet(char* data) {
 	return packet;
 }
 
+static bool usb_check_nl(char *buff, size_t check_len) {
+	for (size_t i = 0; i < check_len; i++) {
+		if (buff[i] == '\n') {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static int usb_read(int dev, char *buff) {
+	size_t check_len = 0, cnt = 0;
+
+
+	while (!usb_check_nl(buff, check_len)) {
+		cnt = read(dev, (buff + cnt), BUFFSIZE);
+		check_len += cnt;
+		if (cnt <= 0) {
+			return ERR_COMMUNICATION;
+		}
+	}
+}
+
 int usb_wake(int dev, unsigned char **answer) {
 	char buff[BUFFSIZE];
 	clear_buffer((unsigned char *)buff, BUFFSIZE);
 	size_t len, cnt;
+	int status;
 
 	//Create messge
 	strcpy(buff, "sha:wake()\n");
@@ -62,10 +86,8 @@ int usb_wake(int dev, unsigned char **answer) {
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
-	cnt = read(dev, buff, BUFFSIZE);
-	if (cnt <= 0) {
-		return ERR_COMMUNICATION;
-	}
+	status = usb_read(dev, buff);
+	if (status != ERR_OK) return status;
 
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
@@ -80,6 +102,7 @@ int usb_idle(int dev) {
 	char buff[BUFFSIZE];
 	clear_buffer((unsigned char *)buff, BUFFSIZE);
 	size_t len, cnt;
+	int status;
 
 	//Create messge
 	strcpy(buff, "sha:idle()\n");
@@ -93,10 +116,8 @@ int usb_idle(int dev) {
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
-	cnt = read(dev, buff, BUFFSIZE);
-	if (cnt <= 0) {
-		return ERR_COMMUNICATION;
-	}
+	status = usb_read(dev, buff);
+	if (status != ERR_OK) return status;
 
 	if (strcmp(buff, "00()\n") != 0) {
 		return ERR_USBCMD_NOT_CONFIRMED;
@@ -109,6 +130,7 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	char buff[BUFFSIZE];
 	clear_buffer((unsigned char *)buff, BUFFSIZE);
 	size_t len, cnt;
+	int status;
 
 	//Create messge
 	strcpy(buff, "sha:talk(");
@@ -128,10 +150,8 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
-	cnt = read(dev, buff, BUFFSIZE);
-	if (cnt <= 0) {
-		return ERR_COMMUNICATION;
-	}
+	status = usb_read(dev, buff);
+	if (status != ERR_OK) return status;
 
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
