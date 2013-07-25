@@ -1,8 +1,6 @@
 #include "error.h"
 
 const char *error_name(int err) {
-
-static const int ERR_WAKE_NOT_CONFIRMED = 4;
 	if (err == ERR_OK) {
 		return "OK";
 	} else if (err == ERR_MEMORY_ALLOCATION_ERROR) {

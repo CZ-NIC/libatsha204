@@ -22,7 +22,7 @@ void log_warning(const char* msg) {
 	}
 }
 
-void set_war_callback(void (*clb)(const char* msg)) {
+void set_warn_callback(void (*clb)(const char* msg)) {
 	warn_callback = clb;
 }
 
@@ -45,6 +45,8 @@ int dev_rev(uint32_t *revision) {
 		free(answer);
 		return status;
 	}
+
+	*revision = op_dev_rev_recv(answer);
 
 	//Let device sleep
 	status = idle(device_fd);
@@ -79,11 +81,15 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	set_war_callback(testing_warn_callback);
+	set_warn_callback(testing_warn_callback);
 
 	int status;
-	status = dev_rev(NULL);
+
+	// Get Revision
+	uint32_t rev;
+	status = dev_rev(&rev);
 	fprintf(stderr, "Status: %s\n", error_name(status));
+	fprintf(stderr, "Revision: %u\n", rev);
 
 	close(device_fd);
 

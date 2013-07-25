@@ -18,7 +18,7 @@
 int wake(int dev) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
-	unsigned char *answer;
+	unsigned char *answer = NULL;
 
 	while (tries >= 0) {
 		tries--;
