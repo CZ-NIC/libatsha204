@@ -60,7 +60,7 @@ int idle(int dev) {
 	}
 }
 
-int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
+int command(int dev, unsigned char *raw_packet, unsigned char **answer, bool check_status_code) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
 
@@ -79,14 +79,16 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 				status = ERR_COMMUNICATION;
 				continue;
 			}
-/*
-			if ((*answer)[1] != ATSHA204_STATUS_SUCCES) {
-				//Parse error is really bad and it isn't user's or device fail
-				assert(!((*answer)[1] == ATSHA204_STATUS_PARSE_ERROR));
-				status = ERR_COMMUNICATION;
-				continue;
+
+			if (check_status_code) {
+				if ((*answer)[1] != ATSHA204_STATUS_SUCCES) {
+					//Parse error is really bad and it isn't user's or device fail
+					assert(!((*answer)[1] == ATSHA204_STATUS_PARSE_ERROR));
+					status = ERR_COMMUNICATION;
+					continue;
+				}
 			}
-*/
+
 			break;
 		}
 	}
