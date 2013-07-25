@@ -10,5 +10,6 @@ static const unsigned char ATSHA204_STATUS_COMMUNICATION_ERROR = 0xFF;
 
 //OpCodes
 static const unsigned char ATSHA204_OPCODE_DEV_REV = 0x30;
+static const unsigned char ATSHA204_OPCODE_RANDOM = 0x1B;
 
 #endif //ATSHA204_H
