@@ -66,6 +66,8 @@ static int usb_read(int dev, char *buff) {
 			return ERR_COMMUNICATION;
 		}
 	}
+
+	return ERR_OK;
 }
 
 int usb_wake(int dev, unsigned char **answer) {
