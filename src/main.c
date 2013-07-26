@@ -6,6 +6,7 @@
 #include<errno.h>
 #include<string.h> //strerror()
 #include<stdint.h>
+#include<stdbool.h>
 
 #include "main.h"
 #include "error.h"
@@ -13,18 +14,38 @@
 #include "tools.h"
 #include "operations.h"
 
-static int device_fd;
-static void (*warn_callback)(const char* msg) = NULL;
+/**
+ * Struct for global configuration of library
+ */
+typedef struct {
+	int device_fd;
+	bool verbose;
+	void (*log_callback)(const char* msg);
+} atsha_configuration;
+
+/**
+ * Global variable with configuration and some initial config values.
+ */
+atsha_configuration g_config = {
+	.device_fd = 0,
+	.verbose = false,
+	.log_callback = NULL
+};
+
 static const char *WARNING_WAKE_NOT_CONFIRMED = "Device is possibly still awake";
 
-void log_warning(const char* msg) {
-	if (warn_callback != NULL) {
-		warn_callback(msg);
+void log_message(const char* msg) {
+	if (g_config.log_callback != NULL) {
+		g_config.log_callback(msg);
 	}
 }
 
-void set_warn_callback(void (*clb)(const char* msg)) {
-	warn_callback = clb;
+void atsha_set_verbose() {
+	g_config.verbose = true;
+}
+
+void atsha_set_log_callback(void (*clb)(const char* msg)) {
+	g_config.log_callback = clb;
 }
 
 int dev_rev(uint32_t *revision) {
@@ -33,13 +54,13 @@ int dev_rev(uint32_t *revision) {
 	unsigned char *answer = NULL;
 
 	//Wakeup device
-	status = wake(device_fd);
+	status = wake(g_config.device_fd);
 	if (status != ERR_OK) return status;
 
 	packet = op_dev_rev();
 	if (!packet) return ERR_MEMORY_ALLOCATION_ERROR;
 
-	status = command(device_fd, packet, &answer, true);
+	status = command(g_config.device_fd, packet, &answer, true);
 	if (status != ERR_OK) {
 		free(packet);
 		free(answer);
@@ -49,9 +70,9 @@ int dev_rev(uint32_t *revision) {
 	*revision = op_dev_rev_recv(answer);
 
 	//Let device sleep
-	status = idle(device_fd);
+	status = idle(g_config.device_fd);
 	if (status != ERR_OK) {
-		log_warning(WARNING_WAKE_NOT_CONFIRMED);
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
@@ -66,13 +87,13 @@ int chl_random(big_int *number) {
 	unsigned char *answer = NULL;
 
 	//Wakeup device
-	status = wake(device_fd);
+	status = wake(g_config.device_fd);
 	if (status != ERR_OK) return status;
 
 	packet = op_random();
 	if (!packet) return ERR_MEMORY_ALLOCATION_ERROR;
 
-	status = command(device_fd, packet, &answer, false);
+	status = command(g_config.device_fd, packet, &answer, false);
 	if (status != ERR_OK) {
 		free(packet);
 		free(answer);
@@ -85,9 +106,9 @@ int chl_random(big_int *number) {
 	}
 
 	//Let device sleep
-	status = idle(device_fd);
+	status = idle(g_config.device_fd);
 	if (status != ERR_OK) {
-		log_warning(WARNING_WAKE_NOT_CONFIRMED);
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
@@ -101,7 +122,7 @@ int chl_random(big_int *number) {
  * some application implementing this library.
  */
 
-void testing_warn_callback(const char *msg) {
+void testing_log_callback(const char *msg) {
 	fprintf(stderr, "Warning: %s\n", msg);
 }
 
@@ -111,13 +132,14 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	device_fd = open(argv[1], O_RDWR);
-	if (device_fd == -1) {
+	g_config.device_fd = open(argv[1], O_RDWR);
+	if (g_config.device_fd == -1) {
 		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
 		return 1;
 	}
 
-	set_warn_callback(testing_warn_callback);
+	atsha_set_verbose();
+	atsha_set_log_callback(testing_log_callback);
 
 	int status;
 
@@ -134,7 +156,7 @@ int main(int argc, char **argv) {
 	fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 	free(number.data);
 
-	close(device_fd);
+	close(g_config.device_fd);
 
 	return 0;
 }
