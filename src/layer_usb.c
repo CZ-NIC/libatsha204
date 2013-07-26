@@ -1,15 +1,15 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h> //strerror()
+#include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
 #include<unistd.h>
 
 #include "atsha204.h"
+#include "atsha204consts.h"
 #include "configuration.h"
 #include "communication.h"
 #include "tools.h"
-#include "error.h"
 
 static const int USB_PACKET_SKIP_PREFIX = 3;
 
@@ -63,11 +63,11 @@ static int usb_read(int dev, char *buff) {
 		cnt = read(dev, (buff + cnt), BUFFSIZE);
 		check_len += cnt;
 		if (cnt <= 0) {
-			return ERR_COMMUNICATION;
+			return ATSHA_ERR_COMMUNICATION;
 		}
 	}
 
-	return ERR_OK;
+	return ATSHA_ERR_OK;
 }
 
 int usb_wake(int dev, unsigned char **answer) {
@@ -83,21 +83,21 @@ int usb_wake(int dev, unsigned char **answer) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
-		return ERR_COMMUNICATION;
+		return ATSHA_ERR_COMMUNICATION;
 	}
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
 	status = usb_read(dev, buff);
-	if (status != ERR_OK) return status;
+	if (status != ATSHA_ERR_OK) return status;
 
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
 	if (*answer == NULL) {
-		return ERR_MEMORY_ALLOCATION_ERROR;
+		return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 	}
 
-	return ERR_OK;
+	return ATSHA_ERR_OK;
 }
 
 int usb_idle(int dev) {
@@ -113,19 +113,19 @@ int usb_idle(int dev) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
-		return ERR_COMMUNICATION;
+		return ATSHA_ERR_COMMUNICATION;
 	}
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
 	status = usb_read(dev, buff);
-	if (status != ERR_OK) return status;
+	if (status != ATSHA_ERR_OK) return status;
 
 	if (strcmp(buff, "00()\n") != 0) {
-		return ERR_USBCMD_NOT_CONFIRMED;
+		return ATSHA_ERR_USBCMD_NOT_CONFIRMED;
 	}
 
-	return ERR_OK;
+	return ATSHA_ERR_OK;
 }
 
 int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
@@ -147,19 +147,19 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
-		return ERR_COMMUNICATION;
+		return ATSHA_ERR_COMMUNICATION;
 	}
 
 	//Read answer
 	clear_buffer((unsigned char *)buff, len);
 	status = usb_read(dev, buff);
-	if (status != ERR_OK) return status;
+	if (status != ATSHA_ERR_OK) return status;
 
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
 	if (answer == NULL) {
-		return ERR_MEMORY_ALLOCATION_ERROR;
+		return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 	}
 
-	return ERR_OK;
+	return ATSHA_ERR_OK;
 }

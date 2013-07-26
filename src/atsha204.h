@@ -1,15 +1,27 @@
-#ifndef ATSHA204_H
-#define ATSHA204_H
-//Status codes
-static const unsigned char ATSHA204_STATUS_SUCCES = 0x00;
-static const unsigned char ATSHA204_STATUS_CHECK_MAC_MISCOMPARE = 0x01;
-static const unsigned char ATSHA204_STATUS_PARSE_ERROR = 0x03;
-static const unsigned char ATSHA204_STATUS_EXEC_ERROR = 0x0F;
-static const unsigned char ATSHA204_STATUS_WAKE_OK = 0x11;
-static const unsigned char ATSHA204_STATUS_COMMUNICATION_ERROR = 0xFF;
+#ifndef LIBATSHA204_H
+#define LIBATSHA204_H
 
-//OpCodes
-static const unsigned char ATSHA204_OPCODE_DEV_REV = 0x30;
-static const unsigned char ATSHA204_OPCODE_RANDOM = 0x1B;
+#include <stdlib.h>
+#include <stdint.h>
 
-#endif //ATSHA204_H
+/**********************************************************************
+ ******** THIS FILE REPRESENTS PUBLIC INTERFACE OF LIBATSHA204 *********
+***********************************************************************/
+
+typedef struct {
+	size_t bytes;
+	unsigned char *data;
+} big_int;
+
+int dev_rev(uint32_t *revision);
+
+static const int ATSHA_ERR_OK = 0;
+static const int ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR = 1;
+static const int ATSHA_ERR_COMMUNICATION = 2;
+static const int ATSHA_ERR_WAKE_NOT_CONFIRMED = 3;
+
+static const int ATSHA_ERR_USBCMD_NOT_CONFIRMED = 6;
+
+const char *atsha_error_name(int ATSHA_ERR);
+
+#endif //LIBATSHA204_H

@@ -4,12 +4,12 @@
 #include<sys/file.h> //open()
 #include<fcntl.h>
 #include<errno.h>
-#include<string.h> //strerror()
+#include<string.h> //strATSHA_ERRor()
 #include<stdint.h>
 #include<stdbool.h>
 
+#include "atsha204.h"
 #include "main.h"
-#include "error.h"
 #include "communication.h"
 #include "tools.h"
 #include "operations.h"
@@ -48,20 +48,20 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
-int dev_rev(uint32_t *revision) {
+int atsha_dev_rev(uint32_t *revision) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
 	//Wakeup device
 	status = wake(g_config.device_fd);
-	if (status != ERR_OK) return status;
+	if (status != ATSHA_ERR_OK) return status;
 
 	packet = op_dev_rev();
-	if (!packet) return ERR_MEMORY_ALLOCATION_ERROR;
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 
 	status = command(g_config.device_fd, packet, &answer, true);
-	if (status != ERR_OK) {
+	if (status != ATSHA_ERR_OK) {
 		free(packet);
 		free(answer);
 		return status;
@@ -71,30 +71,30 @@ int dev_rev(uint32_t *revision) {
 
 	//Let device sleep
 	status = idle(g_config.device_fd);
-	if (status != ERR_OK) {
+	if (status != ATSHA_ERR_OK) {
 		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
 	free(answer);
 
-	return ERR_OK;
+	return ATSHA_ERR_OK;
 }
 
-int chl_random(big_int *number) {
+int atsha_random(big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
 	//Wakeup device
 	status = wake(g_config.device_fd);
-	if (status != ERR_OK) return status;
+	if (status != ATSHA_ERR_OK) return status;
 
 	packet = op_random();
-	if (!packet) return ERR_MEMORY_ALLOCATION_ERROR;
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 
 	status = command(g_config.device_fd, packet, &answer, false);
-	if (status != ERR_OK) {
+	if (status != ATSHA_ERR_OK) {
 		free(packet);
 		free(answer);
 		return status;
@@ -102,19 +102,19 @@ int chl_random(big_int *number) {
 
 	number->bytes = op_random_recv(answer, &(number->data));
 	if (number == 0) {
-		return ERR_MEMORY_ALLOCATION_ERROR;
+		return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 	}
 
 	//Let device sleep
 	status = idle(g_config.device_fd);
-	if (status != ERR_OK) {
+	if (status != ATSHA_ERR_OK) {
 		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
 	free(answer);
 
-	return ERR_OK;
+	return ATSHA_ERR_OK;
 }
 
 /*
@@ -145,14 +145,14 @@ int main(int argc, char **argv) {
 
 	// Get Revision
 	uint32_t rev;
-	status = dev_rev(&rev);
-	fprintf(stderr, "Status: %s\n", error_name(status));
+	status = atsha_dev_rev(&rev);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "Revision: %u\n", rev);
 
 	// Random number
 	big_int number;
-	status = chl_random(&number);
-	fprintf(stderr, "Status: %s\n", error_name(status));
+	status = atsha_random(&number);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 	free(number.data);
 
