@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h> //memcpy()
 
 #include "operations.h"
-#include "atsha204.h"
+#include "atsha204consts.h"
 #include "tools.h"
 
 unsigned char *op_dev_rev() {

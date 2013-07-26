@@ -3,8 +3,7 @@
 #include<unistd.h> //close()
 #include<sys/file.h> //open()
 #include<fcntl.h>
-#include<errno.h>
-#include<string.h> //strerror()
+#include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
 
