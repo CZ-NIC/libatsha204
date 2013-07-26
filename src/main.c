@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
 	fprintf(stderr, "Revision: %u\n", rev);
 
 	// Random number
-	big_int number;
+	atsha_big_int number;
 	status = atsha_random(&number);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
