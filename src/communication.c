@@ -80,6 +80,7 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 				*answer = NULL;
 				if (g_config.verbose) log_message("ERR: Command: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
+				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 				continue;
 			}
 
@@ -101,6 +102,7 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 					free(*answer);
 					*answer = NULL;
 					status = ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+					usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 					continue;
 				}
 			}
