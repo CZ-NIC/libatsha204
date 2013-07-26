@@ -10,6 +10,9 @@
 #include "configuration.h"
 #include "communication.h"
 #include "tools.h"
+#include "main.h"
+
+extern atsha_configuration g_config;
 
 static const int USB_PACKET_SKIP_PREFIX = 3;
 
@@ -32,6 +35,10 @@ static unsigned char get_number_from_hex_char(char high, char low) {
 static unsigned char *usb_get_raw_packet(char* data) {
 	int high_cnt = 0, low_cnt = 1;
 	unsigned char packet_size = get_number_from_hex_char(data[USB_PACKET_SKIP_PREFIX + high_cnt], data[USB_PACKET_SKIP_PREFIX + low_cnt]);
+
+	if (packet_size == 0) {
+		return NULL;
+	}
 
 	unsigned char *packet = (unsigned char *)calloc(packet_size, sizeof(unsigned char));
 	if (packet == NULL) return NULL;
@@ -90,6 +97,11 @@ int usb_wake(int dev, unsigned char **answer) {
 	clear_buffer((unsigned char *)buff, len);
 	status = usb_read(dev, buff);
 	if (status != ATSHA_ERR_OK) return status;
+
+	if (buff[0] != '0' && buff[1] != '0') {
+		if (g_config.verbose) log_message("ERR: Read packet: Malformed packet.");
+		return ATSHA_ERR_COMMUNICATION;
+	}
 
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
@@ -154,6 +166,11 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	clear_buffer((unsigned char *)buff, len);
 	status = usb_read(dev, buff);
 	if (status != ATSHA_ERR_OK) return status;
+
+	if (buff[0] != '0' && buff[1] != '0') {
+		if (g_config.verbose) log_message("ERR: Read packet: Malformed packet.");
+		return ATSHA_ERR_COMMUNICATION;
+	}
 
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
