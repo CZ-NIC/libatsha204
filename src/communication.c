@@ -13,6 +13,9 @@
 #include "configuration.h"
 #include "atsha204consts.h"
 #include "layer_usb.h"
+#include "main.h"
+
+extern atsha_configuration g_config;
 
 int wake(int dev) {
 	int status;
@@ -29,6 +32,7 @@ int wake(int dev) {
 		if (status == ATSHA_ERR_OK) {
 			//Check packet consistency and check wake confirmation
 			if (!check_packet(answer)) {
+				if (g_config.verbose) log_message("ERR: Wake: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
 				continue;
 			}
@@ -75,6 +79,7 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer, bool che
 			if (!check_packet(*answer)) {
 				free(*answer);
 				*answer = NULL;
+				if (g_config.verbose) log_message("ERR: Command: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
 				continue;
 			}

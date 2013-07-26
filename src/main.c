@@ -15,15 +15,6 @@
 #include "operations.h"
 
 /**
- * Struct for global configuration of library
- */
-typedef struct {
-	int device_fd;
-	bool verbose;
-	void (*log_callback)(const char* msg);
-} atsha_configuration;
-
-/**
  * Global variable with configuration and some initial config values.
  */
 atsha_configuration g_config = {
@@ -81,7 +72,7 @@ int atsha_dev_rev(uint32_t *revision) {
 	return ATSHA_ERR_OK;
 }
 
-int atsha_random(big_int *number) {
+int atsha_random(atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
