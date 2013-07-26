@@ -4,7 +4,7 @@
 #include<sys/file.h> //open()
 #include<fcntl.h>
 #include<errno.h>
-#include<string.h> //strATSHA_ERRor()
+#include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
 
@@ -49,7 +49,7 @@ int atsha_dev_rev(uint32_t *revision) {
 	if (status != ATSHA_ERR_OK) return status;
 
 	packet = op_dev_rev();
-	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(g_config.device_fd, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
@@ -82,7 +82,7 @@ int atsha_random(atsha_big_int *number) {
 	if (status != ATSHA_ERR_OK) return status;
 
 	packet = op_random();
-	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(g_config.device_fd, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
@@ -93,7 +93,7 @@ int atsha_random(atsha_big_int *number) {
 
 	number->bytes = op_random_recv(answer, &(number->data));
 	if (number == 0) {
-		return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
 	//Let device sleep

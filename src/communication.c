@@ -86,13 +86,13 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 			if ((*answer)[0] == 4) { //Messages with length 4 are always status codes
 				unsigned char atsha204_status = (*answer)[1];
 				bool go_trough = true;
-				if (atsha204_status == ATSHA204_STATUS_PARSE_ATSHA_ERROR) {
+				if (atsha204_status == ATSHA204_STATUS_PARSE_ERROR) {
 					if (g_config.verbose) log_message("ERR: Bad status: Parse error.");
 					go_trough = false;
-				} else if (atsha204_status == ATSHA204_STATUS_EXEC_ATSHA_ERROR) {
+				} else if (atsha204_status == ATSHA204_STATUS_EXEC_ERROR) {
 					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
 					go_trough = false;
-				} else if (atsha204_status == ATSHA204_STATUS_COMMUNICATION_ATSHA_ERROR) {
+				} else if (atsha204_status == ATSHA204_STATUS_COMMUNICATION_ERROR) {
 					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
 					go_trough = false;
 				} //The rest of status codes are distributed

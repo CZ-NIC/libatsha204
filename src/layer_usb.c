@@ -106,7 +106,7 @@ int usb_wake(int dev, unsigned char **answer) {
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
 	if (*answer == NULL) {
-		return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
 	return ATSHA_ERR_OK;
@@ -175,7 +175,7 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	//"Parse" packet from recieved message
 	*answer = usb_get_raw_packet(buff);
 	if (answer == NULL) {
-		return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
 	return ATSHA_ERR_OK;
