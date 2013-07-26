@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
 	int status;
 
 	// Get Revision
-	uint32_t rev;
+	uint32_t rev = 0;
 	status = atsha_dev_rev(&rev);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "Revision: %u\n", rev);
@@ -144,8 +144,10 @@ int main(int argc, char **argv) {
 	atsha_big_int number;
 	status = atsha_random(&number);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
-	fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
-	free(number.data);
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
+		free(number.data);
+	}
 
 	close(g_config.device_fd);
 
