@@ -31,19 +31,12 @@ int wake(int dev) {
 ////////////////////////////////////////////////////////////////////////
 		if (status == ATSHA_ERR_OK) {
 			//Check packet consistency and check wake confirmation
-			if (!check_packet(answer)) {
+			bool packet_ok = check_packet(answer);
+			if (!packet_ok || (answer[1] != ATSHA204_STATUS_WAKE_OK)) {
 				free(answer);
 				answer = NULL;
-				if (g_config.verbose) log_message("ERR: Wake: CRC doesn't match.");
+				if (!packet_ok && g_config.verbose) log_message("ERR: Wake: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
-				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
-				continue;
-			}
-
-			if (answer[1] != ATSHA204_STATUS_WAKE_OK) {
-				free(answer);
-				answer = NULL;
-				status = ATSHA_ERR_WAKE_NOT_CONFIRMED;
 				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 				continue;
 			}
