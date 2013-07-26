@@ -86,6 +86,7 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer, bool che
 
 			if (check_status_code) {
 				if ((*answer)[1] != ATSHA204_STATUS_SUCCES) {
+					if (g_config.verbose) log_message("ERR: Command: Check ATSHA204 status code was requested and status code is different from SUCCESS (0x00)");
 					//Parse ATSHA_ERRor is really bad and it isn't user's or device fail
 					assert(!((*answer)[1] == ATSHA204_STATUS_PARSE_ATSHA_ERROR));
 					status = ATSHA_ERR_COMMUNICATION;

@@ -114,7 +114,7 @@ int atsha_random(atsha_big_int *number) {
  */
 
 void testing_log_callback(const char *msg) {
-	fprintf(stderr, "Warning: %s\n", msg);
+	fprintf(stderr, "Log: %s\n", msg);
 }
 
 int main(int argc, char **argv) {
