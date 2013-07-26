@@ -6,6 +6,6 @@
 
 int wake(int dev);
 int idle(int dev);
-int command(int dev, unsigned char *raw_packet, unsigned char **answer, bool check_status_code);
+int command(int dev, unsigned char *raw_packet, unsigned char **answer);
 
 #endif //COMMUNICATION_H

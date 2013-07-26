@@ -51,7 +51,7 @@ int atsha_dev_rev(uint32_t *revision) {
 	packet = op_dev_rev();
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 
-	status = command(g_config.device_fd, packet, &answer, true);
+	status = command(g_config.device_fd, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
 		free(answer);
@@ -84,7 +84,7 @@ int atsha_random(atsha_big_int *number) {
 	packet = op_random();
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ATSHA_ERROR;
 
-	status = command(g_config.device_fd, packet, &answer, false);
+	status = command(g_config.device_fd, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
 		free(answer);

@@ -62,7 +62,7 @@ int idle(int dev) {
 	}
 }
 
-int command(int dev, unsigned char *raw_packet, unsigned char **answer, bool check_status_code) {
+int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
 
@@ -83,11 +83,21 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer, bool che
 				continue;
 			}
 
-			if (check_status_code) {
-				if ((*answer)[1] != ATSHA204_STATUS_SUCCES) {
-					if (g_config.verbose) log_message("ERR: Command: Check ATSHA204 status code was requested and status code is different from SUCCESS (0x00)");
-					//Parse ATSHA_ERRor is really bad and it isn't user's or device fail
-					assert(!((*answer)[1] == ATSHA204_STATUS_PARSE_ATSHA_ERROR));
+			if ((*answer)[0] == 4) { //Messages with length 4 are always status codes
+				unsigned char atsha204_status = (*answer)[1];
+				bool go_trough = true;
+				if (atsha204_status == ATSHA204_STATUS_PARSE_ATSHA_ERROR) {
+					if (g_config.verbose) log_message("ERR: Bad status: Parse error.");
+					go_trough = false;
+				} else if (atsha204_status == ATSHA204_STATUS_EXEC_ATSHA_ERROR) {
+					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
+					go_trough = false;
+				} else if (atsha204_status == ATSHA204_STATUS_COMMUNICATION_ATSHA_ERROR) {
+					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
+					go_trough = false;
+				} //The rest of status codes are distributed
+
+				if (!go_trough) {
 					free(*answer);
 					*answer = NULL;
 					status = ATSHA_ERR_COMMUNICATION;
