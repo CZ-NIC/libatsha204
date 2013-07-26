@@ -15,6 +15,7 @@
 
 static int device_fd;
 static void (*warn_callback)(const char* msg) = NULL;
+static const char *WARNING_WAKE_NOT_CONFIRMED = "Device is possibly still awake";
 
 void log_warning(const char* msg) {
 	if (warn_callback != NULL) {
@@ -50,7 +51,7 @@ int dev_rev(uint32_t *revision) {
 	//Let device sleep
 	status = idle(device_fd);
 	if (status != ERR_OK) {
-		log_warning(WARN_MSG_IDLE_NOT_CONFIRMED);
+		log_warning(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
@@ -86,7 +87,7 @@ int chl_random(big_int *number) {
 	//Let device sleep
 	status = idle(device_fd);
 	if (status != ERR_OK) {
-		log_warning(WARN_MSG_IDLE_NOT_CONFIRMED);
+		log_warning(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);

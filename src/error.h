@@ -7,7 +7,6 @@ static const int ERR_COMMUNICATION = 2;
 static const int ERR_WAKE_NOT_CONFIRMED = 3;
 
 static const int ERR_USBCMD_NOT_CONFIRMED = 6;
-static const char *WARN_MSG_IDLE_NOT_CONFIRMED = "Device is possibly still awake";
 
 const char *error_name(int err);
 
