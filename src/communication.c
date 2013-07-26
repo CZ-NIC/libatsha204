@@ -100,7 +100,7 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 				if (!go_trough) {
 					free(*answer);
 					*answer = NULL;
-					status = ATSHA_ERR_COMMUNICATION;
+					status = ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 					continue;
 				}
 			}
