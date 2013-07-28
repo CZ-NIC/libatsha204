@@ -94,7 +94,7 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
 					go_trough = false;
 				} else if (atsha204_status == ATSHA204_STATUS_COMMUNICATION_ERROR) {
-					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
+					if (g_config.verbose) log_message("ERR: Bad status: Communication error.");
 					go_trough = false;
 				} //The rest of status codes are distributed
 
