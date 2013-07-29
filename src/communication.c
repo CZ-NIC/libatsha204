@@ -42,6 +42,8 @@ int wake(int dev) {
 			}
 
 			break;
+		} else {
+			usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 		}
 	}
 
@@ -108,6 +110,8 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 			}
 
 			break;
+		} else {
+			usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 		}
 	}
 
