@@ -127,7 +127,7 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 		return status;
 	}
 
-	number->bytes = op_random_recv(answer, &(number->data));
+	number->bytes = op_read_recv(answer, &(number->data));
 	if (number == 0) {
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
@@ -143,6 +143,7 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 
 	return ATSHA_ERR_OK;
 }
+
 
 /*
  * From this point bellow is code just for testing and it simulation of
@@ -186,12 +187,11 @@ int main(int argc, char **argv) {
 	}
 
 	// Read slot
-	unsigned char READ_SLOT = 8;
 	atsha_big_int number2;
-	status = atsha_read(READ_SLOT, &number2);
+	status = atsha_read(8, &number2);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
-		fprintf(stderr, "Slot number %d contents %zu bytes number: ", READ_SLOT, number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");
+		fprintf(stderr, "Slot contents %zu bytes number: ", number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");
 		free(number2.data);
 	}
 
