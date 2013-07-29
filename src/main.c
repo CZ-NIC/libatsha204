@@ -92,7 +92,9 @@ int atsha_random(atsha_big_int *number) {
 	}
 
 	number->bytes = op_random_recv(answer, &(number->data));
-	if (number == 0) {
+	if (number->bytes == 0) {
+		free(packet);
+		free(answer);
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
@@ -108,7 +110,7 @@ int atsha_random(atsha_big_int *number) {
 	return ATSHA_ERR_OK;
 }
 
-int atsha_read(unsigned char slot_number, atsha_big_int *number) {
+int atsha_slot_read(unsigned char slot_number, atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -117,7 +119,7 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 	status = wake(g_config.device_fd);
 	if (status != ATSHA_ERR_OK) return status;
 
-	packet = op_read(slot_number);
+	packet = op_raw_read(get_zone_config(IO_MEM_DATA, IO_RW_NON_ENC, IO_RW_32_BYTES), get_slot_address(slot_number));
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(g_config.device_fd, packet, &answer);
@@ -127,8 +129,10 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 		return status;
 	}
 
-	number->bytes = op_read_recv(answer, &(number->data));
-	if (number == 0) {
+	number->bytes = op_raw_read_recv(answer, &(number->data));
+	if (number->bytes == 0) {
+		free(packet);
+		free(answer);
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
@@ -144,7 +148,7 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 	return ATSHA_ERR_OK;
 }
 
-int atsha_write(unsigned char slot_number, atsha_big_int number) {
+int atsha_slot_write(unsigned char slot_number, atsha_big_int number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -153,7 +157,7 @@ int atsha_write(unsigned char slot_number, atsha_big_int number) {
 	status = wake(g_config.device_fd);
 	if (status != ATSHA_ERR_OK) return status;
 
-	packet = op_write(slot_number, number.bytes, number.data);
+	packet = op_raw_write(get_zone_config(IO_MEM_DATA, IO_RW_NON_ENC, IO_RW_32_BYTES), get_slot_address(slot_number), number.bytes, number.data);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(g_config.device_fd, packet, &answer);
@@ -163,10 +167,52 @@ int atsha_write(unsigned char slot_number, atsha_big_int number) {
 		return status;
 	}
 
-	status = op_write_recv(answer);
+	status = op_raw_write_recv(answer);
 	if (status != ATSHA_ERR_OK) {
 		return status;
 	}
+
+	//Let device sleep
+	status = idle(g_config.device_fd);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_slot_conf_read(unsigned char slot_number, uint16_t *config_word) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+	atsha_big_int number;
+
+	//Wakeup device
+	status = wake(g_config.device_fd);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_raw_read(get_zone_config(IO_MEM_CONFIG, IO_RW_NON_ENC, IO_RW_4_BYTES), get_slot_config_address(slot_number));
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(g_config.device_fd, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	number.bytes = op_raw_read_recv(answer, &(number.data));
+	if (number.bytes == 0) {
+		free(packet);
+		free(answer);
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+	}
+
+	*config_word = get_slot_config_word(slot_number, number.data);
+	free(number.data);
 
 	//Let device sleep
 	status = idle(g_config.device_fd);
@@ -203,12 +249,12 @@ int write_random_and_read() {
 	}
 
 	//Write to slot
-	status = atsha_write(SLOT_ID, number);
+	status = atsha_slot_write(SLOT_ID, number);
 	fprintf(stderr, "Write to slot %d status: %s\n", SLOT_ID, atsha_error_name(status));
 	free(number.data);
 
 	// Read slot
-	status = atsha_read(SLOT_ID, &number);
+	status = atsha_slot_read(SLOT_ID, &number);
 	fprintf(stderr, "Read from slot %d status: %s\n", SLOT_ID, atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Slot contents %zu bytes number: \n", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
@@ -236,12 +282,14 @@ int main(int argc, char **argv) {
 	int status;
 
 	// Get Revision
+	fprintf(stderr, "Get revision:\n");
 	uint32_t rev = 0;
 	status = atsha_dev_rev(&rev);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "Revision: %u\n", rev);
 
 	// Random number
+	fprintf(stderr, "Random number:\n");
 	atsha_big_int number;
 	status = atsha_random(&number);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
@@ -251,8 +299,9 @@ int main(int argc, char **argv) {
 	}
 
 	// Read slot
+	fprintf(stderr, "Read slot:\n");
 	atsha_big_int number2;
-	status = atsha_read(8, &number2);
+	status = atsha_slot_read(8, &number2);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Slot contents %zu bytes number: ", number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");
@@ -260,6 +309,12 @@ int main(int argc, char **argv) {
 	}
 
 	write_random_and_read();
+
+	fprintf(stderr, "Config read:\n");
+	uint16_t config_word = 0;
+	status = atsha_slot_conf_read(8, &config_word);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
+	fprintf(stderr, "Slot config word: %04X\n", config_word);
 
 	close(g_config.device_fd);
 

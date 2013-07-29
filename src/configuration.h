@@ -1,6 +1,12 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#define ATSHA_USE_BIG_ENDIAN
+//But for now we want little endian
+#undef ATSHA_USE_BIG_ENDIAN
+
+
+
 #define USE_LAYER_USB
 //#define USE_LAYER_I2C
 //#define USE_LAYER_EMUL
