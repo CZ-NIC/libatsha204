@@ -108,6 +108,42 @@ int atsha_random(atsha_big_int *number) {
 	return ATSHA_ERR_OK;
 }
 
+int atsha_read(unsigned char slot_number, atsha_big_int *number) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(g_config.device_fd);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_read(slot_number);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(g_config.device_fd, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	number->bytes = op_random_recv(answer, &(number->data));
+	if (number == 0) {
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+	}
+
+	//Let device sleep
+	status = idle(g_config.device_fd);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
 /*
  * From this point bellow is code just for testing and it simulation of
  * some application implementing this library.
@@ -147,6 +183,16 @@ int main(int argc, char **argv) {
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 		free(number.data);
+	}
+
+	// Read slot
+	unsigned char READ_SLOT = 8;
+	atsha_big_int number2;
+	status = atsha_read(READ_SLOT, &number2);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Slot number %d contents %zu bytes number: ", READ_SLOT, number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");
+		free(number2.data);
 	}
 
 	close(g_config.device_fd);
