@@ -144,6 +144,42 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 	return ATSHA_ERR_OK;
 }
 
+int atsha_write(unsigned char slot_number, atsha_big_int number) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(g_config.device_fd);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_write(slot_number, number.bytes, number.data);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(g_config.device_fd, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_write_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Let device sleep
+	status = idle(g_config.device_fd);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
 
 /*
  * From this point bellow is code just for testing and it simulation of
@@ -152,6 +188,34 @@ int atsha_read(unsigned char slot_number, atsha_big_int *number) {
 
 void testing_log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
+}
+
+int write_random_and_read() {
+	unsigned char SLOT_ID = 8;
+	int status;
+	atsha_big_int number;
+
+	fprintf(stderr, "Generate random number, write to and read again from slot %d\n", SLOT_ID);
+	status = atsha_random(&number);
+	fprintf(stderr, "Generate random number status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Generated %zu bytes random number: \n", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
+	}
+
+	//Write to slot
+	status = atsha_write(SLOT_ID, number);
+	fprintf(stderr, "Write to slot %d status: %s\n", SLOT_ID, atsha_error_name(status));
+	free(number.data);
+
+	// Read slot
+	status = atsha_read(SLOT_ID, &number);
+	fprintf(stderr, "Read from slot %d status: %s\n", SLOT_ID, atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Slot contents %zu bytes number: \n", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
+		free(number.data);
+	}
+
+	return status;
 }
 
 int main(int argc, char **argv) {
@@ -194,6 +258,8 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Slot contents %zu bytes number: ", number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");
 		free(number2.data);
 	}
+
+	write_random_and_read();
 
 	close(g_config.device_fd);
 

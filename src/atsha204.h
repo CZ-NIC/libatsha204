@@ -16,6 +16,7 @@ typedef struct {
 int dev_rev(uint32_t *revision);
 int atsha_random(atsha_big_int *number);
 int atsha_read(unsigned char slot_number, atsha_big_int *number);
+int atsha_write(unsigned char slot_number, atsha_big_int number);
 
 static const int ATSHA_ERR_OK = 0;
 static const int ATSHA_ERR_MEMORY_ALLOCATION_ERROR = 1;
