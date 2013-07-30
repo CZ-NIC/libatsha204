@@ -25,9 +25,17 @@ int wake(int dev) {
 	while (tries >= 0) {
 		tries--;
 ////////////////////////////////////////////////////////////////////////
-#ifdef USE_LAYER_USB
-		status = usb_wake(dev, &answer);
-#endif
+		switch (g_config.bottom_layer) {
+			case BOTTOM_LAYER_EMULATION:
+				status = usb_wake(dev, &answer);
+				break;
+			case BOTTOM_LAYER_I2C:
+				status = ATSHA_ERR_NOT_IMPLEMENTED;
+				break;
+			case BOTTOM_LAYER_USB:
+				status = usb_wake(dev, &answer);
+				break;
+		}
 ////////////////////////////////////////////////////////////////////////
 		if (status == ATSHA_ERR_OK) {
 			//Check packet consistency and check wake confirmation
@@ -56,9 +64,19 @@ int idle(int dev) {
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR;
 
 	while (true) {
-#ifdef USE_LAYER_USB
-		status = usb_idle(dev);
-#endif
+////////////////////////////////////////////////////////////////////////
+		switch (g_config.bottom_layer) {
+			case BOTTOM_LAYER_EMULATION:
+				status = usb_idle(dev);
+				break;
+			case BOTTOM_LAYER_I2C:
+				status = ATSHA_ERR_NOT_IMPLEMENTED;
+				break;
+			case BOTTOM_LAYER_USB:
+				status = usb_idle(dev);
+				break;
+		}
+////////////////////////////////////////////////////////////////////////
 		if (status == ATSHA_ERR_OK) return status;
 		if (tries < 0) return status;
 	}
@@ -71,9 +89,17 @@ int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	while (tries >= 0) {
 		tries--;
 ////////////////////////////////////////////////////////////////////////
-#ifdef USE_LAYER_USB
-		status = usb_command(dev, raw_packet, answer);
-#endif
+		switch (g_config.bottom_layer) {
+			case BOTTOM_LAYER_EMULATION:
+				status = usb_command(dev, raw_packet, answer);
+				break;
+			case BOTTOM_LAYER_I2C:
+				status = ATSHA_ERR_NOT_IMPLEMENTED;
+				break;
+			case BOTTOM_LAYER_USB:
+				status = usb_command(dev, raw_packet, answer);
+				break;
+		}
 ////////////////////////////////////////////////////////////////////////
 		if (status == ATSHA_ERR_OK) {
 			//Check packet consistency and status code

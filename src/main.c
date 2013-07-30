@@ -20,7 +20,8 @@
 atsha_configuration g_config = {
 	.device_fd = 0,
 	.verbose = false,
-	.log_callback = NULL
+	.log_callback = NULL,
+	.bottom_layer = BOTTOM_LAYER_USB
 };
 
 static const char *WARNING_WAKE_NOT_CONFIRMED = "Device is possibly still awake";
@@ -37,6 +38,14 @@ void atsha_set_verbose() {
 
 void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
+}
+
+void atsha_emulation_on() {
+	g_config.bottom_layer = BOTTOM_LAYER_EMULATION;
+}
+
+void atsha_emulation_off() {
+	g_config.bottom_layer = BOTTOM_LAYER_DEFAULT;
 }
 
 int atsha_dev_rev(uint32_t *revision) {
