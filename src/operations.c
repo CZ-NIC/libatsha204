@@ -8,6 +8,17 @@
 #include "atsha204.h"
 #include "tools.h"
 
+static int read_long_data(unsigned char *packet, unsigned char **data) {
+	int size = packet[0] - 3; //-3 == -1 count and -2 crc
+	*data = (unsigned char *)calloc(size, sizeof(unsigned char));
+
+	if (*data == NULL) return 0;
+
+	memcpy(*data, (packet + 1), size);
+
+	return size;
+}
+
 unsigned char *op_dev_rev() {
 	return generate_command_packet(ATSHA204_OPCODE_DEV_REV, 0, 0, NULL, 0);
 }
@@ -34,14 +45,7 @@ unsigned char *op_random() {
 }
 
 int op_random_recv(unsigned char *packet, unsigned char **data) {
-	int size = packet[0] - 3; //-3 == -1 count and -2 crc
-	*data = (unsigned char *)calloc(size, sizeof(unsigned char));
-
-	if (*data == NULL) return 0;
-
-	memcpy(*data, (packet + 1), size);
-
-	return size;
+	return read_long_data(packet, data);
 }
 
 unsigned char get_zone_config(unsigned char io_mem, unsigned char io_enc, unsigned char io_cnt) {
@@ -82,14 +86,7 @@ unsigned char *op_raw_read(unsigned char zone_config, unsigned char address) {
 }
 
 int op_raw_read_recv(unsigned char *packet, unsigned char **data) {
-	int size = packet[0] - 3; //-3 == -1 count and -2 crc
-	*data = (unsigned char *)calloc(size, sizeof(unsigned char));
-
-	if (*data == NULL) return 0;
-
-	memcpy(*data, (packet + 1), size);
-
-	return size;
+	return read_long_data(packet, data);
 }
 
 unsigned char *op_raw_write(unsigned char zone_config, unsigned char address, size_t cnt, unsigned char *data) {
