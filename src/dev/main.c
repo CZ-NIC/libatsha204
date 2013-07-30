@@ -42,6 +42,30 @@ int write_random_and_read(struct atsha_handle *handle) {
 	return status;
 }
 
+int hmac(struct atsha_handle *handle) {
+	unsigned char SLOT_ID = 8;
+	int status;
+	atsha_big_int number;
+	atsha_big_int digest;
+
+	fprintf(stderr, "Generate HMAC digest with key from slot %d\n", SLOT_ID);
+	status = atsha_random(handle, &number);
+	fprintf(stderr, "Generate random number status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Generated %zu bytes random number: \n", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
+	}
+
+	status = atsha_challenge_response(handle, SLOT_ID, number, &digest);
+	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "HMAC is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
+		free(digest.data);
+		free(number.data);
+	}
+
+	return status;
+}
+
 int main(int argc, char **argv) {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s hidraw device path\n", argv[0]);
@@ -93,6 +117,8 @@ int main(int argc, char **argv) {
 	status = atsha_slot_conf_read(handle, 8, &config_word);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "Slot config word: %04X\n", config_word);
+
+	hmac(handle);
 
 	atsha_close(handle);
 

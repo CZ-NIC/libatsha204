@@ -21,6 +21,7 @@ static const unsigned char SLOT_CONFIG_ADDRESSES[] = {
 	0x09, 0x09, 0x0A, 0x0A, 0x0B, 0x0B, 0x0C, 0x0C
 };
 
+//internal function
 static int read_long_data(unsigned char *packet, unsigned char **data) {
 	int size = packet[0] - 3; //-3 == -1 count and -2 crc
 	*data = (unsigned char *)calloc(size, sizeof(unsigned char));
@@ -30,6 +31,14 @@ static int read_long_data(unsigned char *packet, unsigned char **data) {
 	memcpy(*data, (packet + 1), size);
 
 	return size;
+}
+//internal function
+static int just_check_status(unsigned char *packet) {
+	if (packet[1] == ATSHA204_STATUS_SUCCES) {
+		return ATSHA_ERR_OK;
+	}
+
+	return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 }
 
 unsigned char *op_dev_rev() {
@@ -114,9 +123,23 @@ unsigned char *op_raw_write(unsigned char zone_config, unsigned char address, si
 }
 
 int op_raw_write_recv(unsigned char *packet) {
-	if (packet[1] == ATSHA204_STATUS_SUCCES) {
-		return ATSHA_ERR_OK;
-	}
+	return just_check_status(packet);
+}
 
-	return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+unsigned char *op_nonce(size_t cnt, unsigned char *data) {
+	unsigned char USE_MODE = 0x03; //pass-trough mode
+	return generate_command_packet(ATSHA204_OPCODE_NONCE, USE_MODE, 0, data, cnt);
+}
+
+int op_nonce_recv(unsigned char *packet) {
+	return just_check_status(packet);
+}
+
+unsigned char *op_hmac(unsigned char address) {
+	unsigned char USE_MODE = 0x04; //Use key only - 0x04 3rd byte must match TempKey.SourceFlag
+	return generate_command_packet(ATSHA204_OPCODE_HMAC, USE_MODE, (uint16_t)address, NULL, 0);
+}
+
+int op_hmac_recv(unsigned char *packet, unsigned char **data) {
+	return read_long_data(packet, data);
 }

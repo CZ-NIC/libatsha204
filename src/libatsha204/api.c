@@ -270,3 +270,67 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 
 	return ATSHA_ERR_OK;
 }
+
+int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	//Store Challenge to TempKey memory
+	////////////////////////////////////////////////////////////////////
+	packet = op_nonce(challenge.bytes, challenge.data);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_nonce_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Clean and reinit
+	free(packet);
+	free(answer);
+	answer = NULL;
+
+	//Get HMAC digest
+	////////////////////////////////////////////////////////////////////
+	packet = op_hmac(get_slot_address(slot_number));
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	response->bytes = op_hmac_recv(answer, &(response->data));
+	if (response->bytes == 0) {
+		free(packet);
+		free(answer);
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
