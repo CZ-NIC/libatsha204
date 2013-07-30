@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef API_H
+#define API_H
 
 #include<stdint.h>
 
@@ -10,13 +10,18 @@ typedef struct {
 	int device_fd;
 	bool verbose;
 	void (*log_callback)(const char* msg);
-	int bottom_layer;
 } atsha_configuration;
+
+struct atsha_handle {
+	int bottom_layer;
+	int fd;
+	char *sn;
+	char *key;
+};
 
 #define BOTTOM_LAYER_EMULATION 0
 #define BOTTOM_LAYER_I2C 1
 #define BOTTOM_LAYER_USB 2
-#define BOTTOM_LAYER_DEFAULT BOTTOM_LAYER_USB
 
 void log_message(const char* msg);
 #endif //MAIN_H

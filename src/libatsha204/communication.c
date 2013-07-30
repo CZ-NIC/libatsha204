@@ -13,11 +13,11 @@
 #include "configuration.h"
 #include "atsha204consts.h"
 #include "layer_usb.h"
-#include "main.h"
+#include "api.h"
 
 extern atsha_configuration g_config;
 
-int wake(int dev) {
+int wake(struct atsha_handle *handle) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
 	unsigned char *answer = NULL;
@@ -25,15 +25,15 @@ int wake(int dev) {
 	while (tries >= 0) {
 		tries--;
 ////////////////////////////////////////////////////////////////////////
-		switch (g_config.bottom_layer) {
+		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
-				status = usb_wake(dev, &answer);
+				status = usb_wake(handle->fd, &answer);
 				break;
 			case BOTTOM_LAYER_I2C:
 				status = ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
-				status = usb_wake(dev, &answer);
+				status = usb_wake(handle->fd, &answer);
 				break;
 		}
 ////////////////////////////////////////////////////////////////////////
@@ -59,21 +59,21 @@ int wake(int dev) {
 	return status;
 }
 
-int idle(int dev) {
+int idle(struct atsha_handle *handle) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR;
 
 	while (true) {
 ////////////////////////////////////////////////////////////////////////
-		switch (g_config.bottom_layer) {
+		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
-				status = usb_idle(dev);
+				status = usb_idle(handle->fd);
 				break;
 			case BOTTOM_LAYER_I2C:
 				status = ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
-				status = usb_idle(dev);
+				status = usb_idle(handle->fd);
 				break;
 		}
 ////////////////////////////////////////////////////////////////////////
@@ -82,22 +82,22 @@ int idle(int dev) {
 	}
 }
 
-int command(int dev, unsigned char *raw_packet, unsigned char **answer) {
+int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
 
 	while (tries >= 0) {
 		tries--;
 ////////////////////////////////////////////////////////////////////////
-		switch (g_config.bottom_layer) {
+		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
-				status = usb_command(dev, raw_packet, answer);
+				status = usb_command(handle->fd, raw_packet, answer);
 				break;
 			case BOTTOM_LAYER_I2C:
 				status = ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
-				status = usb_command(dev, raw_packet, answer);
+				status = usb_command(handle->fd, raw_packet, answer);
 				break;
 		}
 ////////////////////////////////////////////////////////////////////////

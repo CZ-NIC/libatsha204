@@ -8,23 +8,28 @@
  ******** THIS FILE REPRESENTS PUBLIC INTERFACE OF LIBATSHA204 *********
 ***********************************************************************/
 
+//Internal structure
+struct atsha_handle;
+
+//Structure for data exchange
 typedef struct {
 	size_t bytes;
 	unsigned char *data;
 } atsha_big_int;
 
-//Library settings
+//Library settings and initialization
 void atsha_set_verbose();
 void atsha_set_log_callback(void (*clb)(const char* msg));
-void atsha_emulation_on();
-void atsha_emulation_off();
+struct atsha_handle *atsha_open_usb_dev(char *path);
+struct atsha_handle *atsha_open_emulation(char *serial_number, char *key);
+void atsha_close(struct atsha_handle *handle);
 
 //Operations over device
-int atsha_dev_rev(uint32_t *revision);
-int atsha_random(atsha_big_int *number);
-int atsha_slot_read(unsigned char slot_number, atsha_big_int *number);
-int atsha_slot_write(unsigned char slot_number, atsha_big_int number);
-int atsha_slot_conf_read(unsigned char slot_number, uint16_t *config_word);
+int atsha_dev_rev(struct atsha_handle *handle, uint32_t *revision);
+int atsha_random(struct atsha_handle *handle, atsha_big_int *number);
+int atsha_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number);
+int atsha_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number);
+int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word);
 
 //Error management
 static const int ATSHA_ERR_OK = 0;

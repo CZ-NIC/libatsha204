@@ -10,7 +10,7 @@
 #include "configuration.h"
 #include "communication.h"
 #include "tools.h"
-#include "main.h"
+#include "api.h"
 
 extern atsha_configuration g_config;
 

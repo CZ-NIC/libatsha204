@@ -1,0 +1,3 @@
+LIBRARIES += src/libatsha204/libatsha204
+
+libatsha204_MODULES := api communication emulation error layer_usb operations tools
