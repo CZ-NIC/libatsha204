@@ -12,21 +12,6 @@ static const unsigned char IO_RW_NON_ENC = 0;
 static const unsigned char IO_RW_4_BYTES = 0;
 static const unsigned char IO_RW_32_BYTES = 128; //10000000
 
-
-/**
- * Constants enabling addressing
- */
-static const unsigned char SLOT_ADDRESSES[] = {
-	0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
-	0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78
-};
-
-static const unsigned char SLOT_CONFIG_ADDRESSES[] = {
-	0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08, 0x08,
-	0x09, 0x09, 0x0A, 0x0A, 0x0B, 0x0B, 0x0C, 0x0C
-};
-
-
 /**
  * Generate zone config parameter (Param1)
  */
@@ -41,11 +26,13 @@ unsigned char get_slot_address(unsigned char slot_number);
  * Slot number is in range 0--15.
  */
 unsigned char get_slot_config_address(unsigned char slot_number);
+unsigned char get_serial_number_address();
 /**
  * Decode and get slot config word from raw data.
  * Slot number is in range 0--15.
  */
-uint16_t get_slot_config_word(unsigned char slot_number, unsigned char *data);
+uint16_t decode_slot_config(unsigned char slot_number, unsigned char *data);
+
 /**
  * Get device revision
  */

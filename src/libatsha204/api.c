@@ -256,7 +256,7 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
-	*config_word = get_slot_config_word(slot_number, number.data);
+	*config_word = decode_slot_config(slot_number, number.data);
 	free(number.data);
 
 	//Let device sleep
