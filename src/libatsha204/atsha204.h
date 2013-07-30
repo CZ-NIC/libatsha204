@@ -30,15 +30,17 @@ int atsha_random(struct atsha_handle *handle, atsha_big_int *number);
 int atsha_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number);
 int atsha_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number);
 int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word);
+int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response);
 
 //Error management
 static const int ATSHA_ERR_OK = 0;
 static const int ATSHA_ERR_MEMORY_ALLOCATION_ERROR = 1;
-static const int ATSHA_ERR_COMMUNICATION = 2;
-static const int ATSHA_ERR_BAD_COMMUNICATION_STATUS = 3;
-static const int ATSHA_ERR_WAKE_NOT_CONFIRMED = 4;
-static const int ATSHA_ERR_NOT_IMPLEMENTED = 5;
-static const int ATSHA_ERR_USBCMD_NOT_CONFIRMED = 6;
+static const int ATSHA_ERR_INVALID_INPUT = 2;
+static const int ATSHA_ERR_COMMUNICATION = 3;
+static const int ATSHA_ERR_BAD_COMMUNICATION_STATUS = 4;
+static const int ATSHA_ERR_WAKE_NOT_CONFIRMED = 5;
+static const int ATSHA_ERR_NOT_IMPLEMENTED = 6;
+static const int ATSHA_ERR_USBCMD_NOT_CONFIRMED = 7;
 const char *atsha_error_name(int err);
 
 #endif //LIBATSHA204_H

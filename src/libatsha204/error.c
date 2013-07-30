@@ -5,6 +5,8 @@ const char *atsha_error_name(int err) {
 		return "OK";
 	} else if (err == ATSHA_ERR_MEMORY_ALLOCATION_ERROR) {
 		return "Memory allocation error. Some memory allocation failed.";
+	} else if (err == ATSHA_ERR_INVALID_INPUT) {
+		return "Invalid input parameter.";
 	} else if (err == ATSHA_ERR_COMMUNICATION) {
 		return "Communication error: is not possible to send packet to the device, receive packet from the device, or multiple times was delivered/received malformed packet.";
 	} else if (err == ATSHA_ERR_BAD_COMMUNICATION_STATUS) {
