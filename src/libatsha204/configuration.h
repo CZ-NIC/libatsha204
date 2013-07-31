@@ -1,9 +1,17 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-static const int TRY_SEND_RECV_ON_COMM_ERROR = 5;
-static const int TRY_SEND_RECV_ON_COMM_ERROR_TOUT = 2000000; //in microseconds (2s)
-static const size_t BUFFSIZE = 1024;
+#define TRY_SEND_RECV_ON_COMM_ERROR 5
+#define TRY_SEND_RECV_ON_COMM_ERROR_TOUT 2000000
+										//in microseconds (2s)
+#define BUFFSIZE 1024
 
+#define DEFAULT_EMULATION_CONFIG_PATH "emulation.conf"
+#define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
+
+#define USE_LAYER_EMULATION 0
+#define USE_LAYER_I2C 1
+#define USE_LAYER_USB 2
+#define USE_LAYER USE_LAYER_USB
 
 #endif //CONFIGURATION_H

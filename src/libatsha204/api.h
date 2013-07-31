@@ -14,7 +14,9 @@ typedef struct {
 
 struct atsha_handle {
 	int bottom_layer;
+	bool is_srv_emulation;
 	int fd;
+	FILE *file;
 	char *sn;
 	char *key;
 };

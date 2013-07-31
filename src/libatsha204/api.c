@@ -8,6 +8,7 @@
 #include<stdint.h>
 #include<stdbool.h>
 
+#include "configuration.h"
 #include "atsha204.h"
 #include "api.h"
 #include "communication.h"
@@ -39,6 +40,21 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
+struct atsha_handle *atsha_open() {
+	struct atsha_handle *handle;
+
+#if USE_LAYER == USE_LAYER_USB
+	handle = atsha_open_usb_dev((char *)DEFAULT_USB_DEV_PATH);
+#elif USE_LAYER == USE_LAYER_EMULATION
+	handle = atsha_open_emulation((char *)DEFAULT_EMULATION_CONFIG_PATH);
+#else
+	fprintf(stderr, "Library was compiled without definition of bottom layer.\n");
+	exit(1);
+#endif
+
+	return handle;
+}
+
 struct atsha_handle *atsha_open_usb_dev(char *path) {
 	if (path == NULL) return NULL;
 
@@ -52,20 +68,45 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 	if (handle == NULL) return NULL;
 
 	handle->bottom_layer = BOTTOM_LAYER_USB;
+	handle->is_srv_emulation = false;
 	handle->fd = try_fd;
+	handle->file = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
 
 	return handle;
 }
 
-struct atsha_handle *atsha_open_emulation(char *serial_number, char *key) {
+struct atsha_handle *atsha_open_emulation(char *path) {
+	if (path == NULL) return NULL;
+
+	FILE *try_file = fopen(path, "r");
+	if (try_file == NULL) {
+		log_message("Couldn't open configuration.");
+		return NULL;
+	}
+
+	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
+	if (handle == NULL) return NULL;
+
+	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
+	handle->is_srv_emulation = false;
+	handle->file = try_file;
+	handle->sn = NULL;
+	handle->key = NULL;
+
+	return handle;
+}
+
+struct atsha_handle *atsha_open_server_emulation(char *serial_number, char *key) {
 	if (serial_number == NULL || key == NULL) return NULL;
 
 	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
 	if (handle == NULL) return NULL;
 
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
+	handle->is_srv_emulation = true;
+	handle->file = NULL;
 	handle->sn = serial_number;
 	handle->key = key;
 
@@ -78,6 +119,11 @@ void atsha_close(struct atsha_handle *handle) {
 	if (handle->bottom_layer == BOTTOM_LAYER_USB) {
 		close(handle->bottom_layer);
 	}
+
+	if (handle->file != NULL) {
+		fclose(handle->file);
+	}
+
 	free(handle->sn);
 	free(handle->key);
 

@@ -20,8 +20,10 @@ typedef struct {
 //Library settings and initialization
 void atsha_set_verbose();
 void atsha_set_log_callback(void (*clb)(const char* msg));
+struct atsha_handle *atsha_open();
 struct atsha_handle *atsha_open_usb_dev(char *path);
-struct atsha_handle *atsha_open_emulation(char *serial_number, char *key);
+struct atsha_handle *atsha_open_emulation(char *path);
+struct atsha_handle *atsha_open_server_emulation(char *serial_number, char *key);
 void atsha_close(struct atsha_handle *handle);
 
 //Operations over device
