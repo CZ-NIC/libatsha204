@@ -376,3 +376,41 @@ print_buffer_content(packet, packet[0]);
 
 	return ATSHA_ERR_OK;
 }
+
+int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_serial_number();
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	number->bytes = op_serial_number_recv(answer, &(number->data));
+	if (number->bytes == 0) {
+		free(packet);
+		free(answer);
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}

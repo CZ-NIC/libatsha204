@@ -152,3 +152,26 @@ unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data) {
 int op_mac_recv(unsigned char *packet, unsigned char **data) {
 	return read_long_data(packet, data);
 }
+
+unsigned char *op_serial_number() {
+	return generate_command_packet(ATSHA204_OPCODE_READ, get_zone_config(IO_MEM_CONFIG, IO_RW_NON_ENC, IO_RW_32_BYTES), 0x0000, NULL, 0);
+}
+
+int op_serial_number_recv(unsigned char *packet, unsigned char **data) {
+	int size = 9;
+	*data = (unsigned char *)calloc(size, sizeof(unsigned char));
+
+	if (*data == NULL) return 0;
+
+	(*data)[0] = (packet+1)[0];
+	(*data)[1] = (packet+1)[1];
+	(*data)[2] = (packet+1)[2];
+	(*data)[3] = (packet+1)[3];
+	(*data)[4] = (packet+1)[8];
+	(*data)[5] = (packet+1)[9];
+	(*data)[6] = (packet+1)[10];
+	(*data)[7] = (packet+1)[11];
+	(*data)[8] = (packet+1)[12];
+
+	return size;
+}
