@@ -3,6 +3,6 @@
 
 #include<stdbool.h>
 
-bool wake_emul();
+int emul_command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer);
 
 #endif //EMULATION_H
