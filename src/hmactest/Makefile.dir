@@ -1,0 +1,7 @@
+BINARIES += src/hmactest/hmactest
+
+hmactest_MODULES := main sha2
+hmactest_LOCAL_LIBS := atsha204
+
+#ucollect_SYSTEM_LIBS := pcap rt dl uci crypto ssl
+#DOCS += src/ucollect/ucollect

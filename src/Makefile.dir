@@ -1,2 +1,3 @@
 include $(S)/src/libatsha204/Makefile.dir
 include $(S)/src/dev/Makefile.dir
+include $(S)/src/hmactest/Makefile.dir

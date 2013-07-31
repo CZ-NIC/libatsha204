@@ -1,0 +1,217 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h> //close()
+#include<sys/file.h> //open()
+#include<fcntl.h>
+#include<errno.h>
+#include<string.h>
+#include<stdint.h>
+#include<stdbool.h>
+
+#include "../libatsha204/atsha204.h"
+#include "sha2.h"
+
+void testing_log_callback(const char *msg) {
+	fprintf(stderr, "Log: %s\n", msg);
+}
+
+int hmac_impl_test(atsha_big_int *nonce, atsha_big_int key) {
+	unsigned char output[32];
+	size_t message_len = 32+32+1+1+2+8+3+1+4+2+2; //88
+	unsigned char message[message_len];
+
+	size_t i;
+	for (i = 0; i < 32; i++) {
+		message[i] = 0;
+	}
+
+	for (i = 32; i < 64; i++) {
+		message[i] = nonce->data[i-32];
+	}
+	message[64] = 0x11;
+	message[65] = 0x04;
+	message[66] = 0x08;
+	message[67] = 0x00;
+
+	for (i = 68; i < 76; i++) {
+		message[i] = 0;
+	}
+
+	//////////////////
+	message[76] = 0x00;
+	message[77] = 0x00;
+	message[78] = 0x00;
+	//////////////////
+	message[79] = 0xEE;
+	//////////////////
+	message[80] = 0x00;
+	message[81] = 0x00;
+	message[82] = 0x00;
+	message[83] = 0x00;
+	//////////////////
+	message[84] = 0x01;
+	message[85] = 0x23;
+	//////////////////
+	message[86] = 0x00;
+	message[87] = 0x00;
+	//////////////////
+
+	for (i = 0; i < 32; i++) {
+		if (!(i%8)) fprintf(stderr, "\n");
+		fprintf(stderr, "0x%02X ", nonce->data[i]);
+	}
+	fprintf(stderr, "\n");
+
+	for (i = 0; i < 88; i++) {
+		if (!(i%8)) fprintf(stderr, "\n");
+		fprintf(stderr, "0x%02X ", message[i]);
+	}
+	fprintf(stderr, "\n");
+
+	sha2_hmac(key.data, key.bytes, message, message_len, output, 0); //0 is constant for SHA_256
+	fprintf(stderr, "SW HMAC: \t"); for (size_t i = 0; i < 32; i++) { printf("%02X ", output[i]); } printf("\n");
+
+	return ATSHA_ERR_OK;
+}
+
+int hmac(struct atsha_handle *handle) {
+	unsigned char SLOT_ID = 8;
+	int status;
+	atsha_big_int number;
+	atsha_big_int digest;
+	atsha_big_int key;
+	fprintf(stderr, "\n\n============================================================================\n\n");
+	status = atsha_random(handle, &number);
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Nonce: \t"); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
+	}
+
+	status = atsha_slot_read(handle, SLOT_ID, &key);
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Key: \t"); for (size_t i = 0; i < key.bytes; i++) { printf("%02X ", key.data[i]); } printf("\n");
+	}
+
+	hmac_impl_test(&number, key);
+
+	status = atsha_challenge_response(handle, SLOT_ID, number, &digest);
+	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "HW HMAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
+	}
+
+	fprintf(stderr, "\n\n============================================================================\n\n");
+
+	return status;
+}
+
+int mac_impl_test(atsha_big_int *nonce, atsha_big_int key) {
+	unsigned char output[32];
+	size_t message_len = 32+32+1+1+2+8+3+1+4+2+2; //88
+	unsigned char message[message_len];
+
+	size_t i;
+	for (i = 0; i < 32; i++) {
+		message[i] = key.data[i];
+	}
+
+	for (i = 32; i < 64; i++) {
+		message[i] = nonce->data[i-32];
+	}
+	message[64] = 0x08;
+	message[65] = 0x00;
+	message[66] = 0x08;
+	message[67] = 0x00;
+
+	for (i = 68; i < 76; i++) {
+		message[i] = 0;
+	}
+
+	//////////////////
+	message[76] = 0x00;
+	message[77] = 0x00;
+	message[78] = 0x00;
+	//////////////////
+	message[79] = 0xEE;
+	//////////////////
+	message[80] = 0x00;
+	message[81] = 0x00;
+	message[82] = 0x00;
+	message[83] = 0x00;
+	//////////////////
+	message[84] = 0x01;
+	message[85] = 0x23;
+	//////////////////
+	message[86] = 0x00;
+	message[87] = 0x00;
+	//////////////////
+
+	for (i = 0; i < 32; i++) {
+		if (!(i%8)) fprintf(stderr, "\n");
+		fprintf(stderr, "0x%02X ", nonce->data[i]);
+	}
+	fprintf(stderr, "\n");
+
+	for (i = 0; i < 88; i++) {
+		if (!(i%8)) fprintf(stderr, "\n");
+		fprintf(stderr, "0x%02X ", message[i]);
+	}
+	fprintf(stderr, "\n");
+
+	sha2(message, message_len, output, 0); //0 is constant for SHA_256
+	fprintf(stderr, "SW MAC: \t"); for (size_t i = 0; i < 32; i++) { printf("%02X ", output[i]); } printf("\n");
+
+	return ATSHA_ERR_OK;
+}
+
+int mac(struct atsha_handle *handle) {
+	unsigned char SLOT_ID = 8;
+	int status;
+	atsha_big_int number;
+	atsha_big_int digest;
+	atsha_big_int key;
+	fprintf(stderr, "\n\n============================================================================\n\n");
+	status = atsha_random(handle, &number);
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Nonce: \t"); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
+	}
+
+	status = atsha_slot_read(handle, SLOT_ID, &key);
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Key: \t"); for (size_t i = 0; i < key.bytes; i++) { printf("%02X ", key.data[i]); } printf("\n");
+	}
+
+	mac_impl_test(&number, key);
+
+	status = atsha_challenge_response_mac(handle, SLOT_ID, number, &digest);
+	fprintf(stderr, "MAC digest status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "HW MAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
+	}
+
+	fprintf(stderr, "\n\n============================================================================\n\n");
+
+	return status;
+}
+
+int main(int argc, char **argv) {
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s hidraw device path\n", argv[0]);
+		return 1;
+	}
+
+	struct atsha_handle *handle = atsha_open_usb_dev(argv[1]);
+	if (handle == NULL) {
+		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
+		return 1;
+	}
+
+	atsha_set_verbose();
+	atsha_set_log_callback(testing_log_callback);
+
+	hmac(handle);
+	mac(handle);
+
+	atsha_close(handle);
+
+	return 0;
+}
