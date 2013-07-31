@@ -370,7 +370,7 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
 
 	//Get HMAC digest
 	////////////////////////////////////////////////////////////////////
-	packet = op_hmac(slot_number);
+	packet = op_hmac(slot_number, use_sn_in_digest);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(handle, packet, &answer);
@@ -416,7 +416,7 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 
 	//Store Challenge to TempKey memory
 	////////////////////////////////////////////////////////////////////
-	packet = op_mac(slot_number, challenge.bytes, challenge.data);
+	packet = op_mac(slot_number, challenge.bytes, challenge.data, use_sn_in_digest);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(handle, packet, &answer);
