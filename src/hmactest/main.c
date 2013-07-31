@@ -9,7 +9,8 @@
 #include<stdbool.h>
 
 #include "../libatsha204/atsha204.h"
-#include "sha2.h"
+#include <openssl/hmac.h>
+#include <openssl/sha.h>
 
 void testing_log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
@@ -68,7 +69,11 @@ int hmac_impl_test(atsha_big_int *nonce, atsha_big_int key) {
 	}
 	fprintf(stderr, "\n");
 
-	sha2_hmac(key.data, key.bytes, message, message_len, output, 0); //0 is constant for SHA_256
+	unsigned int ret_len;
+	unsigned char *ret_status;
+	ret_status = HMAC(EVP_sha256(), key.data, key.bytes, message, message_len, output, &ret_len);
+	if (ret_status == NULL || ret_len != 32) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+
 	fprintf(stderr, "SW HMAC: \t"); for (size_t i = 0; i < 32; i++) { printf("%02X ", output[i]); } printf("\n");
 
 	return ATSHA_ERR_OK;
@@ -92,7 +97,7 @@ int hmac(struct atsha_handle *handle) {
 
 	hmac_impl_test(&number, key);
 
-	status = atsha_challenge_response(handle, number, &digest);
+	status = atsha_low_challenge_response(handle, atsha_find_slot_number(), number, &digest, false);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HW HMAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
@@ -156,7 +161,9 @@ int mac_impl_test(atsha_big_int *nonce, atsha_big_int key) {
 	}
 	fprintf(stderr, "\n");
 
-	sha2(message, message_len, output, 0); //0 is constant for SHA_256
+	unsigned char *ret_status;
+	ret_status = SHA256(message, message_len, output);
+	if (ret_status == NULL) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	fprintf(stderr, "SW MAC: \t"); for (size_t i = 0; i < 32; i++) { printf("%02X ", output[i]); } printf("\n");
 
 	return ATSHA_ERR_OK;
@@ -180,7 +187,7 @@ int mac(struct atsha_handle *handle) {
 
 	mac_impl_test(&number, key);
 
-	status = atsha_challenge_response_mac(handle, number, &digest);
+	status = atsha_low_challenge_response_mac(handle, atsha_find_slot_number(), number, &digest, false);
 	fprintf(stderr, "MAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HW MAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
