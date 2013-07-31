@@ -120,6 +120,16 @@ int main(int argc, char **argv) {
 
 	hmac(handle);
 
+	//SN
+	fprintf(stderr, "Serial number:\n");
+	atsha_big_int sn;
+	status = atsha_serial_number(handle, &sn);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "SN contents %zu bytes number: ", sn.bytes); for (size_t i = 0; i < sn.bytes; i++) { printf("%02X ", sn.data[i]); } printf("\n");
+		free(sn.data);
+	}
+
 	atsha_close(handle);
 
 	return 0;
