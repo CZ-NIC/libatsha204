@@ -332,7 +332,7 @@ int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_num
 	////////////////////////////////////////////////////////////////////
 	packet = op_nonce(challenge.bytes, challenge.data);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-print_buffer_content(packet, packet[0]);
+
 	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
@@ -354,14 +354,14 @@ print_buffer_content(packet, packet[0]);
 	////////////////////////////////////////////////////////////////////
 	packet = op_hmac(slot_number);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-print_buffer_content(packet, packet[0]);
+
 	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
 		free(answer);
 		return status;
 	}
-print_buffer_content(answer, answer[0]);
+
 	response->bytes = op_hmac_recv(answer, &(response->data));
 	if (response->bytes == 0) {
 		free(packet);
@@ -396,7 +396,7 @@ int atsha_challenge_response_mac(struct atsha_handle *handle, unsigned char slot
 	////////////////////////////////////////////////////////////////////
 	packet = op_mac(slot_number, challenge.bytes, challenge.data);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-print_buffer_content(packet, packet[0]);
+
 	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
