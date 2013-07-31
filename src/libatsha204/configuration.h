@@ -8,6 +8,7 @@
 
 #define DEFAULT_EMULATION_CONFIG_PATH "emulation.conf"
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
+#define DEFAULT_USE_SN_IN_DIGEST true
 
 #define USE_LAYER_EMULATION 0
 #define USE_LAYER_I2C 1

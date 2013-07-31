@@ -15,11 +15,10 @@ void testing_log_callback(const char *msg) {
 }
 
 int write_random_and_read(struct atsha_handle *handle) {
-	unsigned char SLOT_ID = 8;
 	int status;
 	atsha_big_int number;
 
-	fprintf(stderr, "Generate random number, write to and read again from slot %d\n", SLOT_ID);
+	fprintf(stderr, "Generate random number, write to and read again from slot\n");
 	status = atsha_random(handle, &number);
 	fprintf(stderr, "Generate random number status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
@@ -27,13 +26,13 @@ int write_random_and_read(struct atsha_handle *handle) {
 	}
 
 	//Write to slot
-	status = atsha_slot_write(handle, SLOT_ID, number);
-	fprintf(stderr, "Write to slot %d status: %s\n", SLOT_ID, atsha_error_name(status));
+	status = atsha_slot_write(handle, number);
+	fprintf(stderr, "Write to slot status: %s\n", atsha_error_name(status));
 	free(number.data);
 
 	// Read slot
-	status = atsha_slot_read(handle, SLOT_ID, &number);
-	fprintf(stderr, "Read from slot %d status: %s\n", SLOT_ID, atsha_error_name(status));
+	status = atsha_slot_read(handle, &number);
+	fprintf(stderr, "Read from slot status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Slot contents %zu bytes number: \n", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 		free(number.data);
@@ -43,19 +42,18 @@ int write_random_and_read(struct atsha_handle *handle) {
 }
 
 int hmac(struct atsha_handle *handle) {
-	unsigned char SLOT_ID = 8;
 	int status;
 	atsha_big_int number;
 	atsha_big_int digest;
 
-	fprintf(stderr, "Generate HMAC digest with key from slot %d\n", SLOT_ID);
+	fprintf(stderr, "Generate HMAC digest with key from slot\n");
 	status = atsha_random(handle, &number);
 	fprintf(stderr, "Generate random number status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Generated %zu bytes random number: \n", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 	}
 
-	status = atsha_challenge_response(handle, SLOT_ID, number, &digest);
+	status = atsha_challenge_response(handle, number, &digest);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HMAC is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
@@ -103,7 +101,7 @@ int main(int argc, char **argv) {
 	// Read slot
 	fprintf(stderr, "Read slot:\n");
 	atsha_big_int number2;
-	status = atsha_slot_read(handle, 8, &number2);
+	status = atsha_slot_read(handle, &number2);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Slot contents %zu bytes number: ", number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");

@@ -40,6 +40,12 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
+unsigned char atsha_find_slot_number() {
+	//OK, here will be some difficult DNS magic
+	//For now is one hardcoded open and free to use slot good enough
+	return 8;
+}
+
 struct atsha_handle *atsha_open() {
 	struct atsha_handle *handle;
 
@@ -201,7 +207,11 @@ int atsha_random(struct atsha_handle *handle, atsha_big_int *number) {
 	return ATSHA_ERR_OK;
 }
 
-int atsha_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
+int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number) {
+	return atsha_low_slot_read(handle, atsha_find_slot_number(), number);
+}
+
+int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -239,7 +249,11 @@ int atsha_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsh
 	return ATSHA_ERR_OK;
 }
 
-int atsha_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
+int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number) {
+	return atsha_low_slot_write(handle, atsha_find_slot_number(), number);
+}
+
+int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -317,7 +331,11 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 	return ATSHA_ERR_OK;
 }
 
-int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response) {
+int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response) {
+	return atsha_low_challenge_response(handle, atsha_find_slot_number(), challenge, response, DEFAULT_USE_SN_IN_DIGEST);
+}
+
+int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -381,7 +399,11 @@ int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_num
 	return ATSHA_ERR_OK;
 }
 
-int atsha_challenge_response_mac(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response) {
+int atsha_challenge_response_mac(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response) {
+	return atsha_low_challenge_response_mac(handle, atsha_find_slot_number(), challenge, response, DEFAULT_USE_SN_IN_DIGEST);
+}
+
+int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;

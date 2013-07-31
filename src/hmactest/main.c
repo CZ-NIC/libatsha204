@@ -75,7 +75,6 @@ int hmac_impl_test(atsha_big_int *nonce, atsha_big_int key) {
 }
 
 int hmac(struct atsha_handle *handle) {
-	unsigned char SLOT_ID = 8;
 	int status;
 	atsha_big_int number;
 	atsha_big_int digest;
@@ -86,14 +85,14 @@ int hmac(struct atsha_handle *handle) {
 		fprintf(stderr, "Nonce: \t"); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 	}
 
-	status = atsha_slot_read(handle, SLOT_ID, &key);
+	status = atsha_slot_read(handle, &key);
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Key: \t"); for (size_t i = 0; i < key.bytes; i++) { printf("%02X ", key.data[i]); } printf("\n");
 	}
 
 	hmac_impl_test(&number, key);
 
-	status = atsha_challenge_response(handle, SLOT_ID, number, &digest);
+	status = atsha_challenge_response(handle, number, &digest);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HW HMAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
@@ -164,7 +163,6 @@ int mac_impl_test(atsha_big_int *nonce, atsha_big_int key) {
 }
 
 int mac(struct atsha_handle *handle) {
-	unsigned char SLOT_ID = 8;
 	int status;
 	atsha_big_int number;
 	atsha_big_int digest;
@@ -175,14 +173,14 @@ int mac(struct atsha_handle *handle) {
 		fprintf(stderr, "Nonce: \t"); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 	}
 
-	status = atsha_slot_read(handle, SLOT_ID, &key);
+	status = atsha_slot_read(handle, &key);
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "Key: \t"); for (size_t i = 0; i < key.bytes; i++) { printf("%02X ", key.data[i]); } printf("\n");
 	}
 
 	mac_impl_test(&number, key);
 
-	status = atsha_challenge_response_mac(handle, SLOT_ID, number, &digest);
+	status = atsha_challenge_response_mac(handle, number, &digest);
 	fprintf(stderr, "MAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HW MAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
