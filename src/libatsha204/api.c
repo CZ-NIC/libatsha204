@@ -286,7 +286,7 @@ int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_num
 	////////////////////////////////////////////////////////////////////
 	packet = op_nonce(challenge.bytes, challenge.data);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-
+print_buffer_content(packet, packet[0]);
 	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
@@ -306,9 +306,51 @@ int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_num
 
 	//Get HMAC digest
 	////////////////////////////////////////////////////////////////////
-	packet = op_hmac(get_slot_address(slot_number));
+	packet = op_hmac(slot_number);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+print_buffer_content(packet, packet[0]);
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+print_buffer_content(answer, answer[0]);
+	response->bytes = op_hmac_recv(answer, &(response->data));
+	if (response->bytes == 0) {
+		free(packet);
+		free(answer);
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+	}
 
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_challenge_response_mac(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	//Store Challenge to TempKey memory
+	////////////////////////////////////////////////////////////////////
+	packet = op_mac(slot_number, challenge.bytes, challenge.data);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+print_buffer_content(packet, packet[0]);
 	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
@@ -316,7 +358,7 @@ int atsha_challenge_response(struct atsha_handle *handle, unsigned char slot_num
 		return status;
 	}
 
-	response->bytes = op_hmac_recv(answer, &(response->data));
+	response->bytes = op_mac_recv(answer, &(response->data));
 	if (response->bytes == 0) {
 		free(packet);
 		free(answer);

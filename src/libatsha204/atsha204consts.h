@@ -15,5 +15,6 @@ static const unsigned char ATSHA204_OPCODE_READ = 0x02;
 static const unsigned char ATSHA204_OPCODE_WRITE = 0x12;
 static const unsigned char ATSHA204_OPCODE_NONCE = 0x16;
 static const unsigned char ATSHA204_OPCODE_HMAC = 0x11;
+static const unsigned char ATSHA204_OPCODE_MAC = 0x08;
 
 #endif //ATSHA204CONSTS_H

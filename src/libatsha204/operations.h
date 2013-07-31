@@ -56,5 +56,7 @@ unsigned char *op_nonce(size_t cnt, unsigned char *data);
 int op_nonce_recv(unsigned char *packet);
 unsigned char *op_hmac(unsigned char address);
 int op_hmac_recv(unsigned char *packet, unsigned char **data);
+unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data);
+int op_mac_recv(unsigned char *packet, unsigned char **data);
 
 #endif //OPERATIONS_H

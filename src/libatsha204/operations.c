@@ -143,3 +143,12 @@ unsigned char *op_hmac(unsigned char address) {
 int op_hmac_recv(unsigned char *packet, unsigned char **data) {
 	return read_long_data(packet, data);
 }
+
+unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data) {
+	unsigned char USE_MODE = 0x00; //use key slot; read message from input
+	return generate_command_packet(ATSHA204_OPCODE_MAC, USE_MODE, (uint16_t)address, data, cnt);
+}
+
+int op_mac_recv(unsigned char *packet, unsigned char **data) {
+	return read_long_data(packet, data);
+}
