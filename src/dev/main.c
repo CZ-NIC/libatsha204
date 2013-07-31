@@ -56,7 +56,21 @@ int hmac(struct atsha_handle *handle) {
 	status = atsha_challenge_response(handle, number, &digest);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
-		fprintf(stderr, "HMAC is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
+		fprintf(stderr, "HMAC D is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
+		free(digest.data);
+	}
+
+	status = atsha_low_challenge_response(handle, atsha_find_slot_number(), number, &digest, true);
+	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "HMAC T is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
+		free(digest.data);
+	}
+
+	status = atsha_low_challenge_response(handle, atsha_find_slot_number(), number, &digest, false);
+	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "HMAC F is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
 		free(digest.data);
 		free(number.data);
 	}
