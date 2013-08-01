@@ -40,7 +40,7 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	unsigned char message[message_len];
 
 	bool use_sn;
-	if ((raw_packet[POSITION_PARAM1] | 0x40) == 0) {
+	if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
 		use_sn = false;
 	} else {
 		use_sn = true;
@@ -55,10 +55,10 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		message[i] = handle->nonce[i-32];
 	}
 	//////////////////
-	message[64] = 0x11; //opcode
+	message[64] = ATSHA204_OPCODE_HMAC; //opcode
 	message[65] = raw_packet[POSITION_PARAM1]; //mode
-	message[66] = raw_packet[POSITION_PARAM1]+1; //param2 alias slotID
-	message[67] = raw_packet[POSITION_PARAM1]+2; //param2 alias slotID
+	message[66] = raw_packet[POSITION_PARAM1 + 1]; //param2 alias slotID
+	message[67] = raw_packet[POSITION_PARAM1 + 2]; //param2 alias slotID
 	//////////////////
 	message[68] = 0x00; //8bytes OTP[0:7] - we will never use it!!
 	message[69] = 0x00;
@@ -101,7 +101,7 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	//End of message
 
 	atsha_big_int key = {.bytes = 0, .data = NULL};
-	if (atsha_low_slot_read(handle, get_slot_address(raw_packet[POSITION_PARAM1+1]), &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 
 	unsigned int ret_len;
 	unsigned char *ret_status;
@@ -123,10 +123,10 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	unsigned char message[message_len];
 
 	atsha_big_int key = {.bytes = 0, .data = NULL};
-	if (atsha_low_slot_read(handle, get_slot_address(raw_packet[POSITION_PARAM1+1]), &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 
 	bool use_sn;
-	if ((raw_packet[POSITION_PARAM1] | 0x40) == 0) {
+	if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
 		use_sn = false;
 	} else {
 		use_sn = true;
@@ -138,13 +138,13 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	}
 	//////////////////
 	for (size_t i = 32; i < 64; i++) {
-		message[i] = raw_packet[i-32+1]; //+1 == skip count parameter
+		message[i] = raw_packet[i-32+5]; //+1 == skip count parameter
 	}
 	//////////////////
-	message[64] = 0x11; //opcode
+	message[64] = ATSHA204_OPCODE_MAC; //opcode
 	message[65] = raw_packet[POSITION_PARAM1]; //mode
-	message[66] = raw_packet[POSITION_PARAM1]+1; //param2 alias slotID
-	message[67] = raw_packet[POSITION_PARAM1]+2; //param2 alias slotID
+	message[66] = raw_packet[POSITION_PARAM1 + 1]; //param2 alias slotID
+	message[67] = raw_packet[POSITION_PARAM1 + 2]; //param2 alias slotID
 	//////////////////
 	message[68] = 0x00; //8bytes OTP[0:7] - we will never use it!!
 	message[69] = 0x00;
