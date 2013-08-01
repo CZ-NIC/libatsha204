@@ -95,10 +95,16 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
 	if (handle == NULL) return NULL;
 
+	atsha_big_int number;
+	if (atsha_serial_number(handle, &number) != ATSHA_ERR_OK) {
+		atsha_close(handle);
+		return NULL;
+	}
+
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = false;
 	handle->file = try_file;
-	handle->sn = NULL;
+	handle->sn = number.data;
 	handle->key = NULL;
 
 	return handle;
