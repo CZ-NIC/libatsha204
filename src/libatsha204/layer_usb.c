@@ -17,17 +17,6 @@ extern atsha_configuration g_config;
 static const int USB_PACKET_SKIP_PREFIX = 3;
 
 /**
- * This function gets two chars, that are representing hex string, and
- * return real byte value.
- */
-static unsigned char get_number_from_hex_char(char high, char low) {
-	char str[3];
-	str[0] = high; str[1] = low; str[2] = '\0';
-
-	return (unsigned char)strtol(str, NULL, 16);
-}
-
-/**
  * USB chip is returning bytes as string.
  * This function gets received message and return raw packet.
  * Function passes char by char and each pair is converting to one real byte

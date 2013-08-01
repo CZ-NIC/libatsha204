@@ -6,7 +6,7 @@
 										//in microseconds (2s)
 #define BUFFSIZE 1024
 
-#define DEFAULT_EMULATION_CONFIG_PATH "emulation.conf"
+#define DEFAULT_EMULATION_CONFIG_PATH "atsha204.sw"
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
 #define DEFAULT_USE_SN_IN_DIGEST true
 

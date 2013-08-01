@@ -7,6 +7,17 @@
 
 static const uint16_t POLYNOM = 0x8005; //TODO: Move this constant to more reasonable place
 
+/**
+ * This function gets two chars, that are representing hex string, and
+ * return real byte value.
+ */
+unsigned char get_number_from_hex_char(char high, char low) {
+	char str[3];
+	str[0] = high; str[1] = low; str[2] = '\0';
+
+	return (unsigned char)strtol(str, NULL, 16);
+}
+
 bool check_packet(unsigned char *packet) {
 	unsigned char packet_size;
 	unsigned char crc[2];
