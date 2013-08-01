@@ -123,7 +123,7 @@ void atsha_close(struct atsha_handle *handle) {
 	if (handle == NULL) return;
 
 	if (handle->bottom_layer == BOTTOM_LAYER_USB) {
-		close(handle->bottom_layer);
+		close(handle->fd);
 	}
 
 	if (handle->file != NULL) {
