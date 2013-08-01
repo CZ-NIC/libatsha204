@@ -20,6 +20,9 @@ const char *atsha_error_name(int err) {
 		case ATSHA_ERR_NOT_IMPLEMENTED:
 			return "Operation not implemented. Requested function or feature in not implemented in applicable layer (yet).";
 
+		case ATSHA_ERR_CONFIG_FILE_BAD_FORMAT:
+			return "Configuration file has bad formatting.";
+
 		case ATSHA_ERR_WAKE_NOT_CONFIRMED:
 			return "Is not confirmed if device is wake up or not.";
 
