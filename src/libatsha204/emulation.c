@@ -5,6 +5,9 @@
 #include<stdbool.h>
 #include<unistd.h>
 
+#include <openssl/hmac.h>
+#include <openssl/sha.h>
+
 #include "atsha204.h"
 #include "atsha204consts.h"
 #include "configuration.h"
@@ -20,12 +23,179 @@ static const size_t POSITION_PARAM1 = 2;
 static const size_t POSITION_ADDRESS = 3;
 static const size_t LINE_BUFFSIZE = 128;
 
-static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
-	(void) raw_packet;
-	(void) answer;
-	(void) handle;
+static int emul_nonce(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
+	memcpy(handle->nonce, (raw_packet + 5), ATSHA204_SLOT_BYTE_LEN);
 
-	return ATSHA_ERR_NOT_IMPLEMENTED;
+	unsigned char data[1];
+	data[0] = ATSHA204_STATUS_SUCCES;
+	*answer = generate_answer_packet(data, 1);
+	if (*answer == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	return ATSHA_ERR_OK;
+}
+
+static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
+	unsigned char output[32];
+	size_t message_len = 32+32+1+1+2+8+3+1+4+2+2; //88
+	unsigned char message[message_len];
+
+	bool use_sn;
+	if ((raw_packet[POSITION_PARAM1] | 0x40) == 0) {
+		use_sn = false;
+	} else {
+		use_sn = true;
+	}
+	//Start of message
+	//////////////////
+	for (size_t i = 0; i < 32; i++) {
+		message[i] = 0;
+	}
+	//////////////////
+	for (size_t i = 32; i < 64; i++) {
+		message[i] = handle->nonce[i-32];
+	}
+	//////////////////
+	message[64] = 0x11; //opcode
+	message[65] = raw_packet[POSITION_PARAM1]; //mode
+	message[66] = raw_packet[POSITION_PARAM1]+1; //param2 alias slotID
+	message[67] = raw_packet[POSITION_PARAM1]+2; //param2 alias slotID
+	//////////////////
+	message[68] = 0x00; //8bytes OTP[0:7] - we will never use it!!
+	message[69] = 0x00;
+	message[70] = 0x00;
+	message[71] = 0x00;
+	message[72] = 0x00;
+	message[73] = 0x00;
+	message[74] = 0x00;
+	message[75] = 0x00;
+	//////////////////
+	message[76] = 0x00; //8bytes OTP[8:10] - we will never use it!!
+	message[77] = 0x00;
+	message[78] = 0x00;
+	//////////////////
+	message[79] = handle->sn[8]; //0xEE constant
+	//////////////////
+	if (use_sn) {
+		message[80] = handle->sn[4];
+		message[81] = handle->sn[5];
+		message[82] = handle->sn[6];
+		message[83] = handle->sn[7];
+	} else {
+		message[80] = 0x00;
+		message[81] = 0x00;
+		message[82] = 0x00;
+		message[83] = 0x00;
+	}
+	//////////////////
+	message[84] = handle->sn[0]; //0x01 constant
+	message[85] = handle->sn[1]; //0x02 constant
+	//////////////////
+	if (use_sn) {
+		message[86] = handle->sn[2];
+		message[87] = handle->sn[3];
+	} else {
+		message[86] = 0x00;
+		message[87] = 0x00;
+	}
+	//////////////////
+	//End of message
+
+	atsha_big_int key = {.bytes = 0, .data = NULL};
+	if (atsha_low_slot_read(handle, get_slot_address(raw_packet[POSITION_PARAM1+1]), &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+
+	unsigned int ret_len;
+	unsigned char *ret_status;
+	ret_status = HMAC(EVP_sha256(), key.data, key.bytes, message, message_len, output, &ret_len);
+
+	free(key.data);
+
+	if (ret_status == NULL || ret_len != 32) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+
+	(*answer) = generate_answer_packet(output, 32);
+	if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	return ATSHA_ERR_OK;
+}
+
+static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
+	unsigned char output[32];
+	size_t message_len = 32+32+1+1+2+8+3+1+4+2+2; //88
+	unsigned char message[message_len];
+
+	atsha_big_int key = {.bytes = 0, .data = NULL};
+	if (atsha_low_slot_read(handle, get_slot_address(raw_packet[POSITION_PARAM1+1]), &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+
+	bool use_sn;
+	if ((raw_packet[POSITION_PARAM1] | 0x40) == 0) {
+		use_sn = false;
+	} else {
+		use_sn = true;
+	}
+	//Start of message
+	//////////////////
+	for (size_t i = 0; i < 32; i++) {
+		message[i] = key.data[i];
+	}
+	//////////////////
+	for (size_t i = 32; i < 64; i++) {
+		message[i] = raw_packet[i-32+1]; //+1 == skip count parameter
+	}
+	//////////////////
+	message[64] = 0x11; //opcode
+	message[65] = raw_packet[POSITION_PARAM1]; //mode
+	message[66] = raw_packet[POSITION_PARAM1]+1; //param2 alias slotID
+	message[67] = raw_packet[POSITION_PARAM1]+2; //param2 alias slotID
+	//////////////////
+	message[68] = 0x00; //8bytes OTP[0:7] - we will never use it!!
+	message[69] = 0x00;
+	message[70] = 0x00;
+	message[71] = 0x00;
+	message[72] = 0x00;
+	message[73] = 0x00;
+	message[74] = 0x00;
+	message[75] = 0x00;
+	//////////////////
+	message[76] = 0x00; //8bytes OTP[8:10] - we will never use it!!
+	message[77] = 0x00;
+	message[78] = 0x00;
+	//////////////////
+	message[79] = handle->sn[8]; //0xEE constant
+	//////////////////
+	if (use_sn) {
+		message[80] = handle->sn[4];
+		message[81] = handle->sn[5];
+		message[82] = handle->sn[6];
+		message[83] = handle->sn[7];
+	} else {
+		message[80] = 0x00;
+		message[81] = 0x00;
+		message[82] = 0x00;
+		message[83] = 0x00;
+	}
+	//////////////////
+	message[84] = handle->sn[0]; //0x01 constant
+	message[85] = handle->sn[1]; //0x02 constant
+	//////////////////
+	if (use_sn) {
+		message[86] = handle->sn[2];
+		message[87] = handle->sn[3];
+	} else {
+		message[86] = 0x00;
+		message[87] = 0x00;
+	}
+	//////////////////
+	//End of message
+
+	free(key.data);
+
+	unsigned char *ret_status;
+	ret_status = SHA256(message, message_len, output);
+	if (ret_status == NULL) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+
+	(*answer) = generate_answer_packet(output, 32);
+	if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	return ATSHA_ERR_OK;
 }
 
 static int emul_random(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
@@ -129,8 +299,16 @@ int emul_command(struct atsha_handle *handle, unsigned char *raw_packet, unsigne
 			status = emul_hmac(handle, raw_packet, answer);
 			break;
 
+		case ATSHA204_OPCODE_MAC:
+			status = emul_mac(handle, raw_packet, answer);
+			break;
+
 		case ATSHA204_OPCODE_READ:
 			status = emul_read(handle, raw_packet, answer);
+			break;
+
+		case ATSHA204_OPCODE_NONCE:
+			status = emul_nonce(handle, raw_packet, answer);
 			break;
 
 		case ATSHA204_OPCODE_RANDOM:

@@ -3,5 +3,5 @@ BINARIES += src/dev/dev
 dev_MODULES := main
 dev_LOCAL_LIBS := atsha204
 
-#ucollect_SYSTEM_LIBS := pcap rt dl uci crypto ssl
+dev_SYSTEM_LIBS := crypto
 #DOCS += src/ucollect/ucollect
