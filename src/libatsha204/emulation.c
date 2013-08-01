@@ -28,6 +28,23 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	return ATSHA_ERR_NOT_IMPLEMENTED;
 }
 
+static int emul_random(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
+	(void) raw_packet;
+	(void) handle;
+
+	unsigned char data[] = {
+		0x55, 0xE3, 0xD9, 0x65, 0x6A, 0x82, 0x69, 0x33,
+		0xB2, 0xAF, 0x9B, 0xCA, 0x64, 0x5C, 0x49, 0x0D,
+		0x09, 0x27, 0xC3, 0x82, 0x0C, 0x32, 0x58, 0xBC,
+		0x8D, 0x23, 0xEE, 0xC4, 0x04, 0xF3, 0xC4, 0x14
+	};
+
+	(*answer) = generate_answer_packet(data, ATSHA204_SLOT_BYTE_LEN);
+	if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	return ATSHA_ERR_OK;
+}
+
 static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
 	char line[LINE_BUFFSIZE];
 	char *line_p = line;
@@ -66,7 +83,7 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			line_p += 2;
 		}
 
-		(*answer) = generate_answer_packet(SN, ATSHA204_SLOT_BYTE_LEN); //
+		(*answer) = generate_answer_packet(SN, ATSHA204_SLOT_BYTE_LEN);
 		if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	} else if (read_from == IO_MEM_DATA) {
@@ -114,6 +131,10 @@ int emul_command(struct atsha_handle *handle, unsigned char *raw_packet, unsigne
 
 		case ATSHA204_OPCODE_READ:
 			status = emul_read(handle, raw_packet, answer);
+			break;
+
+		case ATSHA204_OPCODE_RANDOM:
+			status = emul_random(handle, raw_packet, answer);
 			break;
 
 		default:
