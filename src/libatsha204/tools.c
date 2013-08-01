@@ -50,6 +50,27 @@ unsigned char *generate_command_packet(unsigned char opcode, unsigned char param
 	return packet;
 }
 
+unsigned char *generate_answer_packet(unsigned char *data, unsigned char data_count) {
+	unsigned char packet_size =
+		1 + //count item
+		data_count + //data count
+		2; //CRC
+
+	unsigned char crc[2];
+	unsigned char *packet = calloc(packet_size, sizeof(unsigned char));
+	if (packet == NULL) {
+		return NULL;
+	}
+
+	packet[0] = packet_size;
+	memcpy((packet + 1), data, data_count);
+	calculate_crc(packet_size - 2, packet, crc); //skip crc slot
+	packet[1 + data_count] = crc[0];
+	packet[1 + data_count + 1] = crc[1];
+
+	return packet;
+}
+
 bool check_crc(unsigned char length, unsigned char *data, unsigned char *crc) {
 	unsigned char rcrc[2];
 
