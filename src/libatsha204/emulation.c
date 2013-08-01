@@ -235,6 +235,7 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		//Prepare memory for reading operation
 		size_t sn_in_memory_len = ATSHA204_SN_BYTE_LEN + 4;
 		unsigned char SN[ATSHA204_SLOT_BYTE_LEN]; //this is much more memory, but higher layers want it
+		clear_buffer(SN, ATSHA204_SLOT_BYTE_LEN);
 
 		size_t i = 0;
 		while (i < sn_in_memory_len) {
