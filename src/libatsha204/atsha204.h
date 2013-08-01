@@ -45,14 +45,14 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 
 //Error management
-static const int ATSHA_ERR_OK = 0;
-static const int ATSHA_ERR_MEMORY_ALLOCATION_ERROR = 1;
-static const int ATSHA_ERR_INVALID_INPUT = 2;
-static const int ATSHA_ERR_COMMUNICATION = 3;
-static const int ATSHA_ERR_BAD_COMMUNICATION_STATUS = 4;
-static const int ATSHA_ERR_WAKE_NOT_CONFIRMED = 5;
-static const int ATSHA_ERR_NOT_IMPLEMENTED = 6;
-static const int ATSHA_ERR_USBCMD_NOT_CONFIRMED = 7;
+#define ATSHA_ERR_OK 0
+#define ATSHA_ERR_MEMORY_ALLOCATION_ERROR 1
+#define ATSHA_ERR_INVALID_INPUT 2
+#define ATSHA_ERR_COMMUNICATION 3
+#define ATSHA_ERR_BAD_COMMUNICATION_STATUS 4
+#define ATSHA_ERR_WAKE_NOT_CONFIRMED 5
+#define ATSHA_ERR_NOT_IMPLEMENTED 6
+#define ATSHA_ERR_USBCMD_NOT_CONFIRMED 7
 const char *atsha_error_name(int err);
 
 #endif //LIBATSHA204_H
