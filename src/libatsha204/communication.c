@@ -28,10 +28,10 @@ int wake(struct atsha_handle *handle) {
 ////////////////////////////////////////////////////////////////////////
 		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
-				status = ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
+				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
-				status = ATSHA_ERR_NOT_IMPLEMENTED;
+				return ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_wake(handle->fd, &answer);
@@ -68,10 +68,10 @@ int idle(struct atsha_handle *handle) {
 ////////////////////////////////////////////////////////////////////////
 		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
-				status = ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
+				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
-				status = ATSHA_ERR_NOT_IMPLEMENTED;
+				return ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_idle(handle->fd);
@@ -92,10 +92,10 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 ////////////////////////////////////////////////////////////////////////
 		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
-				status = emul_command(handle, raw_packet, answer);
+				return emul_command(handle, raw_packet, answer);
 				break;
 			case BOTTOM_LAYER_I2C:
-				status = ATSHA_ERR_NOT_IMPLEMENTED;
+				return ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_command(handle->fd, raw_packet, answer);
