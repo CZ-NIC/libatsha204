@@ -24,7 +24,7 @@ void atsha_set_log_callback(void (*clb)(const char* msg));
 struct atsha_handle *atsha_open();
 struct atsha_handle *atsha_open_usb_dev(char *path);
 struct atsha_handle *atsha_open_emulation(char *path);
-struct atsha_handle *atsha_open_server_emulation(char *serial_number, char *key);
+struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, unsigned char *key);
 void atsha_close(struct atsha_handle *handle);
 
 //Special

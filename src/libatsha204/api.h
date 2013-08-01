@@ -17,8 +17,8 @@ struct atsha_handle {
 	bool is_srv_emulation;
 	int fd;
 	FILE *file;
-	char *sn;
-	char *key;
+	unsigned char *sn;
+	unsigned char *key;
 };
 
 #define BOTTOM_LAYER_EMULATION 0
