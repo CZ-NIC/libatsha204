@@ -19,6 +19,7 @@ struct atsha_handle {
 	FILE *file;
 	unsigned char *sn;
 	unsigned char *key;
+	unsigned char nonce[32];
 };
 
 #define BOTTOM_LAYER_EMULATION 0
