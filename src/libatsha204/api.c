@@ -9,6 +9,7 @@
 #include<stdbool.h>
 
 #include "configuration.h"
+#include "atsha204consts.h"
 #include "atsha204.h"
 #include "api.h"
 #include "communication.h"
@@ -53,7 +54,7 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 	//For now is one hardcoded open and free to use slot good enough
 	return 8;
 
-	return -1;
+	return DNS_ERR_CONST;
 }
 
 struct atsha_handle *atsha_open() {
@@ -226,13 +227,18 @@ int atsha_random(struct atsha_handle *handle, atsha_big_int *number) {
 }
 
 int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number) {
-	return atsha_low_slot_read(handle, atsha_find_slot_number(handle), number);
+	unsigned char slot_number = atsha_find_slot_number(handle);
+	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
+
+	return atsha_low_slot_read(handle, slot_number, number);
 }
 
 int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
+
+	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
 	status = wake(handle);
@@ -268,13 +274,18 @@ int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, 
 }
 
 int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number) {
-	return atsha_low_slot_write(handle, atsha_find_slot_number(handle), number);
+	unsigned char slot_number = atsha_find_slot_number(handle);
+	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
+
+	return atsha_low_slot_write(handle, slot_number, number);
 }
 
 int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
+
+	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
 	status = wake(handle);
@@ -313,6 +324,8 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 	unsigned char *answer = NULL;
 	atsha_big_int number;
 
+	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
+
 	//Wakeup device
 	status = wake(handle);
 	if (status != ATSHA_ERR_OK) return status;
@@ -350,7 +363,10 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 }
 
 int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response) {
-	return atsha_low_challenge_response(handle, atsha_find_slot_number(handle), challenge, response, DEFAULT_USE_SN_IN_DIGEST);
+	unsigned char slot_number = atsha_find_slot_number(handle);
+	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
+
+	return atsha_low_challenge_response(handle, slot_number, challenge, response, DEFAULT_USE_SN_IN_DIGEST);
 }
 
 int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest) {
@@ -358,6 +374,7 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
+	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
 	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
@@ -418,7 +435,10 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
 }
 
 int atsha_challenge_response_mac(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response) {
-	return atsha_low_challenge_response_mac(handle, atsha_find_slot_number(handle), challenge, response, DEFAULT_USE_SN_IN_DIGEST);
+	unsigned char slot_number = atsha_find_slot_number(handle);
+	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
+
+	return atsha_low_challenge_response_mac(handle, slot_number, challenge, response, DEFAULT_USE_SN_IN_DIGEST);
 }
 
 int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest) {
@@ -426,6 +446,7 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
+	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
 	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device

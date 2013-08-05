@@ -53,7 +53,8 @@ int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 #define ATSHA_ERR_WAKE_NOT_CONFIRMED 5
 #define ATSHA_ERR_NOT_IMPLEMENTED 6
 #define ATSHA_ERR_CONFIG_FILE_BAD_FORMAT 7
-#define ATSHA_ERR_USBCMD_NOT_CONFIRMED 8
+#define ATSHA_ERR_DNS_GET_KEY 8
+#define ATSHA_ERR_USBCMD_NOT_CONFIRMED 9
 const char *atsha_error_name(int err);
 
 #endif //LIBATSHA204_H

@@ -25,6 +25,7 @@ struct atsha_handle {
 #define BOTTOM_LAYER_EMULATION 0
 #define BOTTOM_LAYER_I2C 1
 #define BOTTOM_LAYER_USB 2
+#define DNS_ERR_CONST 255
 
 void log_message(const char* msg);
 #endif //MAIN_H
