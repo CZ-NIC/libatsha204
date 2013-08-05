@@ -132,8 +132,14 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, u
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = true;
 	handle->file = NULL;
-	handle->sn = serial_number;
-	handle->key = key;
+
+	handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
+	if (handle->sn == NULL) return NULL;
+	handle->key = (unsigned char *)calloc(ATSHA204_SLOT_BYTE_LEN, sizeof(unsigned char));
+	if (handle->key == NULL) return NULL;
+
+	memcpy(handle->sn, serial_number, ATSHA204_SN_BYTE_LEN);
+	memcpy(handle->key, key, ATSHA204_SLOT_BYTE_LEN);
 
 	return handle;
 }
