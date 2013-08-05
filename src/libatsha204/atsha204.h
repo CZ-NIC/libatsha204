@@ -28,7 +28,7 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, u
 void atsha_close(struct atsha_handle *handle);
 
 //Special
-unsigned char atsha_find_slot_number();
+unsigned char atsha_find_slot_number(struct atsha_handle *handle);
 
 //Operations over device
 int atsha_dev_rev(struct atsha_handle *handle, uint32_t *revision);
