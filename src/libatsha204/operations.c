@@ -24,7 +24,7 @@ static const unsigned char SLOT_CONFIG_ADDRESSES[] = {
 //internal function
 static int read_long_data(unsigned char *packet, unsigned char *data) {
 	int size = packet[0] - 3; //-3 == -1 count and -2 crc
-	if (size == ATSHA_MAX_DATA_SIZE) return 0;
+	if (size > ATSHA_MAX_DATA_SIZE) return 0;
 
 	memcpy(data, (packet + 1), size);
 
