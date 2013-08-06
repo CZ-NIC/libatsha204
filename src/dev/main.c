@@ -59,13 +59,13 @@ int hmac(struct atsha_handle *handle) {
 		fprintf(stderr, "HMAC D is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
 	}
 
-	status = atsha_low_challenge_response(handle, atsha_find_slot_number(), number, &digest, true);
+	status = atsha_low_challenge_response(handle, atsha_find_slot_number(handle), number, &digest, true);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HMAC T is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
 	}
 
-	status = atsha_low_challenge_response(handle, atsha_find_slot_number(), number, &digest, false);
+	status = atsha_low_challenge_response(handle, atsha_find_slot_number(handle), number, &digest, false);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HMAC F is %zu bytes number: \n", digest.bytes); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
@@ -184,6 +184,41 @@ int main(int argc, char **argv) {
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "SN contents %zu bytes number: ", sn.bytes); for (size_t i = 0; i < sn.bytes; i++) { printf("%02X ", sn.data[i]); } printf("\n");
+	}
+
+	atsha_close(handle);
+
+	fprintf(stderr, "SW Server Emulation\n============================================================\n\n");
+	unsigned char ssekey[32] = {
+		0xBE, 0xBA, 0x48, 0x40, 0xD6, 0x45, 0xDE, 0xE5,
+		0xA2, 0x37, 0x6F, 0x2F, 0x68, 0x35, 0x3B, 0xA6,
+		0xAA, 0x74, 0xE1, 0xA1, 0x3C, 0xE8, 0xB6, 0x99,
+		0x95, 0xAB, 0x31, 0x83, 0x1A, 0x01, 0xFB, 0x9A
+	};
+
+	unsigned char ssesn[9] = {
+		0x01, 0x23, 0x43, 0x39, 0xB5, 0x36, 0xA7, 0xC9, 0xEE
+	};
+
+	handle = atsha_open_server_emulation(ssesn, ssekey);
+	if (handle == NULL) {
+		fprintf(stderr, "Couldn't create server emulation handler.\n");
+		return 1;
+	}
+
+	fprintf(stderr, "Serial number:\n");
+	status = atsha_serial_number(handle, &sn);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "SN contents %zu bytes number: ", sn.bytes); for (size_t i = 0; i < sn.bytes; i++) { printf("%02X ", sn.data[i]); } printf("\n");
+	}
+
+	// Read slot
+	fprintf(stderr, "Read slot:\n");
+	status = atsha_slot_read(handle, &number2);
+	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
+	if (status == ATSHA_ERR_OK) {
+		fprintf(stderr, "Slot contents %zu bytes number: ", number2.bytes); for (size_t i = 0; i < number2.bytes; i++) { printf("%02X ", number2.data[i]); } printf("\n");
 	}
 
 	atsha_close(handle);

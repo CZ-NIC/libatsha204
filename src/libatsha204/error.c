@@ -23,6 +23,9 @@ const char *atsha_error_name(int err) {
 		case ATSHA_ERR_CONFIG_FILE_BAD_FORMAT:
 			return "Configuration file has bad formatting.";
 
+		case ATSHA_ERR_DNS_GET_KEY:
+			return "Information about slot id couldn't be obtained from DNS.";
+
 		case ATSHA_ERR_WAKE_NOT_CONFIRMED:
 			return "Is not confirmed if device is wake up or not.";
 

@@ -224,30 +224,36 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		//Operation read supports only reading SN from config memory
 		if (raw_packet[POSITION_ADDRESS] != 0x00) return ATSHA_ERR_NOT_IMPLEMENTED;
 
-		//Serial number is first line
-		rewind(handle->file);
-		if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
-
 		//Prepare memory for reading operation
 		size_t sn_in_memory_len = ATSHA204_SN_BYTE_LEN + 4;
 		unsigned char SN[ATSHA204_SLOT_BYTE_LEN]; //this is much more memory, but higher layers want it
 		clear_buffer(SN, ATSHA204_SLOT_BYTE_LEN);
 
-		size_t i = 0;
-		while (i < sn_in_memory_len) {
-			//Make "virtual" hole in answer
-			if ((i >= 4) && (i <= 7)) {
-				i++;
-				continue;
+		if (handle->is_srv_emulation) {
+			SN[0] = handle->sn[0]; SN[1] = handle->sn[1]; SN[2] = handle->sn[2];
+			SN[3] = handle->sn[3]; SN[8] = handle->sn[4]; SN[9] = handle->sn[5];
+			SN[10] = handle->sn[6]; SN[11] = handle->sn[7]; SN[12] = handle->sn[8];
+		} else {
+			//Serial number is first line
+			rewind(handle->file);
+			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+
+			size_t i = 0;
+			while (i < sn_in_memory_len) {
+				//Make "virtual" hole in answer
+				if ((i >= 4) && (i <= 7)) {
+					i++;
+					continue;
+				}
+				//skip delimiters
+				if (line_p[0] == ' ' || line_p[0] == '\t' || line_p[0] == ';' || line_p[0] == ',' || line_p[0] == ':') {
+					line_p++;
+					continue;
+				}
+				//Decode byte representation
+				SN[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
+				line_p += 2;
 			}
-			//skip delimiters
-			if (line_p[0] == ' ' || line_p[0] == '\t' || line_p[0] == ';' || line_p[0] == ',' || line_p[0] == ':') {
-				line_p++;
-				continue;
-			}
-			//Decode byte representation
-			SN[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
-			line_p += 2;
 		}
 
 		(*answer) = generate_answer_packet(SN, ATSHA204_SLOT_BYTE_LEN);
@@ -256,29 +262,34 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	} else if (read_from == IO_MEM_DATA) {
 		//User want some slot data
 
-		rewind(handle->file);
-		//Adresses starts at multiples of 8; first line is SN
-		size_t skip_lines = (raw_packet[POSITION_ADDRESS] / 8) + 1;
-		for (size_t i = 0; i < skip_lines; i++) {
-			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
-		}
-
-		//On next line is key that user want
-		if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
-		unsigned char key[ATSHA204_SLOT_BYTE_LEN];
-		size_t i = 0;
-		while (i < ATSHA204_SLOT_BYTE_LEN) {
-			if (line_p[0] == ' ' || line_p[0] == '\t' || line_p[0] == ';' || line_p[0] == ',' || line_p[0] == ':') {
-				line_p++;
-				continue;
+		if (handle->is_srv_emulation) {
+			(*answer) = generate_answer_packet(handle->key, ATSHA204_SLOT_BYTE_LEN);
+			if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+		} else {
+			rewind(handle->file);
+			//Adresses starts at multiples of 8; first line is SN
+			size_t skip_lines = (raw_packet[POSITION_ADDRESS] / 8) + 1;
+			for (size_t i = 0; i < skip_lines; i++) {
+				if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 			}
 
-			key[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
-			line_p += 2;
-		}
+			//On next line is key that user want
+			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			unsigned char key[ATSHA204_SLOT_BYTE_LEN];
+			size_t i = 0;
+			while (i < ATSHA204_SLOT_BYTE_LEN) {
+				if (line_p[0] == ' ' || line_p[0] == '\t' || line_p[0] == ';' || line_p[0] == ',' || line_p[0] == ':') {
+					line_p++;
+					continue;
+				}
 
-		(*answer) = generate_answer_packet(key, ATSHA204_SLOT_BYTE_LEN);
-		if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+				key[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
+				line_p += 2;
+			}
+
+			(*answer) = generate_answer_packet(key, ATSHA204_SLOT_BYTE_LEN);
+			if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+		}
 
 	} else {
 		return ATSHA_ERR_NOT_IMPLEMENTED;

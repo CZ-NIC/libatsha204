@@ -97,7 +97,7 @@ int hmac(struct atsha_handle *handle) {
 
 	hmac_impl_test(&number, key);
 
-	status = atsha_low_challenge_response(handle, atsha_find_slot_number(), number, &digest, false);
+	status = atsha_low_challenge_response(handle, atsha_find_slot_number(handle), number, &digest, false);
 	fprintf(stderr, "HMAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HW HMAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
@@ -187,7 +187,7 @@ int mac(struct atsha_handle *handle) {
 
 	mac_impl_test(&number, key);
 
-	status = atsha_low_challenge_response_mac(handle, atsha_find_slot_number(), number, &digest, false);
+	status = atsha_low_challenge_response_mac(handle, atsha_find_slot_number(handle), number, &digest, false);
 	fprintf(stderr, "MAC digest status: %s\n", atsha_error_name(status));
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "HW MAC: \t"); for (size_t i = 0; i < digest.bytes; i++) { printf("%02X ", digest.data[i]); } printf("\n");
