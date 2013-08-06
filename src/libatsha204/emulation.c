@@ -101,13 +101,19 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	//End of message
 
 	atsha_big_int key;
-	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
+		log_message("Bad slot read return status (emul_hmac)");
+		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	}
 
 	unsigned int ret_len;
 	unsigned char *ret_status;
 	ret_status = HMAC(EVP_sha256(), key.data, key.bytes, message, message_len, output, &ret_len);
 
-	if (ret_status == NULL || ret_len != 32) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	if (ret_status == NULL || ret_len != 32) {
+		log_message("Bad HMAC return status (emul_hmac)");
+		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	}
 
 	(*answer) = generate_answer_packet(output, 32);
 	if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
@@ -121,7 +127,10 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	unsigned char message[message_len];
 
 	atsha_big_int key;
-	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
+		log_message("Bad slot read return status (emul_mac)");
+		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	}
 
 	bool use_sn;
 	if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
@@ -186,7 +195,10 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 
 	unsigned char *ret_status;
 	ret_status = SHA256(message, message_len, output);
-	if (ret_status == NULL) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	if (ret_status == NULL) {
+		log_message("Bad MAC return status (emul_mac)");
+		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
+	}
 
 	(*answer) = generate_answer_packet(output, 32);
 	if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
