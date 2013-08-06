@@ -118,7 +118,12 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 		return NULL;
 	}
 
-	handle->sn = number.data;
+	handle->sn = (unsigned char *)calloc(number.bytes, sizeof(unsigned char));
+	if (handle->sn == NULL) {
+		atsha_close(handle);
+		return NULL;
+	}
+	memcpy(handle->sn, number.data, number.bytes);
 
 	return handle;
 }
