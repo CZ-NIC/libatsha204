@@ -100,14 +100,12 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	//////////////////
 	//End of message
 
-	atsha_big_int key = {.bytes = 0, .data = NULL};
+	atsha_big_int key;
 	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 
 	unsigned int ret_len;
 	unsigned char *ret_status;
 	ret_status = HMAC(EVP_sha256(), key.data, key.bytes, message, message_len, output, &ret_len);
-
-	free(key.data);
 
 	if (ret_status == NULL || ret_len != 32) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 
@@ -122,7 +120,7 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	size_t message_len = 32+32+1+1+2+8+3+1+4+2+2; //88
 	unsigned char message[message_len];
 
-	atsha_big_int key = {.bytes = 0, .data = NULL};
+	atsha_big_int key;
 	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 
 	bool use_sn;
@@ -185,8 +183,6 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	}
 	//////////////////
 	//End of message
-
-	free(key.data);
 
 	unsigned char *ret_status;
 	ret_status = SHA256(message, message_len, output);

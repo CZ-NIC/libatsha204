@@ -45,22 +45,22 @@ uint32_t op_dev_rev_recv(unsigned char *packet);
  * Let device generate random number
  */
 unsigned char *op_random();
-int op_random_recv(unsigned char *packet, unsigned char **data);
+int op_random_recv(unsigned char *packet, unsigned char *data);
 
 /**
  * Raw read and write to device
  */
 unsigned char *op_raw_read(unsigned char zone_config, unsigned char address);
-int op_raw_read_recv(unsigned char *packet, unsigned char **data);
+int op_raw_read_recv(unsigned char *packet, unsigned char *data);
 unsigned char *op_raw_write(unsigned char zone_config, unsigned char address, size_t cnt, unsigned char *data);
 int op_raw_write_recv(unsigned char *packet);
 unsigned char *op_nonce(size_t cnt, unsigned char *data);
 int op_nonce_recv(unsigned char *packet);
 unsigned char *op_hmac(unsigned char address, bool use_sn_in_digest);
-int op_hmac_recv(unsigned char *packet, unsigned char **data);
+int op_hmac_recv(unsigned char *packet, unsigned char *data);
 unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data, bool use_sn_in_digest);
-int op_mac_recv(unsigned char *packet, unsigned char **data);
+int op_mac_recv(unsigned char *packet, unsigned char *data);
 unsigned char *op_serial_number();
-int op_serial_number_recv(unsigned char *packet, unsigned char **data);
+int op_serial_number_recv(unsigned char *packet, unsigned char *data);
 
 #endif //OPERATIONS_H

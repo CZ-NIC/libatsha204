@@ -196,7 +196,7 @@ int atsha_random(struct atsha_handle *handle, atsha_big_int *number) {
 		return status;
 	}
 
-	number->bytes = op_random_recv(answer, &(number->data));
+	number->bytes = op_random_recv(answer, number->data);
 	if (number->bytes == 0) {
 		free(packet);
 		free(answer);
@@ -238,7 +238,7 @@ int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, 
 		return status;
 	}
 
-	number->bytes = op_raw_read_recv(answer, &(number->data));
+	number->bytes = op_raw_read_recv(answer, number->data);
 	if (number->bytes == 0) {
 		free(packet);
 		free(answer);
@@ -317,7 +317,7 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 		return status;
 	}
 
-	number.bytes = op_raw_read_recv(answer, &(number.data));
+	number.bytes = op_raw_read_recv(answer, number.data);
 	if (number.bytes == 0) {
 		free(packet);
 		free(answer);
@@ -325,7 +325,6 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 	}
 
 	*config_word = decode_slot_config(slot_number, number.data);
-	free(number.data);
 
 	//Let device sleep
 	status = idle(handle);
@@ -388,7 +387,7 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
 		return status;
 	}
 
-	response->bytes = op_hmac_recv(answer, &(response->data));
+	response->bytes = op_hmac_recv(answer, response->data);
 	if (response->bytes == 0) {
 		free(packet);
 		free(answer);
@@ -434,7 +433,7 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 		return status;
 	}
 
-	response->bytes = op_mac_recv(answer, &(response->data));
+	response->bytes = op_mac_recv(answer, response->data);
 	if (response->bytes == 0) {
 		free(packet);
 		free(answer);
@@ -472,7 +471,7 @@ int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
 		return status;
 	}
 
-	number->bytes = op_serial_number_recv(answer, &(number->data));
+	number->bytes = op_serial_number_recv(answer, number->data);
 	if (number->bytes == 0) {
 		free(packet);
 		free(answer);

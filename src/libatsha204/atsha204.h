@@ -13,9 +13,10 @@
 struct atsha_handle;
 
 //Structure for data exchange
+#define ATSHA_MAX_DATA_SIZE 32
 typedef struct {
 	size_t bytes;
-	unsigned char *data;
+	unsigned char data[ATSHA_MAX_DATA_SIZE];
 } atsha_big_int;
 
 //Library settings and initialization
