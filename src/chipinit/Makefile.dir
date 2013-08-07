@@ -1,0 +1,7 @@
+BINARIES += src/chipinit/chipinit
+
+chipinit_MODULES := main
+chipinit_LOCAL_LIBS := atsha204
+
+chipinit_SYSTEM_LIBS := crypto
+#DOCS += src/ucollect/ucollect
