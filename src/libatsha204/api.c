@@ -534,18 +534,16 @@ int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
 	return ATSHA_ERR_OK;
 }
 
-int atsha_conf_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
+int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
-
-	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
 	status = wake(handle);
 	if (status != ATSHA_ERR_OK) return status;
 
-	packet = op_raw_read(get_zone_config(IO_MEM_DATA, IO_RW_NON_ENC, IO_RW_32_BYTES), get_slot_address(slot_number));
+	packet = op_raw_read(get_zone_config(IO_MEM_CONFIG, IO_RW_NON_ENC, IO_RW_4_BYTES), address);
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 
 	status = command(handle, packet, &answer);
@@ -555,17 +553,103 @@ int atsha_conf_read(struct atsha_handle *handle, unsigned char slot_number, atsh
 		return status;
 	}
 
-	number->bytes = op_raw_read_recv(answer, number->data);
-	if (number->bytes == 0) {
+	data->bytes = op_raw_read_recv(answer, data->data);
+	if (data->bytes == 0) {
 		free(packet);
 		free(answer);
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
-	//Let device sleep
-	status = idle(handle);
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_raw_write(get_zone_config(IO_MEM_CONFIG, IO_RW_NON_ENC, IO_RW_4_BYTES), address, data.bytes, data.data);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
-		log_message(WARNING_WAKE_NOT_CONFIRMED);
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_raw_write_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_raw_read(get_zone_config(IO_MEM_OTP, IO_RW_NON_ENC, IO_RW_4_BYTES), address);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	data->bytes = op_raw_read_recv(answer, data->data);
+	if (data->bytes == 0) {
+		free(packet);
+		free(answer);
+		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_raw_write(get_zone_config(IO_MEM_OTP, IO_RW_NON_ENC, IO_RW_4_BYTES), address, data.bytes, data.data);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_raw_write_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
 	}
 
 	free(packet);
