@@ -118,12 +118,6 @@ int main(int argc, char **argv) {
 
 	write_random_and_read(handle);
 
-	fprintf(stderr, "Config read:\n");
-	uint16_t config_word = 0;
-	status = atsha_slot_conf_read(handle, 8, &config_word);
-	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
-	fprintf(stderr, "Slot config word: %04X\n", config_word);
-
 	hmac(handle);
 
 	//SN
@@ -169,12 +163,6 @@ int main(int argc, char **argv) {
 	}
 
 	write_random_and_read(handle);
-
-	fprintf(stderr, "Config read:\n");
-	config_word = 0;
-	status = atsha_slot_conf_read(handle, 8, &config_word);
-	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
-	fprintf(stderr, "Slot config word: %04X\n", config_word);
 
 	hmac(handle);
 

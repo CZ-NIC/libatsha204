@@ -38,7 +38,7 @@ int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number);
 int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number);
 int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number);
 int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number);
-int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word);
+//int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word);
 int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response);
 int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest);
 int atsha_challenge_response_mac(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response);
