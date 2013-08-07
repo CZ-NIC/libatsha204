@@ -250,6 +250,8 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			rewind(handle->file);
 			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 
+			char *line_end_p = (line_p + strlen(line_p));
+
 			size_t i = 0;
 			while (i < sn_in_memory_len) {
 				//Make "virtual" hole in answer
@@ -265,6 +267,8 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 				//Decode byte representation
 				SN[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
 				line_p += 2;
+
+				if (line_p >= line_end_p) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 			}
 		}
 
@@ -287,6 +291,9 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 
 			//On next line is key that user want
 			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+
+			char *line_end_p = (line_p + strlen(line_p));
+
 			unsigned char key[ATSHA204_SLOT_BYTE_LEN];
 			size_t i = 0;
 			while (i < ATSHA204_SLOT_BYTE_LEN) {
@@ -297,6 +304,8 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 
 				key[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
 				line_p += 2;
+
+				if (line_p >= line_end_p) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 			}
 
 			(*answer) = generate_answer_packet(key, ATSHA204_SLOT_BYTE_LEN);
