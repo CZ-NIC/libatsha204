@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 
 	struct atsha_handle *handle_emul = atsha_open_emulation("atsha204.sw");
 	if (handle_emul == NULL) {
-		fprintf(stderr, "Couldn't open config.\n");
+		fprintf(stderr, "Couldn't open configuration handler.\n");
 		return 1;
 	}
 

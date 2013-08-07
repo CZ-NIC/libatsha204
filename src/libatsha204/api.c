@@ -99,7 +99,7 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 
 	FILE *try_file = fopen(path, "r");
 	if (try_file == NULL) {
-		log_message("Couldn't open configuration.");
+		log_message("Couldn't open configuration file.");
 		return NULL;
 	}
 
@@ -114,12 +114,14 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 
 	atsha_big_int number;
 	if (atsha_serial_number(handle, &number) != ATSHA_ERR_OK) {
+		log_message("Couldn't read serial number.");
 		atsha_close(handle);
 		return NULL;
 	}
 
 	handle->sn = (unsigned char *)calloc(number.bytes, sizeof(unsigned char));
 	if (handle->sn == NULL) {
+		log_message("Couldn't open configuration file.");
 		atsha_close(handle);
 		return NULL;
 	}
