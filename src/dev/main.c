@@ -80,16 +80,30 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	struct atsha_handle *handle = atsha_open_usb_dev(argv[1]);
+	atsha_set_verbose();
+	atsha_set_log_callback(testing_log_callback);
+
+	//struct atsha_handle *handle = atsha_open_usb_dev(argv[1]);
+	struct atsha_handle *handle = atsha_open_emulation("atsha204.sw");
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
 		return 1;
 	}
 
-	atsha_set_verbose();
-	atsha_set_log_callback(testing_log_callback);
-
 	int status;
+
+	////////////////////////////////////////////////////////////////////
+	int slot = atsha_find_slot_number(handle);
+	if (slot == 255) {
+		fprintf(stderr, "DNS communication error\n");
+	} else {
+		printf("Slot number is: %d\n", slot);
+	}
+
+	atsha_close(handle);
+
+	return 0;
+	////////////////////////////////////////////////////////////////////
 
 	// Get Revision
 	fprintf(stderr, "Get revision:\n");
