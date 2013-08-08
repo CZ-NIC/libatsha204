@@ -97,17 +97,6 @@ uint16_t decode_slot_config(unsigned char slot_number, unsigned char *data) {
 	return config_word;
 }
 
-uint32_t decode_serial_number(unsigned char *data) {
-	uint32_t res = 0;
-
-	res |= data[0]; res <<= (3 * 8);
-	res |= data[1]; res <<= (2 * 8);
-	res |= data[2]; res <<= (1 * 8);
-	res |= data[3];
-
-	return res;
-}
-
 unsigned char *op_raw_read(unsigned char zone_config, unsigned char address) {
 	return generate_command_packet(ATSHA204_OPCODE_READ, zone_config, (uint16_t)address, NULL, 0);
 }
