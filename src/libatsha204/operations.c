@@ -7,6 +7,7 @@
 #include "atsha204consts.h"
 #include "atsha204.h"
 #include "tools.h"
+#include "api.h"
 
 /**
  * Constants enabling addressing
