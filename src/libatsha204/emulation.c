@@ -311,7 +311,47 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 		}
 
+	} else if (read_from == IO_MEM_OTP) {
+		if (handle->is_srv_emulation) {
+			log_message("Emulation: OTP not supporten on server emulation mode.");
+			return ATSHA_ERR_NOT_IMPLEMENTED;
+		} else {
+			rewind(handle->file);
+
+			//Skip SN and All key slotss
+			for (size_t i = 0; i < 17; i++) {
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			}
+
+			//Skip SN and All key slotss
+			for (size_t i = 0; i < raw_packet[POSITION_ADDRESS]; i++) {
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			}
+
+			//On next line is key that user want
+			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+
+			char *line_end_p = (line_p + strlen(line_p));
+
+			unsigned char data[ATSHA204_OTP_BYTE_LEN];
+			size_t i = 0;
+			while (i < ATSHA204_OTP_BYTE_LEN) {
+				if (line_p[0] == ' ' || line_p[0] == '\t' || line_p[0] == ';' || line_p[0] == ',' || line_p[0] == ':') {
+					line_p++;
+					continue;
+				}
+
+				data[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
+				line_p += 2;
+
+				if (line_p >= line_end_p) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			}
+
+			(*answer) = generate_answer_packet(data, ATSHA204_OTP_BYTE_LEN);
+			if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+		}
 	} else {
+		log_message("Emulation: Unknown type of memory to read.");
 		return ATSHA_ERR_NOT_IMPLEMENTED;
 	}
 
@@ -344,6 +384,7 @@ int emul_command(struct atsha_handle *handle, unsigned char *raw_packet, unsigne
 			break;
 
 		default:
+			log_message("Emulation: NOT IMPLEMENTED");
 			status = ATSHA_ERR_NOT_IMPLEMENTED;
 			break;
 	}
