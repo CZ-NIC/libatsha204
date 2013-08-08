@@ -25,14 +25,14 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
 		return 1;
 	}
-
+///*
 	atsha_big_int data;
-/*
+
 	data.bytes=4;
 	data.data[0] = 0x00;
-	data.data[1] = 0x11;
-	data.data[2] = 0x22;
-	data.data[3] = 0x33;
+	data.data[1] = 0x00;
+	data.data[2] = 0x00;
+	data.data[3] = 0x00;
 
 	int status;
 	status = atsha_raw_otp_write(handle, 0x00, data);
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
 	atsha_close(handle);
 	return 0;
-*/
+//*/
 	printf("OTP zone (0x00 - 0x0F):\n");
 	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
 		sleep(2);
