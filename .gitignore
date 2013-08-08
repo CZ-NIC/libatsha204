@@ -25,3 +25,11 @@ src/*.html
 # Random "service" files
 core
 tags
+
+# Symlinks
+src/atsha204cmd/atsha204cmd
+src/chipinit/chipinit
+src/dev/dev
+src/hmactest/hmactest
+src/ucollect_example/ucollect_example
+tests/challenge_response/challenge_response
