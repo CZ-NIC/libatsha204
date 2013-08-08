@@ -12,6 +12,7 @@
  */
 void calculate_crc(unsigned char length, unsigned char *data, unsigned char *crc);
 unsigned char get_number_from_hex_char(char high, char low);
+uint32_t uint32_from_4_bytes(unsigned char *data);
 bool check_crc(unsigned char length, unsigned char *data, unsigned char *crc);
 void clear_buffer(unsigned char *buff, size_t len);
 void print_buffer_content(unsigned char *buff, ssize_t len);

@@ -18,6 +18,17 @@ unsigned char get_number_from_hex_char(char high, char low) {
 	return (unsigned char)strtol(str, NULL, 16);
 }
 
+uint32_t uint32_from_4_bytes(unsigned char *data) {
+	uint32_t res = 0;
+
+	res |= data[0]; res <<= (3 * 8);
+	res |= data[1]; res <<= (2 * 8);
+	res |= data[2]; res <<= (1 * 8);
+	res |= data[3];
+
+	return res;
+}
+
 bool check_packet(unsigned char *packet) {
 	unsigned char packet_size;
 	unsigned char crc[2];
