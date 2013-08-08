@@ -1,12 +1,11 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<unistd.h> //close()
-#include<sys/file.h> //open()
-#include<fcntl.h>
-#include<errno.h>
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
+
+//DNS Resolving
+#include <unbound.h>
 
 #include "configuration.h"
 #include "atsha204consts.h"
@@ -14,9 +13,58 @@
 #include "api.h"
 
 /**
+ * viz IANA
+ * This is not documented in unbound
+ * Unbound refers to IANA too
+ */
+#define CLASS_INET 1
+#define TYPE_TXT 16
+
+/**
  * Global variable with configuration and some initial config values.
  */
 atsha_configuration g_config;
+
+static uint32_t number_from_string(size_t len, char *str) {
+	uint32_t res = 0;
+	unsigned char digit = 0;
+
+	for (size_t i = 0; i < len; i++) {
+		digit = str[i] - '0';
+		res *= 10;
+		res += digit;
+	}
+
+	return res;
+}
+
+static bool resolve_key(uint32_t *offset) {
+	struct ub_result* result;
+    struct ub_ctx *ctx = ub_ctx_create();
+
+    if (!ctx) {
+		log_message("libunbound: create context error");
+		return false;
+	}
+
+	if (ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result) != 0) {
+		log_message("libunbound: resolve error");
+		ub_ctx_delete(ctx);
+		return false;
+	}
+
+	if (result->havedata) {
+		*offset = (unsigned char) number_from_string(result->data[0][0], (result->data[0] + 1));
+		ub_resolve_free(result);
+		ub_ctx_delete(ctx);
+		return true;
+	}
+
+	ub_resolve_free(result);
+	ub_ctx_delete(ctx);
+
+	return false;
+}
 
 unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 	if (handle->is_srv_emulation == true) {
@@ -27,9 +75,10 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 		return 0;
 	}
 
-	//OK, here will be some difficult DNS magic
-	//For now is one hardcoded open and free to use slot good enough
-	return 8;
+	uint32_t offset;
+	if (!resolve_key(&offset)) {
+		return DNS_ERR_CONST;
+	}
 
-	return DNS_ERR_CONST;
+	return (unsigned char)(offset - handle->key_origin);
 }
