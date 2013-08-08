@@ -74,6 +74,16 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 	handle->file = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
+	handle->key_origin = 0;
+
+	atsha_big_int number;
+	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
+		log_message("Couldn't read key origin");
+		atsha_close(handle);
+		return NULL;
+	}
+
+	handle->key_origin = uint32_from_4_bytes(number.data);
 
 	return handle;
 }
@@ -95,6 +105,7 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 	handle->file = try_file;
 	handle->sn = NULL;
 	handle->key = NULL;
+	handle->key_origin = 0;
 
 	atsha_big_int number;
 	if (atsha_serial_number(handle, &number) != ATSHA_ERR_OK) {
@@ -111,6 +122,14 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 	}
 	memcpy(handle->sn, number.data, number.bytes);
 
+	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
+		log_message("Couldn't read key origin");
+		atsha_close(handle);
+		return NULL;
+	}
+
+	handle->key_origin = uint32_from_4_bytes(number.data);
+
 	return handle;
 }
 
@@ -123,6 +142,7 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, u
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = true;
 	handle->file = NULL;
+	handle->key_origin = 0;
 
 	handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
 	if (handle->sn == NULL) return NULL;

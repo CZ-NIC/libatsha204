@@ -19,6 +19,7 @@ struct atsha_handle {
 	FILE *file;
 	unsigned char *sn;
 	unsigned char *key;
+	uint32_t key_origin;
 	unsigned char nonce[32];
 };
 
