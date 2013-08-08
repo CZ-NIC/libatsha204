@@ -41,6 +41,10 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
+void atsha_wait() {
+	usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+}
+
 struct atsha_handle *atsha_open() {
 	struct atsha_handle *handle;
 
