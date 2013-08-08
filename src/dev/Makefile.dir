@@ -3,5 +3,5 @@ BINARIES += src/dev/dev
 dev_MODULES := main
 dev_LOCAL_LIBS := atsha204
 
-dev_SYSTEM_LIBS := crypto resolv
+dev_SYSTEM_LIBS := crypto unbound
 #DOCS += src/ucollect/ucollect
