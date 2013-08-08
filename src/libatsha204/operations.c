@@ -24,7 +24,10 @@ static const unsigned char SLOT_CONFIG_ADDRESSES[] = {
 //internal function
 static int read_long_data(unsigned char *packet, unsigned char *data) {
 	int size = packet[0] - 3; //-3 == -1 count and -2 crc
-	if (size > ATSHA_MAX_DATA_SIZE) return 0;
+	if (size > ATSHA_MAX_DATA_SIZE) {
+		log_message("operations: read_long_data: size is bigger than max size");
+		return 0;
+	}
 
 	memcpy(data, (packet + 1), size);
 
@@ -36,6 +39,7 @@ static int just_check_status(unsigned char *packet) {
 		return ATSHA_ERR_OK;
 	}
 
+	log_message("operations: just_check_status: status is not ATSHA204_STATUS_SUCCES");
 	return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 }
 

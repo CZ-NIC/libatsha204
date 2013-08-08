@@ -25,7 +25,7 @@ atsha_configuration g_config = {
 	.log_callback = NULL
 };
 
-static const char *WARNING_WAKE_NOT_CONFIRMED = "Device is possibly still awake";
+static const char *WARNING_WAKE_NOT_CONFIRMED = "WARNING: Device is possibly still awake";
 
 void log_message(const char* msg) {
 	if (g_config.log_callback != NULL) {
@@ -65,7 +65,7 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 
 	int try_fd = open(path, O_RDWR);
 	if (try_fd == -1) {
-		log_message("Couldn't open devidce.");
+		log_message("api: open_usb_dev: Couldn't open usb devidce.");
 		return NULL;
 	}
 
@@ -82,7 +82,7 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 
 	atsha_big_int number;
 	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
-		log_message("Couldn't read key origin");
+		log_message("api: open_usb_dev: Couldn't read key origin");
 		atsha_close(handle);
 		return NULL;
 	}
@@ -97,7 +97,7 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 
 	FILE *try_file = fopen(path, "r");
 	if (try_file == NULL) {
-		log_message("Couldn't open configuration file.");
+		log_message("api: open_emulation: Couldn't open configuration file.");
 		return NULL;
 	}
 
@@ -113,21 +113,21 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 
 	atsha_big_int number;
 	if (atsha_serial_number(handle, &number) != ATSHA_ERR_OK) {
-		log_message("Couldn't read serial number.");
+		log_message("api: open_emulation: Couldn't read serial number.");
 		atsha_close(handle);
 		return NULL;
 	}
 
 	handle->sn = (unsigned char *)calloc(number.bytes, sizeof(unsigned char));
 	if (handle->sn == NULL) {
-		log_message("Couldn't open configuration file.");
+		log_message("api: open_emulation: Copy SN memory allocation error");
 		atsha_close(handle);
 		return NULL;
 	}
 	memcpy(handle->sn, number.data, number.bytes);
 
 	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
-		log_message("Couldn't read key origin");
+		log_message("api: open_emulation: Couldn't read key origin");
 		atsha_close(handle);
 		return NULL;
 	}
@@ -259,7 +259,10 @@ int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, 
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) {
+		log_message("api: low_slot_read: requested slot number is bigger than max slot number");
+		return ATSHA_ERR_INVALID_INPUT;
+	}
 
 	//Wakeup device
 	status = wake(handle);
@@ -306,7 +309,10 @@ int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number,
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) {
+		log_message("api: low_slot_write: requested slot number is bigger than max slot number");
+		return ATSHA_ERR_INVALID_INPUT;
+	}
 
 	//Wakeup device
 	status = wake(handle);
@@ -394,8 +400,14 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
-	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) {
+		log_message("api: low_challenge_response: requested slot number is bigger than max slot number");
+		return ATSHA_ERR_INVALID_INPUT;
+	}
+	if (challenge.bytes != 32) {
+		log_message("api: low_challenge_response: challnege is bigger than 32 bytes");
+		return ATSHA_ERR_INVALID_INPUT;
+	}
 
 	//Wakeup device
 	status = wake(handle);
@@ -466,8 +478,15 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
-	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) {
+		log_message("api: low_challenge_response_mac: requested slot number is bigger than max slot number");
+		return ATSHA_ERR_INVALID_INPUT;
+	}
+
+	if (challenge.bytes != 32) {
+		log_message("api: low_challenge_response_max: challenge is bigger than 32 bytes");
+		return ATSHA_ERR_INVALID_INPUT;
+	}
 
 	//Wakeup device
 	status = wake(handle);

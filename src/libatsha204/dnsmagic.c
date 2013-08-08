@@ -43,12 +43,12 @@ static bool resolve_key(uint32_t *offset) {
     struct ub_ctx *ctx = ub_ctx_create();
 
     if (!ctx) {
-		log_message("libunbound: create context error");
+		log_message("dnsmagic: libunbound: create context error");
 		return false;
 	}
 
 	if (ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result) != 0) {
-		log_message("libunbound: resolve error");
+		log_message("dnsmagic: libunbound: resolve error");
 		ub_ctx_delete(ctx);
 		return false;
 	}
@@ -62,7 +62,7 @@ static bool resolve_key(uint32_t *offset) {
 
 	ub_resolve_free(result);
 	ub_ctx_delete(ctx);
-
+	log_message("dnsmagic: libunbound: no data in answer");
 	return false;
 }
 
