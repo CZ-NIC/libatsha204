@@ -235,7 +235,7 @@ int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, 
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
 	status = wake(handle);
@@ -282,7 +282,7 @@ int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number,
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
 	status = wake(handle);
@@ -321,7 +321,7 @@ int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number,
 	unsigned char *answer = NULL;
 	atsha_big_int number;
 
-	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
 	status = wake(handle);
@@ -370,7 +370,7 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
 	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
@@ -442,7 +442,7 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 	unsigned char *packet;
 	unsigned char *answer = NULL;
 
-	if (slot_number >= ATSHA204_SLOT_COUNT) return ATSHA_ERR_INVALID_INPUT;
+	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
 	if (challenge.bytes != 32) return ATSHA_ERR_INVALID_INPUT;
 
 	//Wakeup device
