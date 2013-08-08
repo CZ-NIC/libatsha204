@@ -101,7 +101,7 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 
 	atsha_big_int key;
 	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
-		log_message("Bad slot read return status (emul_hmac)");
+		log_message("emulation: emul_hmac: Bad status code: atsha_low_slot_read");
 		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	}
 
@@ -110,7 +110,7 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	ret_status = HMAC(EVP_sha256(), key.data, key.bytes, message, message_len, output, &ret_len);
 
 	if (ret_status == NULL || ret_len != 32) {
-		log_message("Bad HMAC return status (emul_hmac)");
+		log_message("emulation: emul_hmac: Bad status code: HMAC (libopenssl)");
 		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	}
 
@@ -127,7 +127,7 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 
 	atsha_big_int key;
 	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
-		log_message("Bad slot read return status (emul_mac)");
+		log_message("emulation: emul_mac: Bad status code: atsha_low_slot_read");
 		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	}
 
@@ -195,7 +195,7 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	unsigned char *ret_status;
 	ret_status = SHA256(message, message_len, output);
 	if (ret_status == NULL) {
-		log_message("Bad MAC return status (emul_mac)");
+		log_message("emulation: emul_mac: Bad status code: SHA256 (libopenssl)");
 		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	}
 
@@ -233,7 +233,10 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		//User want serial number
 
 		//Operation read supports only reading SN from config memory
-		if (raw_packet[POSITION_ADDRESS] != 0x00) return ATSHA_ERR_NOT_IMPLEMENTED;
+		if (raw_packet[POSITION_ADDRESS] != 0x00) {
+			log_message("emulation: emul_read: Reading only 0x00 address from config zone is allowed");
+			return ATSHA_ERR_NOT_IMPLEMENTED;
+		}
 
 		//Prepare memory for reading operation
 		size_t sn_in_memory_len = ATSHA204_SN_BYTE_LEN + 4;
@@ -247,7 +250,10 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		} else {
 			//Serial number is first line
 			rewind(handle->file);
-			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+				log_message("emulation: emul_read: read SN (bad file format)");
+				return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			}
 
 			char *line_end_p = (line_p + strlen(line_p));
 
@@ -267,7 +273,10 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 				SN[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
 				line_p += 2;
 
-				if (line_p >= line_end_p) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (line_p >= line_end_p) {
+					log_message("emulation: emul_read: read SN (input too short)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				}
 			}
 		}
 
@@ -285,11 +294,17 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			//Adresses starts at multiples of 8; first line is SN
 			size_t skip_lines = (raw_packet[POSITION_ADDRESS] / 8) + 1;
 			for (size_t i = 0; i < skip_lines; i++) {
-				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+					log_message("emulation: emul_read: skip keys (bad file format)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				}
 			}
 
 			//On next line is key that user want
-			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+				log_message("emulation: emul_read: read requested key (bad file format)");
+				return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			}
 
 			char *line_end_p = (line_p + strlen(line_p));
 
@@ -304,7 +319,10 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 				key[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
 				line_p += 2;
 
-				if (line_p >= line_end_p) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (line_p >= line_end_p) {
+					log_message("emulation: emul_read: read key (input too short)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				 }
 			}
 
 			(*answer) = generate_answer_packet(key, ATSHA204_SLOT_BYTE_LEN);
@@ -313,23 +331,32 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 
 	} else if (read_from == IO_MEM_OTP) {
 		if (handle->is_srv_emulation) {
-			log_message("Emulation: OTP not supporten on server emulation mode.");
+			log_message("emulation: emul_read: OTP zone not supporten in server emulation mode.");
 			return ATSHA_ERR_NOT_IMPLEMENTED;
 		} else {
 			rewind(handle->file);
 
 			//Skip SN and All key slotss
 			for (size_t i = 0; i < 17; i++) {
-				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+					log_message("emulation: emul_read: skip keys (bad file format)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				}
 			}
 
 			//Skip SN and All key slotss
 			for (size_t i = 0; i < raw_packet[POSITION_ADDRESS]; i++) {
-				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+					log_message("emulation: emul_read: skip OTP records (bad file format)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				}
 			}
 
 			//On next line is key that user want
-			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+				log_message("emulation: emul_read: read requested OTP record (bad file format)");
+				return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			}
 
 			char *line_end_p = (line_p + strlen(line_p));
 
@@ -344,14 +371,17 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 				data[i++] = get_number_from_hex_char(line_p[0], line_p[1]);
 				line_p += 2;
 
-				if (line_p >= line_end_p) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (line_p >= line_end_p) {
+					log_message("emulation: emul_read: read requested OTP record (input too short)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				}
 			}
 
 			(*answer) = generate_answer_packet(data, ATSHA204_OTP_BYTE_LEN);
 			if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 		}
 	} else {
-		log_message("Emulation: Unknown type of memory to read.");
+		log_message("emulation: emul_read: Unknown memory type to read.");
 		return ATSHA_ERR_NOT_IMPLEMENTED;
 	}
 
@@ -384,7 +414,7 @@ int emul_command(struct atsha_handle *handle, unsigned char *raw_packet, unsigne
 			break;
 
 		default:
-			log_message("Emulation: NOT IMPLEMENTED");
+			log_message("emulation: requested opconde not implemented");
 			status = ATSHA_ERR_NOT_IMPLEMENTED;
 			break;
 	}

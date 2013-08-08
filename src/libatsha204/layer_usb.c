@@ -54,11 +54,11 @@ static bool usb_check_nl(char *buff, size_t check_len) {
 static int usb_read(int dev, char *buff) {
 	size_t check_len = 0, cnt = 0;
 
-
 	while (!usb_check_nl(buff, check_len)) {
 		cnt = read(dev, (buff + cnt), BUFFSIZE_USB);
 		check_len += cnt;
 		if (cnt <= 0) {
+			log_message("usb_layer: usb_read: File descriptor read failed");
 			return ATSHA_ERR_COMMUNICATION;
 		}
 	}
@@ -79,6 +79,7 @@ int usb_wake(int dev, unsigned char **answer) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
+		log_message("usb_layer: usb_wake: File descriptor write failed");
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
@@ -88,7 +89,7 @@ int usb_wake(int dev, unsigned char **answer) {
 	if (status != ATSHA_ERR_OK) return status;
 
 	if (buff[0] != '0' && buff[1] != '0') {
-		if (g_config.verbose) log_message("ERR: Read packet: Malformed packet.");
+		log_message("usb_layer: usb_wake: Malformed packet.");
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
@@ -114,6 +115,7 @@ int usb_idle(int dev) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
+		log_message("usb_layer: usb_idle: File descriptor write");
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
@@ -148,6 +150,7 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	len = strlen(buff);
 	cnt = write(dev, buff, len);
 	if (cnt != len) {
+		log_message("usb_layer: usb_command: File descriptor write");
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
@@ -157,7 +160,7 @@ int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
 	if (status != ATSHA_ERR_OK) return status;
 
 	if (buff[0] != '0' && buff[1] != '0') {
-		if (g_config.verbose) log_message("ERR: Read packet: Malformed packet.");
+		log_message("usb_layer: usb_command: Malformed packet.");
 		return ATSHA_ERR_COMMUNICATION;
 	}
 

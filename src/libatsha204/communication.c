@@ -31,6 +31,7 @@ int wake(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
+				log_message("communication: wake: I2C layer not implemented");
 				return ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
@@ -44,7 +45,7 @@ int wake(struct atsha_handle *handle) {
 			if (!packet_ok || (answer[1] != ATSHA204_STATUS_WAKE_OK)) {
 				free(answer);
 				answer = NULL;
-				if (!packet_ok && g_config.verbose) log_message("ERR: Wake: CRC doesn't match.");
+				if (!packet_ok) log_message("communication: wake: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
 				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 				continue;
@@ -71,6 +72,7 @@ int idle(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
+			log_message("communication: idle: I2C layer not implemented");
 				return ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
@@ -95,6 +97,7 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				return emul_command(handle, raw_packet, answer);
 				break;
 			case BOTTOM_LAYER_I2C:
+				log_message("communication: command: I2C layer not implemented");
 				return ATSHA_ERR_NOT_IMPLEMENTED;
 				break;
 			case BOTTOM_LAYER_USB:
@@ -107,7 +110,7 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 			if (!check_packet(*answer)) {
 				free(*answer);
 				*answer = NULL;
-				if (g_config.verbose) log_message("ERR: Command: CRC doesn't match.");
+				log_message("communication: command: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
 				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 				continue;
@@ -117,13 +120,13 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				unsigned char atsha204_status = (*answer)[1];
 				bool go_trough = true;
 				if (atsha204_status == ATSHA204_STATUS_PARSE_ERROR) {
-					if (g_config.verbose) log_message("ERR: Bad status: Parse error.");
+					log_message("communication: command: Bad ATSHA204 status: Parse error.");
 					go_trough = false;
 				} else if (atsha204_status == ATSHA204_STATUS_EXEC_ERROR) {
-					if (g_config.verbose) log_message("ERR: Bad status: Execution error.");
+					log_message("communication: command: Bad ATSHA204 status: Execution error.");
 					go_trough = false;
 				} else if (atsha204_status == ATSHA204_STATUS_COMMUNICATION_ERROR) {
-					if (g_config.verbose) log_message("ERR: Bad status: Communication error.");
+					log_message("communication: command: Bad ATSHA204 status: Communication error.");
 					go_trough = false;
 				} //The rest of status codes are distributed
 
