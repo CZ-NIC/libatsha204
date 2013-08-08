@@ -3,5 +3,5 @@ BINARIES += src/hmactest/hmactest
 hmactest_MODULES := main
 hmactest_LOCAL_LIBS := atsha204
 
-hmactest_SYSTEM_LIBS := crypto
+hmactest_SYSTEM_LIBS := crypto resolv
 #DOCS += src/ucollect/ucollect

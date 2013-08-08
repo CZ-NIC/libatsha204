@@ -3,5 +3,5 @@ BINARIES += src/chipinit/chipinit
 chipinit_MODULES := main
 chipinit_LOCAL_LIBS := atsha204
 
-chipinit_SYSTEM_LIBS := crypto
+chipinit_SYSTEM_LIBS := crypto resolv
 #DOCS += src/ucollect/ucollect
