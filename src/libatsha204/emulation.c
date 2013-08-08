@@ -21,7 +21,6 @@ extern atsha_configuration g_config;
 static const size_t POSITION_OPCODE = 1;
 static const size_t POSITION_PARAM1 = 2;
 static const size_t POSITION_ADDRESS = 3;
-static const size_t LINE_BUFFSIZE = 128;
 
 static int emul_nonce(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
 	memcpy(handle->nonce, (raw_packet + 5), ATSHA204_SLOT_BYTE_LEN);
@@ -224,7 +223,7 @@ static int emul_random(struct atsha_handle *handle, unsigned char *raw_packet, u
 }
 
 static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, unsigned char **answer) {
-	char line[LINE_BUFFSIZE];
+	char line[BUFFSIZE_LINE];
 	char *line_p = line;
 
 	//Decide if user try to read SN or data
@@ -248,7 +247,7 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		} else {
 			//Serial number is first line
 			rewind(handle->file);
-			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 
 			char *line_end_p = (line_p + strlen(line_p));
 
@@ -286,11 +285,11 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			//Adresses starts at multiples of 8; first line is SN
 			size_t skip_lines = (raw_packet[POSITION_ADDRESS] / 8) + 1;
 			for (size_t i = 0; i < skip_lines; i++) {
-				if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 			}
 
 			//On next line is key that user want
-			if (fgets(line, LINE_BUFFSIZE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 
 			char *line_end_p = (line_p + strlen(line_p));
 

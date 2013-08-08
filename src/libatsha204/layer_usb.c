@@ -56,7 +56,7 @@ static int usb_read(int dev, char *buff) {
 
 
 	while (!usb_check_nl(buff, check_len)) {
-		cnt = read(dev, (buff + cnt), BUFFSIZE);
+		cnt = read(dev, (buff + cnt), BUFFSIZE_USB);
 		check_len += cnt;
 		if (cnt <= 0) {
 			return ATSHA_ERR_COMMUNICATION;
@@ -67,8 +67,8 @@ static int usb_read(int dev, char *buff) {
 }
 
 int usb_wake(int dev, unsigned char **answer) {
-	char buff[BUFFSIZE];
-	clear_buffer((unsigned char *)buff, BUFFSIZE);
+	char buff[BUFFSIZE_USB];
+	clear_buffer((unsigned char *)buff, BUFFSIZE_USB);
 	size_t len, cnt;
 	int status;
 
@@ -102,8 +102,8 @@ int usb_wake(int dev, unsigned char **answer) {
 }
 
 int usb_idle(int dev) {
-	char buff[BUFFSIZE];
-	clear_buffer((unsigned char *)buff, BUFFSIZE);
+	char buff[BUFFSIZE_USB];
+	clear_buffer((unsigned char *)buff, BUFFSIZE_USB);
 	size_t len, cnt;
 	int status;
 
@@ -130,8 +130,8 @@ int usb_idle(int dev) {
 }
 
 int usb_command(int dev, unsigned char *raw_packet, unsigned char **answer) {
-	char buff[BUFFSIZE];
-	clear_buffer((unsigned char *)buff, BUFFSIZE);
+	char buff[BUFFSIZE_USB];
+	clear_buffer((unsigned char *)buff, BUFFSIZE_USB);
 	size_t len, cnt;
 	int status;
 
