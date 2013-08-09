@@ -12,6 +12,7 @@
 #include "communication.h"
 #include "tools.h"
 #include "operations.h"
+#include "mpsse.h"
 
 /**
  * Global variable with configuration and some initial config values.
@@ -47,6 +48,8 @@ struct atsha_handle *atsha_open() {
 
 #if USE_LAYER == USE_LAYER_USB
 	handle = atsha_open_usb_dev((char *)DEFAULT_USB_DEV_PATH);
+#elif USE_LAYER == USE_LAYER_I2C
+	handle = atsha_open_i2c_dev();
 #elif USE_LAYER == USE_LAYER_EMULATION
 	handle = atsha_open_emulation((char *)DEFAULT_EMULATION_CONFIG_PATH);
 #else
@@ -73,6 +76,7 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 	handle->is_srv_emulation = false;
 	handle->fd = try_fd;
 	handle->file = NULL;
+	handle->i2c = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
@@ -86,6 +90,34 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 
 	handle->key_origin = uint32_from_4_bytes(number.data);
 
+	return handle;
+}
+
+struct atsha_handle *atsha_open_i2c_dev() {
+	struct mpsse_context *try_i2c = MPSSE(I2C, FOUR_HUNDRED_KHZ, MSB); //# Initialize libmpsse for I2C operations at 400kHz
+	if (try_i2c == NULL) return NULL;
+	SendAcks(try_i2c);
+
+	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
+	if (handle == NULL) return NULL;
+
+	handle->bottom_layer = BOTTOM_LAYER_I2C;
+	handle->is_srv_emulation = false;
+	handle->file = NULL;
+	handle->i2c = try_i2c;
+	handle->sn = NULL;
+	handle->key = NULL;
+	handle->key_origin = 0;
+/*
+	atsha_big_int number;
+	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
+		log_message("api: open_usb_dev: Couldn't read key origin");
+		atsha_close(handle);
+		return NULL;
+	}
+
+	handle->key_origin = uint32_from_4_bytes(number.data);
+*/
 	return handle;
 }
 
@@ -104,6 +136,7 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = false;
 	handle->file = try_file;
+	handle->i2c = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
@@ -143,6 +176,7 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, u
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = true;
 	handle->file = NULL;
+	handle->i2c = NULL;
 	handle->key_origin = 0;
 
 	handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
@@ -165,6 +199,10 @@ void atsha_close(struct atsha_handle *handle) {
 
 	if (handle->file != NULL) {
 		fclose(handle->file);
+	}
+
+	if (handle->i2c != NULL) {
+		Close(handle->i2c); //Deinitialize libmpsse
 	}
 
 	free(handle->sn);

@@ -5,6 +5,7 @@
 #define TRY_SEND_RECV_ON_COMM_ERROR_TOUT 2000000
 										//in microseconds (2s)
 #define BUFFSIZE_USB 1024
+#define BUFFSIZE_I2C 64
 #define BUFFSIZE_DNS 512
 #define BUFFSIZE_LINE 128
 

@@ -25,8 +25,7 @@ int wake(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
-				log_message("communication: wake: I2C layer not implemented");
-				return ATSHA_ERR_NOT_IMPLEMENTED;
+				status = i2c_wake(handle, &answer);
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_wake(handle->fd, &answer);
@@ -66,8 +65,7 @@ int idle(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
-			log_message("communication: idle: I2C layer not implemented");
-				return ATSHA_ERR_NOT_IMPLEMENTED;
+				return ATSHA_ERR_OK; //Good enough for now
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_idle(handle->fd);
@@ -91,8 +89,7 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				return emul_command(handle, raw_packet, answer);
 				break;
 			case BOTTOM_LAYER_I2C:
-				log_message("communication: command: I2C layer not implemented");
-				return ATSHA_ERR_NOT_IMPLEMENTED;
+				status = i2c_command(handle, raw_packet, answer);
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_command(handle->fd, raw_packet, answer);

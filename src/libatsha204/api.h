@@ -18,6 +18,7 @@ struct atsha_handle {
 	bool is_srv_emulation;
 	int fd;
 	FILE *file;
+	struct mpsse_context *i2c;
 	unsigned char *sn;
 	unsigned char *key;
 	uint32_t key_origin;
