@@ -25,7 +25,7 @@ int wake(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
-				status = i2c_wake(handle, &answer);
+				status = i2c_wake(handle, &answer); //do not check - there are no data
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_wake(handle->fd, &answer);

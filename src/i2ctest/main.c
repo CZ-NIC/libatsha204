@@ -27,7 +27,7 @@ int main(void) {
 	status = atsha_dev_rev(handle, &rev);
 	fprintf(stderr, "Status: %s\n", atsha_error_name(status));
 	fprintf(stderr, "Revision: %u\n", rev);
-
+/*
 	// Random number
 	fprintf(stderr, "Random number:\n");
 	atsha_big_int number;
@@ -36,7 +36,7 @@ int main(void) {
 	if (status == ATSHA_ERR_OK) {
 		fprintf(stderr, "%zu bytes number: ", number.bytes); for (size_t i = 0; i < number.bytes; i++) { printf("%02X ", number.data[i]); } printf("\n");
 	}
-
+*/
 	return 0;
 }
 #if 0
