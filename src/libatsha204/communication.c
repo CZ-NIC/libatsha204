@@ -7,6 +7,7 @@
 #include "configuration.h"
 #include "atsha204consts.h"
 #include "layer_usb.h"
+#include "layer_i2c.h"
 #include "emulation.h"
 #include "api.h"
 
