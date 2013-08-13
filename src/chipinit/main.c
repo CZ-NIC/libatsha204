@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 	int status;
 	status = atsha_raw_otp_write(handle, 0x00, idata);
 	printf("Status: %s\n", atsha_error_name(status));
-	atsha_wait();
+
 	atsha_raw_otp_read(handle, 0x00, &idata);
 	for (size_t i = 0; i < idata.bytes; i++) {
 		printf("%02X ", idata.data[i]);
@@ -46,7 +46,6 @@ int main(int argc, char **argv) {
 	atsha_big_int data;
 	printf("OTP zone (0x00 - 0x0F):\n");
 	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
-		atsha_wait();
 		atsha_raw_otp_read(handle, addr, &data);
 		printf("0x%02X: ", addr);
 		for (size_t i = 0; i < data.bytes; i++) {
@@ -58,7 +57,6 @@ int main(int argc, char **argv) {
 
 	printf("Config zone (0x00 - 0x15):\n");
 	for (unsigned char addr = 0x00; addr <= 0x15; addr++) {
-		atsha_wait();
 		atsha_raw_conf_read(handle, addr, &data);
 		printf("0x%02X: ", addr);
 		for (size_t i = 0; i < data.bytes; i++) {
@@ -70,7 +68,6 @@ int main(int argc, char **argv) {
 
 	printf("Data zone (slot 0 - 15):\n");
 	for (unsigned char slot = 0; slot <= 15; slot++) {
-		atsha_wait();
 		atsha_low_slot_read(handle, slot, &data);
 		printf("%2u: ", slot);
 		for (size_t i = 0; i < data.bytes; i++) {

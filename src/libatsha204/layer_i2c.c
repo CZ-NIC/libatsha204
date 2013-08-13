@@ -65,7 +65,7 @@ static int i2c_read(struct atsha_handle *handle, unsigned char **answer) {
 }
 
 int i2c_wake(struct atsha_handle *handle, unsigned char **answer) {
-	char wr_wake[] = { 0x00 };
+	unsigned char wr_wake[] = { 0x00 };
 	int status;
 
 	status = SetClock(handle->i2c, ATSHA204_I2C_WAKE_CLOCK);
@@ -80,7 +80,7 @@ int i2c_wake(struct atsha_handle *handle, unsigned char **answer) {
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
-	status = Write(handle->i2c, wr_wake, 1);
+	status = Write(handle->i2c, (char *)wr_wake, 1);
 	if (status != MPSSE_OK) {
 		log_message("layer_i2c: i2c_wake: Write");
 		return ATSHA_ERR_COMMUNICATION;
@@ -108,9 +108,9 @@ int i2c_wake(struct atsha_handle *handle, unsigned char **answer) {
 	return ATSHA_ERR_OK;
 }
 
-int i2c_idle(struct atsha_handle *handle, unsigned char **answer) {
-	char wr_idle[] = { ATSHA204_I2C_WA_IDLE };
-	char wr_addr[] = { ATSHA204_I2C_ADDRESS };
+int i2c_idle(struct atsha_handle *handle) {
+	unsigned char wr_idle[] = { ATSHA204_I2C_WA_IDLE };
+	unsigned char wr_addr[] = { ATSHA204_I2C_ADDRESS };
 	int status;
 
 	status = Start(handle->i2c);
@@ -119,13 +119,13 @@ int i2c_idle(struct atsha_handle *handle, unsigned char **answer) {
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
-	status = Write(handle->i2c, wr_addr, 1);
+	status = Write(handle->i2c, (char *)wr_addr, 1);
 	if (status != MPSSE_OK) {
 		log_message("layer_i2c: i2c_idle: Write addr");
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
-	status = Write(handle->i2c, wr_idle, 1);
+	status = Write(handle->i2c, (char *)wr_idle, 1);
 	if (status != MPSSE_OK) {
 		log_message("layer_i2c: i2c_idle: Write idle");
 		return ATSHA_ERR_COMMUNICATION;
