@@ -4,7 +4,7 @@
 #include<stdint.h>
 #include<stdbool.h>
 #include<unistd.h>
-#include <mpsse.h>
+#include<mpsse.h>
 
 #include "atsha204.h"
 #include "atsha204consts.h"
@@ -26,42 +26,50 @@ static int i2c_read(struct atsha_handle *handle, unsigned char **answer) {
 
 	wr_addr[0] |= 0x01;
 
-	status = Start(handle->i2c);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_read: Start");
-		return ATSHA_ERR_COMMUNICATION;
+	for (int i = 0; i < ATSHA204_I2C_IO_ERR_RESPONSE_TRIES; i++) {
+		status = Start(handle->i2c);
+		if (status != MPSSE_OK) {
+			log_message("layer_i2c: i2c_read: Start");
+			return ATSHA_ERR_COMMUNICATION;
+		}
+
+		status = Write(handle->i2c, (char *)wr_addr, 1);
+		if (status != MPSSE_OK) {
+			log_message("layer_i2c: i2c_read: Write addr");
+			return ATSHA_ERR_COMMUNICATION;
+		}
+
+		data = (unsigned char *)Read(handle->i2c, BUFFSIZE_I2C);
+		if (status != MPSSE_OK) {
+			log_message("layer_i2c: i2c_read: Read");
+			return ATSHA_ERR_COMMUNICATION;
+		}
+
+		if (data == NULL) {
+			log_message("layer_i2c: i2c_command: No data read");
+			return ATSHA_ERR_COMMUNICATION;
+		}
+
+		status = Stop(handle->i2c);
+		if (status != MPSSE_OK) {
+			log_message("layer_i2c: i2c_read: Stop");
+			return ATSHA_ERR_COMMUNICATION;
+		}
+
+		if (data[0] != ATSHA204_I2C_IO_ERR_RESPONSE) {
+			*answer = calloc(data[0], sizeof(char));
+			if (*answer == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+			memcpy(*answer, data, data[0]);
+			free(data);
+
+			return ATSHA_ERR_OK;
+		}
+
+		i2c_wait();
 	}
 
-	status = Write(handle->i2c, (char *)wr_addr, 1);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_read: Write addr");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	data = (unsigned char *)Read(handle->i2c, BUFFSIZE_I2C);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_read: Read");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	if (data == NULL) {
-		log_message("layer_i2c: i2c_command: No data read");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	status = Stop(handle->i2c);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_read: Stop");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	*answer = calloc(data[0], sizeof(char));
-	if (*answer == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-
-	memcpy(*answer, data, data[0]);
-	free(data);
-
-	return ATSHA_ERR_OK;
+	return ATSHA_ERR_COMMUNICATION;
 }
 
 int i2c_wake(struct atsha_handle *handle, unsigned char **answer) {
@@ -136,6 +144,8 @@ int i2c_idle(struct atsha_handle *handle) {
 		log_message("layer_i2c: i2c_idle: Stop");
 		return ATSHA_ERR_COMMUNICATION;
 	}
+
+	i2c_wait();
 
 	return ATSHA_ERR_OK;
 }
