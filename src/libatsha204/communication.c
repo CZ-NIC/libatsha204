@@ -14,7 +14,11 @@
 extern atsha_configuration g_config;
 
 static void try_send_and_recv_sleep(struct atsha_handle *handle) {
+	if (handle->bottom_layer == BOTTOM_LAYER_USB) {
 		usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+	} else {
+		i2c_wait();
+	}
 }
 
 int wake(struct atsha_handle *handle) {
@@ -38,6 +42,16 @@ int wake(struct atsha_handle *handle) {
 		}
 ////////////////////////////////////////////////////////////////////////
 		if (status == ATSHA_ERR_OK) {
+			//Check bus consistency
+			if ((handle->bottom_layer == BOTTOM_LAYER_I2C) && (answer[0] == ATSHA204_I2C_IO_ERR_RESPONSE)) {
+				free(answer);
+				answer = NULL;
+				log_message("communication: wake: I2C I/O error detected");
+				status = ATSHA_ERR_COMMUNICATION;
+				i2c_wait();
+				continue;
+			}
+
 			//Check packet consistency and check wake confirmation
 			bool packet_ok = check_packet(answer);
 			if (!packet_ok || (answer[1] != ATSHA204_STATUS_WAKE_OK)) {
@@ -102,6 +116,16 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 		}
 ////////////////////////////////////////////////////////////////////////
 		if (status == ATSHA_ERR_OK) {
+			//Check bus consistency
+			if ((handle->bottom_layer == BOTTOM_LAYER_I2C) && ((*answer)[0] == ATSHA204_I2C_IO_ERR_RESPONSE)) {
+				free(answer);
+				answer = NULL;
+				log_message("communication: command: I2C I/O error detected");
+				status = ATSHA_ERR_COMMUNICATION;
+				i2c_wait();
+				continue;
+			}
+
 			//Check packet consistency and status code
 			if (!check_packet(*answer)) {
 				free(*answer);

@@ -15,14 +15,11 @@
 
 extern atsha_configuration g_config;
 
-static void i2c_wait() {
+void i2c_wait() {
 	usleep(ATSHA204_I2C_CMD_TOUT);
 }
 
-static void i2c_ack(struct atsha_handle *handle) {
-	fprintf(stderr, "ACK: %d\n", GetAck(handle->i2c));
-}
-
+#if 0
 static int i2c_reset(struct atsha_handle *handle) {
 	unsigned char wr_reset[] = { ATSHA204_I2C_WA_RESET };
 	unsigned char wr_addr[] = { ATSHA204_I2C_ADDRESS };
@@ -56,7 +53,7 @@ static int i2c_reset(struct atsha_handle *handle) {
 
 	return ATSHA_ERR_OK;
 }
-
+#endif
 static int i2c_read(struct atsha_handle *handle, unsigned char **answer) {
 	unsigned char wr_addr[] = { ATSHA204_I2C_ADDRESS };
 	unsigned char *data;
@@ -92,7 +89,6 @@ static int i2c_read(struct atsha_handle *handle, unsigned char **answer) {
 		log_message("layer_i2c: i2c_read: Stop");
 		return ATSHA_ERR_COMMUNICATION;
 	}
-print_buffer_content(data, data[0]);
 
 	*answer = calloc(data[0], sizeof(char));
 	if (*answer == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
@@ -137,6 +133,8 @@ int i2c_wake(struct atsha_handle *handle, unsigned char **answer) {
 		return ATSHA_ERR_COMMUNICATION;
 	}
 
+	i2c_wait();
+	i2c_wait();
 	i2c_wait();
 
 	status = i2c_read(handle, answer);
