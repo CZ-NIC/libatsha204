@@ -134,12 +134,42 @@ int i2c_wake(struct atsha_handle *handle, unsigned char **answer) {
 	}
 
 	i2c_wait();
-	i2c_wait();
-	i2c_wait();
 
 	status = i2c_read(handle, answer);
 	if (status != ATSHA_ERR_OK) {
 		return status;
+	}
+
+	return ATSHA_ERR_OK;
+}
+
+int i2c_idle(struct atsha_handle *handle, unsigned char **answer) {
+	char wr_idle[] = { ATSHA204_I2C_WA_IDLE };
+	char wr_addr[] = { ATSHA204_I2C_ADDRESS };
+	int status;
+
+	status = Start(handle->i2c);
+	if (status != MPSSE_OK) {
+		log_message("layer_i2c: i2c_idle: Start");
+		return ATSHA_ERR_COMMUNICATION;
+	}
+
+	status = Write(handle->i2c, wr_addr, 1);
+	if (status != MPSSE_OK) {
+		log_message("layer_i2c: i2c_idle: Write addr");
+		return ATSHA_ERR_COMMUNICATION;
+	}
+
+	status = Write(handle->i2c, wr_idle, 1);
+	if (status != MPSSE_OK) {
+		log_message("layer_i2c: i2c_idle: Write idle");
+		return ATSHA_ERR_COMMUNICATION;
+	}
+
+	status = Stop(handle->i2c);
+	if (status != MPSSE_OK) {
+		log_message("layer_i2c: i2c_idle: Stop");
+		return ATSHA_ERR_COMMUNICATION;
 	}
 
 	return ATSHA_ERR_OK;
@@ -161,7 +191,7 @@ int i2c_command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned
 		log_message("layer_i2c: i2c_command: Write addr");
 		return ATSHA_ERR_COMMUNICATION;
 	}
-
+//TODO: write NACK check here
 	status = Write(handle->i2c, (char *)wr_cmd, 1);
 	if (status != MPSSE_OK) {
 		log_message("layer_i2c: i2c_command: Write addr");

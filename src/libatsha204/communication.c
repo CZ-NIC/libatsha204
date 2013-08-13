@@ -84,7 +84,7 @@ int idle(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
-				return ATSHA_ERR_OK; //Good enough for now
+				status = i2c_idle(handle);
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_idle(handle->fd);
