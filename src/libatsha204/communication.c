@@ -13,6 +13,10 @@
 
 extern atsha_configuration g_config;
 
+static void try_send_and_recv_sleep(struct atsha_handle *handle) {
+		usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+}
+
 int wake(struct atsha_handle *handle) {
 	int status;
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
@@ -41,13 +45,13 @@ int wake(struct atsha_handle *handle) {
 				answer = NULL;
 				if (!packet_ok) log_message("communication: wake: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
-				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+				try_send_and_recv_sleep(handle);
 				continue;
 			}
 
 			break;
 		} else {
-			usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+			try_send_and_recv_sleep(handle);
 		}
 	}
 
@@ -104,7 +108,7 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				*answer = NULL;
 				log_message("communication: command: CRC doesn't match.");
 				status = ATSHA_ERR_COMMUNICATION;
-				usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+				try_send_and_recv_sleep(handle);
 				continue;
 			}
 
@@ -126,14 +130,14 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 					free(*answer);
 					*answer = NULL;
 					status = ATSHA_ERR_BAD_COMMUNICATION_STATUS;
-					usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+					try_send_and_recv_sleep(handle);
 					continue;
 				}
 			}
 
 			break;
 		} else {
-			usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
+			try_send_and_recv_sleep(handle);
 		}
 	}
 
