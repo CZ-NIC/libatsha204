@@ -4,6 +4,7 @@
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
+#include<mpsse.h>
 
 #include "configuration.h"
 #include "atsha204consts.h"
@@ -618,6 +619,12 @@ int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsh
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
 	free(packet);
 	free(answer);
 
@@ -646,6 +653,12 @@ int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, ats
 	status = op_raw_write_recv(answer);
 	if (status != ATSHA_ERR_OK) {
 		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
@@ -680,6 +693,12 @@ int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
 	free(packet);
 	free(answer);
 
@@ -708,6 +727,12 @@ int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsh
 	status = op_raw_write_recv(answer);
 	if (status != ATSHA_ERR_OK) {
 		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
