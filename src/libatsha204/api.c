@@ -283,10 +283,10 @@ int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number) {
 	unsigned char slot_number = atsha_find_slot_number(handle);
 	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
 
-	return atsha_low_slot_read(handle, slot_number, number);
+	return atsha_raw_slot_read(handle, slot_number, number);
 }
 
-int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
+int atsha_raw_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -333,10 +333,10 @@ int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number) {
 	unsigned char slot_number = atsha_find_slot_number(handle);
 	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
 
-	return atsha_low_slot_write(handle, slot_number, number);
+	return atsha_raw_slot_write(handle, slot_number, number);
 }
 
-int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
+int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;

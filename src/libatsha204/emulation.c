@@ -97,7 +97,7 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	//End of message
 
 	atsha_big_int key;
-	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
+	if (atsha_raw_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
 		log_message("emulation: emul_hmac: Bad status code: atsha_low_slot_read");
 		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	}
@@ -123,7 +123,7 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	unsigned char message[message_len];
 
 	atsha_big_int key;
-	if (atsha_low_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
+	if (atsha_raw_slot_read(handle, raw_packet[POSITION_PARAM1+1], &key) != ATSHA_ERR_OK) {
 		log_message("emulation: emul_mac: Bad status code: atsha_low_slot_read");
 		return ATSHA_ERR_BAD_COMMUNICATION_STATUS;
 	}
