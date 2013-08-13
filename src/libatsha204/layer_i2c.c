@@ -19,41 +19,6 @@ void i2c_wait() {
 	usleep(ATSHA204_I2C_CMD_TOUT);
 }
 
-#if 0
-static int i2c_reset(struct atsha_handle *handle) {
-	unsigned char wr_reset[] = { ATSHA204_I2C_WA_RESET };
-	unsigned char wr_addr[] = { ATSHA204_I2C_ADDRESS };
-	int status;
-
-	status = Start(handle->i2c);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_reset: Start");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	status = Write(handle->i2c, (char *)wr_addr, 1);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_reset: Write addr");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	status = Write(handle->i2c, (char *)wr_reset, 1);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_reset: Write");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	status = Stop(handle->i2c);
-	if (status != MPSSE_OK) {
-		log_message("layer_i2c: i2c_reset: Stop");
-		return ATSHA_ERR_COMMUNICATION;
-	}
-
-	i2c_wait();
-
-	return ATSHA_ERR_OK;
-}
-#endif
 static int i2c_read(struct atsha_handle *handle, unsigned char **answer) {
 	unsigned char wr_addr[] = { ATSHA204_I2C_ADDRESS };
 	unsigned char *data;
