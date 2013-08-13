@@ -48,7 +48,7 @@ int wake(struct atsha_handle *handle) {
 				answer = NULL;
 				log_message("communication: wake: I2C I/O error detected");
 				status = ATSHA_ERR_COMMUNICATION;
-				i2c_wait();
+				try_send_and_recv_sleep(handle);
 				continue;
 			}
 
@@ -122,7 +122,7 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				answer = NULL;
 				log_message("communication: command: I2C I/O error detected");
 				status = ATSHA_ERR_COMMUNICATION;
-				i2c_wait();
+				try_send_and_recv_sleep(handle);
 				continue;
 			}
 
