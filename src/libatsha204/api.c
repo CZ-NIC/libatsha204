@@ -222,7 +222,7 @@ int atsha_dev_rev(struct atsha_handle *handle, uint32_t *revision) {
 
 	packet = op_dev_rev();
 	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-atsha_wait();
+
 	status = command(handle, packet, &answer);
 	if (status != ATSHA_ERR_OK) {
 		free(packet);
