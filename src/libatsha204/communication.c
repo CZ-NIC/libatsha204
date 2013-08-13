@@ -118,8 +118,8 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 		if (status == ATSHA_ERR_OK) {
 			//Check bus consistency
 			if ((handle->bottom_layer == BOTTOM_LAYER_I2C) && ((*answer)[0] == ATSHA204_I2C_IO_ERR_RESPONSE)) {
-				free(answer);
-				answer = NULL;
+				free(*answer);
+				*answer = NULL;
 				log_message("communication: command: I2C I/O error detected");
 				status = ATSHA_ERR_COMMUNICATION;
 				try_send_and_recv_sleep(handle);
