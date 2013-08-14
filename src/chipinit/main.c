@@ -113,7 +113,6 @@ static bool set_slot_config(struct atsha_handle *handle, unsigned char *config) 
 	atsha_big_int record;
 
 	for (unsigned char addr = 0x05; addr <= 0x0C; addr++) {
-		//sleep(1);
 		if (atsha_raw_conf_read(handle, addr, &record) != ATSHA_ERR_OK) return false;
 		record.data[0] = SLOT_CONFIG_READ;
 		record.data[1] = SLOT_CONFIG_WRITE;
@@ -138,7 +137,6 @@ static bool create_and_lock_config(struct atsha_handle *handle) {
 	size_t item = 0;
 	record.bytes = BYTESIZE_CNF;
 	for (unsigned char addr = 0x00; addr <= 0x15; addr++) {
-		//sleep(1);
 		if (atsha_raw_conf_read(handle, addr, &record) != ATSHA_ERR_OK) return false;
 		memcpy((config + (item * BYTESIZE_CNF)), record.data, record.bytes);
 		item++;
