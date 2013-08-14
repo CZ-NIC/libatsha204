@@ -22,9 +22,9 @@ typedef struct {
 //Library settings and initialization
 void atsha_set_verbose();
 void atsha_set_log_callback(void (*clb)(const char* msg));
-void atsha_wait();
 struct atsha_handle *atsha_open();
 struct atsha_handle *atsha_open_usb_dev(char *path);
+struct atsha_handle *atsha_open_i2c_dev();
 struct atsha_handle *atsha_open_emulation(char *path);
 struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, unsigned char *key);
 void atsha_close(struct atsha_handle *handle);
@@ -36,9 +36,9 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle);
 int atsha_dev_rev(struct atsha_handle *handle, uint32_t *revision);
 int atsha_random(struct atsha_handle *handle, atsha_big_int *number);
 int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number);
-int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number);
+int atsha_raw_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number);
 int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number);
-int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number);
+int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number);
 //int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word);
 int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response);
 int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest);
@@ -49,6 +49,8 @@ int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsh
 int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
 int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data);
 int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
+int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc);
+int atsha_lock_data(struct atsha_handle *handle, unsigned char *crc);
 
 //Error management
 #define ATSHA_ERR_OK 0

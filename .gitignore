@@ -33,3 +33,6 @@ src/dev/dev
 src/hmactest/hmactest
 src/ucollect_example/ucollect_example
 tests/challenge_response/challenge_response
+tests/challenge_response_i2c/challenge_response_i2c
+src/i2ctest/i2ctest
+src/toolbox/toolbox

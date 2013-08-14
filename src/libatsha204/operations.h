@@ -13,11 +13,18 @@ static const unsigned char IO_RW_ENC = 64;
 static const unsigned char IO_RW_NON_ENC = 0;
 static const unsigned char IO_RW_4_BYTES = 0;
 static const unsigned char IO_RW_32_BYTES = 128; //10000000
+static const unsigned char LOCK_CONFIG = 0;
+static const unsigned char LOCK_DATA = 1;
 
 /**
  * Generate zone config parameter (Param1)
  */
 unsigned char get_zone_config(unsigned char io_mem, unsigned char io_enc, unsigned char io_cnt);
+
+/**
+ * Generate lock config parameter (Param1)
+ */
+unsigned char get_lock_config(unsigned char lock_what);
 /**
  * Get slot address according to slot number.
  * Slot number is in range 0--15.
@@ -62,5 +69,7 @@ unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data, bo
 int op_mac_recv(unsigned char *packet, unsigned char *data);
 unsigned char *op_serial_number();
 int op_serial_number_recv(unsigned char *packet, unsigned char *data);
+unsigned char *op_lock(unsigned char lock_config, unsigned char *crc);
+int op_lock_recv(unsigned char *packet);
 
 #endif //OPERATIONS_H

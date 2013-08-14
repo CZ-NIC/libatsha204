@@ -3,5 +3,5 @@ BINARIES += src/atsha204cmd/atsha204cmd
 atsha204cmd_MODULES := main
 atsha204cmd_LOCAL_LIBS := atsha204
 
-atsha204cmd_SYSTEM_LIBS := crypto unbound
+atsha204cmd_SYSTEM_LIBS := crypto unbound ftdi mpsse
 #DOCS += src/ucollect/ucollect

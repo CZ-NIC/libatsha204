@@ -4,6 +4,7 @@
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
+#include<mpsse.h>
 
 #include "configuration.h"
 #include "atsha204consts.h"
@@ -12,6 +13,7 @@
 #include "communication.h"
 #include "tools.h"
 #include "operations.h"
+#include "mpsse.h"
 
 /**
  * Global variable with configuration and some initial config values.
@@ -38,15 +40,13 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
-void atsha_wait() {
-	usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
-}
-
 struct atsha_handle *atsha_open() {
 	struct atsha_handle *handle;
 
 #if USE_LAYER == USE_LAYER_USB
 	handle = atsha_open_usb_dev((char *)DEFAULT_USB_DEV_PATH);
+#elif USE_LAYER == USE_LAYER_I2C
+	handle = atsha_open_i2c_dev();
 #elif USE_LAYER == USE_LAYER_EMULATION
 	handle = atsha_open_emulation((char *)DEFAULT_EMULATION_CONFIG_PATH);
 #else
@@ -73,6 +73,7 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 	handle->is_srv_emulation = false;
 	handle->fd = try_fd;
 	handle->file = NULL;
+	handle->i2c = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
@@ -86,6 +87,34 @@ struct atsha_handle *atsha_open_usb_dev(char *path) {
 
 	handle->key_origin = uint32_from_4_bytes(number.data);
 
+	return handle;
+}
+
+struct atsha_handle *atsha_open_i2c_dev() {
+	struct mpsse_context *try_i2c = MPSSE(I2C, FOUR_HUNDRED_KHZ, MSB); //# Initialize libmpsse for I2C operations at 400kHz
+	if (try_i2c == NULL) return NULL;
+	SendAcks(try_i2c);
+
+	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
+	if (handle == NULL) return NULL;
+
+	handle->bottom_layer = BOTTOM_LAYER_I2C;
+	handle->is_srv_emulation = false;
+	handle->file = NULL;
+	handle->i2c = try_i2c;
+	handle->sn = NULL;
+	handle->key = NULL;
+	handle->key_origin = 0;
+/*
+	atsha_big_int number;
+	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
+		log_message("api: open_usb_dev: Couldn't read key origin");
+		atsha_close(handle);
+		return NULL;
+	}
+
+	handle->key_origin = uint32_from_4_bytes(number.data);
+*/
 	return handle;
 }
 
@@ -104,6 +133,7 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = false;
 	handle->file = try_file;
+	handle->i2c = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
@@ -143,6 +173,7 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, u
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = true;
 	handle->file = NULL;
+	handle->i2c = NULL;
 	handle->key_origin = 0;
 
 	handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
@@ -165,6 +196,10 @@ void atsha_close(struct atsha_handle *handle) {
 
 	if (handle->file != NULL) {
 		fclose(handle->file);
+	}
+
+	if (handle->i2c != NULL) {
+		Close(handle->i2c); //Deinitialize libmpsse
 	}
 
 	free(handle->sn);
@@ -248,10 +283,10 @@ int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number) {
 	unsigned char slot_number = atsha_find_slot_number(handle);
 	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
 
-	return atsha_low_slot_read(handle, slot_number, number);
+	return atsha_raw_slot_read(handle, slot_number, number);
 }
 
-int atsha_low_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
+int atsha_raw_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -298,10 +333,10 @@ int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number) {
 	unsigned char slot_number = atsha_find_slot_number(handle);
 	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;
 
-	return atsha_low_slot_write(handle, slot_number, number);
+	return atsha_raw_slot_write(handle, slot_number, number);
 }
 
-int atsha_low_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
+int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -584,6 +619,12 @@ int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsh
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
 	free(packet);
 	free(answer);
 
@@ -612,6 +653,12 @@ int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, ats
 	status = op_raw_write_recv(answer);
 	if (status != ATSHA_ERR_OK) {
 		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);
@@ -646,6 +693,12 @@ int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha
 		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 	}
 
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
 	free(packet);
 	free(answer);
 
@@ -674,6 +727,84 @@ int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsh
 	status = op_raw_write_recv(answer);
 	if (status != ATSHA_ERR_OK) {
 		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_lock(get_lock_config(LOCK_CONFIG), crc);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_lock_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_lock_data(struct atsha_handle *handle, unsigned char *crc) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_lock(get_lock_config(LOCK_DATA), crc);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_lock_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
 	}
 
 	free(packet);

@@ -104,8 +104,8 @@ bool check_crc(unsigned char length, unsigned char *data, unsigned char *crc) {
 	return true;
 }
 
-void calculate_crc(unsigned char length, unsigned char *data, unsigned char *crc) {
-	unsigned char counter;
+void calculate_crc(uint16_t length, unsigned char *data, unsigned char *crc) {
+	uint16_t counter;
 	uint16_t crc_register = 0;
 	uint16_t polynom = POLYNOM;
 	unsigned char shift_register;
