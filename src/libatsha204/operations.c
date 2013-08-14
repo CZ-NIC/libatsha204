@@ -181,8 +181,8 @@ int op_serial_number_recv(unsigned char *packet, unsigned char *data) {
 
 unsigned char *op_lock(unsigned char lock_config, unsigned char *crc) {
 	uint16_t crc_int = 0; //clear
-	crc_int |= crc[0]; crc_int <<= (1 * 8);
-	crc_int |= crc[1];
+	crc_int |= crc[1]; crc_int <<= (1 * 8);
+	crc_int |= crc[0];
 
 	return generate_command_packet(ATSHA204_OPCODE_LOCK, lock_config, crc_int, NULL, 0);
 }
