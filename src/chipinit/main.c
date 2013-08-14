@@ -134,6 +134,7 @@ static bool set_slot_config(struct atsha_handle *handle, unsigned char *config) 
 
 static bool create_and_lock_config(struct atsha_handle *handle) {
 	unsigned char config[CONFIG_CNT*BYTESIZE_CNF];
+	unsigned char crc[2];
 	atsha_big_int record;
 
 	size_t item = 0;
@@ -148,6 +149,8 @@ static bool create_and_lock_config(struct atsha_handle *handle) {
 	if (!set_otp_mode(handle, config)) return false;
 	if (!set_slot_config(handle, config)) return false;
 
+	calculate_crc(CONFIG_CNT*BYTESIZE_CNF, config, crc);
+	if (atsha_lock_config(handle, crc) != ATSHA_ERR_OK) return false;
 
 	return true;
 }
@@ -173,7 +176,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	create_and_lock_config(handle);
+	if (create_and_lock_config(handle)) {
+		printf("Configuration is locked\n");
+	} else {
+		printf("Configuration is NOT locked\n");
+	}
 	dump_config(handle);
 	//dump_config(handle);
 return 0;
