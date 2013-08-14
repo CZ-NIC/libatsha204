@@ -49,6 +49,8 @@ int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsh
 int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
 int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data);
 int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
+int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc);
+int atsha_lock_data(struct atsha_handle *handle, unsigned char *crc);
 
 //Error management
 #define ATSHA_ERR_OK 0

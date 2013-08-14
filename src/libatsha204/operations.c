@@ -79,6 +79,12 @@ unsigned char get_zone_config(unsigned char io_mem, unsigned char io_enc, unsign
 	return config;
 }
 
+unsigned char get_lock_config(unsigned char lock_what) {
+	unsigned char config = 0; //0 = we need to check CRC
+	config |= lock_what;
+	return config;
+}
+
 unsigned char get_slot_address(unsigned char slot_number) {
 	unsigned char address = 0;
 	address |= SLOT_ADDRESSES[slot_number];
@@ -171,4 +177,16 @@ int op_serial_number_recv(unsigned char *packet, unsigned char *data) {
 	data[8] = (packet+1)[12];
 
 	return size;
+}
+
+unsigned char *op_lock(unsigned char lock_config, unsigned char *crc) {
+	uint16_t crc_int = 0; //clear
+	crc_int |= crc[0]; crc_int <<= (1 * 8);
+	crc_int |= crc[1];
+
+	return generate_command_packet(ATSHA204_OPCODE_LOCK, lock_config, crc_int, NULL, 0);
+}
+
+int op_lock_recv(unsigned char *packet) {
+	return just_check_status(packet);
 }

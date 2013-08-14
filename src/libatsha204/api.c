@@ -740,3 +740,75 @@ int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsh
 
 	return ATSHA_ERR_OK;
 }
+
+int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_lock(get_lock_config(LOCK_CONFIG), crc);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_lock_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
+int atsha_lock_data(struct atsha_handle *handle, unsigned char *crc) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_lock(get_lock_config(LOCK_DATA), crc);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_lock_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
