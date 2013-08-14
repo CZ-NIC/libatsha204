@@ -17,7 +17,7 @@ void log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
 }
 
-static void dump_device(struct atsha_handle *handle) {
+static void dump_config(struct atsha_handle *handle) {
 	atsha_big_int data;
 
 	printf("Config zone (0x00 - 0x15):\n");
@@ -31,6 +31,10 @@ static void dump_device(struct atsha_handle *handle) {
 		printf("\n");
 	}
 	printf("\n");
+}
+
+static void dump_data(struct atsha_handle *handle) {
+	atsha_big_int data;
 
 	printf("Data zone (slot 0 - 15):\n");
 	for (unsigned char slot = 0; slot <= 15; slot++) {
@@ -42,7 +46,11 @@ static void dump_device(struct atsha_handle *handle) {
 		}
 		printf("\n");
 	}
-return;
+}
+
+static void dump_otp(struct atsha_handle *handle) {
+	atsha_big_int data;
+
 	printf("OTP zone (0x00 - 0x0F):\n");
 	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
 		sleep(1);
@@ -115,8 +123,10 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
 		return 1;
 	}
-//	set_otp_mode(handle);
-//	dump_device(handle);
+
+	set_otp_mode(handle);
+	dump_config(handle);
+
 	//Prepare data structures
 	unsigned char data[SLOT_CNT*BYTESIZE_KEY];
 	unsigned char otp[SLOT_CNT*BYTESIZE_OTP];
@@ -136,12 +146,12 @@ int main(int argc, char **argv) {
 	calculate_crc((unsigned char)(SLOT_CNT*BYTESIZE_KEY), data, crc_data);
 	calculate_crc((unsigned char)(SLOT_CNT*BYTESIZE_OTP), otp, crc_otp);
 	//Write keys into chip
-	/*number.bytes = BYTESIZE_KEY;
+	number.bytes = BYTESIZE_KEY;
 	for (size_t item = 0; item < SLOT_CNT; item++) {
 		memcpy(number.data, (data + (item * BYTESIZE_KEY)), number.bytes);
 		atsha_raw_slot_write(handle, item, number);
 		sleep(1);
-	}*/
+	}
 	//Write OTP items into chip
 	size_t item = 0;
 	number.bytes = BYTESIZE_OTP;
@@ -153,7 +163,6 @@ int main(int argc, char **argv) {
 	}
 
 //	dump_device(handle);
-
 	fclose(conf);
 	atsha_close(handle);
 
