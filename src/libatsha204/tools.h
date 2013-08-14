@@ -10,7 +10,7 @@
  * \param[in] data pointer to data for which CRC should be calculated
  * \param[out] crc pointer to 16-bit CRC
  */
-void calculate_crc(unsigned char length, unsigned char *data, unsigned char *crc);
+void calculate_crc(uint16_t length, unsigned char *data, unsigned char *crc);
 unsigned char get_number_from_hex_char(char high, char low);
 uint32_t uint32_from_4_bytes(unsigned char *data);
 bool check_crc(unsigned char length, unsigned char *data, unsigned char *crc);
