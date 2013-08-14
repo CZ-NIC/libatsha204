@@ -1,0 +1,7 @@
+BINARIES += tests/challenge_response_i2c/challenge_response_i2c
+
+challenge_response_i2c_MODULES := main
+challenge_response_i2c_LOCAL_LIBS := atsha204
+
+challenge_response_i2c_SYSTEM_LIBS := crypto unbound ftdi mpsse
+#DOCS += src/ucollect/ucollect
