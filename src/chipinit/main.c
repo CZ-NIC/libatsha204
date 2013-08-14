@@ -11,7 +11,12 @@
 #define BUFFSIZE_LINE 128
 #define BYTESIZE_KEY 32
 #define BYTESIZE_OTP 4
+#define BYTESIZE_CNF 4
 #define SLOT_CNT 16
+#define CONFIG_CNT 22
+
+#define SLOT_CONFIG_READ 0x80
+#define SLOT_CONFIG_WRITE 0x80
 
 void log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
@@ -94,11 +99,55 @@ static bool read_config(FILE *conf, unsigned char *data, size_t line_cnt) {
 	return true;
 }
 
-bool set_otp_mode(struct atsha_handle *handle) {
+static bool set_otp_mode(struct atsha_handle *handle, unsigned char *config) {
 	atsha_big_int record;
+
 	if (atsha_raw_conf_read(handle, 0x04, &record) != ATSHA_ERR_OK) return false;
 	record.data[2] = ATSHA204_CONFIG_OTPMODE_READONLY;
 	if (atsha_raw_conf_write(handle, 0x04, record) != ATSHA_ERR_OK) return false;
+
+	config[0x04*BYTESIZE_CNF+2] = ATSHA204_CONFIG_OTPMODE_READONLY;
+
+	return true;
+
+}
+static bool set_slot_config(struct atsha_handle *handle, unsigned char *config) {
+	atsha_big_int record;
+
+	for (unsigned char addr = 0x05; addr <= 0x0C; addr++) {
+		//sleep(1);
+		if (atsha_raw_conf_read(handle, addr, &record) != ATSHA_ERR_OK) return false;
+		record.data[0] = SLOT_CONFIG_READ;
+		record.data[1] = SLOT_CONFIG_WRITE;
+		record.data[2] = SLOT_CONFIG_READ;
+		record.data[3] = SLOT_CONFIG_WRITE;
+		if (atsha_raw_conf_write(handle, addr, record) != ATSHA_ERR_OK) return false;
+
+		config[addr*BYTESIZE_CNF+0] = SLOT_CONFIG_READ;
+		config[addr*BYTESIZE_CNF+1] = SLOT_CONFIG_WRITE;
+		config[addr*BYTESIZE_CNF+2] = SLOT_CONFIG_READ;
+		config[addr*BYTESIZE_CNF+3] = SLOT_CONFIG_WRITE;
+	}
+
+	return true;
+}
+
+static bool create_and_lock_config(struct atsha_handle *handle) {
+	unsigned char config[CONFIG_CNT*BYTESIZE_CNF];
+	atsha_big_int record;
+
+	size_t item = 0;
+	record.bytes = BYTESIZE_CNF;
+	for (unsigned char addr = 0x00; addr <= 0x15; addr++) {
+		//sleep(1);
+		if (atsha_raw_conf_read(handle, addr, &record) != ATSHA_ERR_OK) return false;
+		memcpy((config + (item * BYTESIZE_CNF)), record.data, record.bytes);
+		item++;
+	}
+
+	if (!set_otp_mode(handle, config)) return false;
+	if (!set_slot_config(handle, config)) return false;
+
 
 	return true;
 }
@@ -124,9 +173,10 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	set_otp_mode(handle);
+	create_and_lock_config(handle);
 	dump_config(handle);
-
+	//dump_config(handle);
+return 0;
 	//Prepare data structures
 	unsigned char data[SLOT_CNT*BYTESIZE_KEY];
 	unsigned char otp[SLOT_CNT*BYTESIZE_OTP];
