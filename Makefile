@@ -9,3 +9,10 @@ AR := ar
 PAGE_SIZE := $(shell getconf PAGE_SIZE)
 
 include $(S)/Makefile.dir
+
+.PHONY: install
+
+install:
+	cp src/libatsha204/atsha204.h /usr/include/
+	cp lib/libatsha204.so /usr/lib
+	ldconfig
