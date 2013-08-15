@@ -15,7 +15,7 @@ include $(S)/Makefile.dir
 install:
 	cp src/libatsha204/atsha204.h /usr/include/
 	cp lib/libatsha204.so /usr/lib
-	cp bin/toolbox /usr/bin
+	cp bin/chiptools /usr/bin
 	cp bin/atsha204cmd /usr/bin
 	cp bin/chipinit /usr/bin
 	cp bin/chiptest /usr/bin

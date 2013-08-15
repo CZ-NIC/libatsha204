@@ -35,4 +35,4 @@ src/ucollect_example/ucollect_example
 tests/challenge_response/challenge_response
 src/chiptest/chiptest
 src/i2ctest/i2ctest
-src/toolbox/toolbox
+src/chiptools/chiptools

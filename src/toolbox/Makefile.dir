@@ -1,7 +1,0 @@
-BINARIES += src/toolbox/toolbox
-
-toolbox_MODULES := main
-toolbox_LOCAL_LIBS := atsha204
-
-toolbox_SYSTEM_LIBS := crypto unbound ftdi mpsse
-#DOCS += src/ucollect/ucollect
