@@ -8,6 +8,16 @@ void testing_log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
 }
 
+static bool cmp_responses(atsha_big_int r1, atsha_big_int r2) {
+	if (r1.bytes != r2.bytes) return false;
+
+	for (size_t i = 0; i < r1.bytes; i++) {
+		if (r1.data[i] != r2.data[i]) return false;
+	}
+
+	return true;
+}
+
 int main(int argc, char **argv) {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s [emulation config file]\n", argv[0]);
@@ -56,6 +66,7 @@ int main(int argc, char **argv) {
 		printf("%02X ", response_emul.data[i]);
 	}
 	printf("\n");
+	if (!cmp_responses(response_i2c, response_emul)) return 1;
 
 	for (unsigned char slot = 0; slot < 16; slot++) {
 		printf("================================================== %02u ==================================================\n", slot);
@@ -73,6 +84,7 @@ int main(int argc, char **argv) {
 			printf("%02X ", response_emul.data[i]);
 		}
 		printf("\n");
+		if (!cmp_responses(response_i2c, response_emul)) return 1;
 
 		if (atsha_low_challenge_response(handle_i2c, slot, challenge, &response_i2c, false) != ATSHA_ERR_OK) return 1;
 		if (atsha_low_challenge_response(handle_emul, slot, challenge, &response_emul, false) != ATSHA_ERR_OK) return 1;
@@ -88,36 +100,39 @@ int main(int argc, char **argv) {
 			printf("%02X ", response_emul.data[i]);
 		}
 		printf("\n");
+		if (!cmp_responses(response_i2c, response_emul)) return 1;
 
 		if (atsha_low_challenge_response_mac(handle_i2c, slot, challenge, &response_i2c, true) != ATSHA_ERR_OK) return 1;
 		if (atsha_low_challenge_response_mac(handle_emul, slot, challenge, &response_emul, true) != ATSHA_ERR_OK) return 1;
 
-		printf("MAC HW: ");
+		printf("MAC  HW: ");
 		for (size_t i = 0; i < response_i2c.bytes; i++) {
 			printf("%02X ", response_i2c.data[i]);
 		}
 		printf("\n");
 
-		printf("MAC SW: ");
+		printf("MAC  SW: ");
 		for (size_t i = 0; i < response_emul.bytes; i++) {
 			printf("%02X ", response_emul.data[i]);
 		}
 		printf("\n");
+		if (!cmp_responses(response_i2c, response_emul)) return 1;
 
 		if (atsha_low_challenge_response_mac(handle_i2c, slot, challenge, &response_i2c, false) != ATSHA_ERR_OK) return 1;
 		if (atsha_low_challenge_response_mac(handle_emul, slot, challenge, &response_emul, false) != ATSHA_ERR_OK) return 1;
 
-		printf("MAC HW: ");
+		printf("MAC  HW: ");
 		for (size_t i = 0; i < response_i2c.bytes; i++) {
 			printf("%02X ", response_i2c.data[i]);
 		}
 		printf("\n");
 
-		printf("MAC SW: ");
+		printf("MAC  SW: ");
 		for (size_t i = 0; i < response_emul.bytes; i++) {
 			printf("%02X ", response_emul.data[i]);
 		}
 		printf("\n");
+		if (!cmp_responses(response_i2c, response_emul)) return 1;
 	}
 
 	printf("================================================== OTP =================================================\n");
@@ -138,6 +153,7 @@ int main(int argc, char **argv) {
 			response_emul.data[2],
 			response_emul.data[3]
 		);
+		if (!cmp_responses(response_i2c, response_emul)) return 1;
 	}
 
 	printf("================================================== CNF =================================================\n");

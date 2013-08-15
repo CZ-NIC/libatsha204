@@ -18,62 +18,12 @@
 #define SLOT_CONFIG_READ 0x80
 #define SLOT_CONFIG_WRITE 0x80
 
+#define ERR_INIT 1
+#define ERR_CNF_READ 2
+#define ERR_LOCK 3
+
 void log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
-}
-
-static void dump_config(struct atsha_handle *handle) {
-	atsha_big_int data;
-
-	printf("Config zone (0x00 - 0x15):\n");
-	for (unsigned char addr = 0x00; addr <= 0x15; addr++) {
-		printf("0x%02X: ", addr);
-		if (atsha_raw_conf_read(handle, addr, &data) == ATSHA_ERR_OK) {
-			for (size_t i = 0; i < data.bytes; i++) {
-				printf("%02X ", data.data[i]);
-			}
-			printf("\n");
-		} else {
-			printf("ERROR\n");
-		}
-	}
-	printf("\n");
-}
-
-static void dump_data(struct atsha_handle *handle) {
-	atsha_big_int data;
-
-	printf("Data zone (slot 0 - 15):\n");
-	for (unsigned char slot = 0; slot <= 15; slot++) {
-		printf("%2u: ", slot);
-		if (atsha_raw_slot_read(handle, slot, &data) == ATSHA_ERR_OK) {
-			for (size_t i = 0; i < data.bytes; i++) {
-				printf("%02X ", data.data[i]);
-			}
-			printf("\n");
-		} else {
-			printf("ERROR\n");
-		}
-	}
-	printf("\n");
-}
-
-static void dump_otp(struct atsha_handle *handle) {
-	atsha_big_int data;
-
-	printf("OTP zone (0x00 - 0x0F):\n");
-	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
-		printf("0x%02X: ", addr);
-		if (atsha_raw_otp_read(handle, addr, &data) == ATSHA_ERR_OK) {
-			for (size_t i = 0; i < data.bytes; i++) {
-				printf("%02X ", data.data[i]);
-			}
-			printf("\n");
-		} else {
-			printf("ERROR\n");
-		}
-	}
-	printf("\n");
 }
 
 static bool read_config(FILE *conf, unsigned char *data, size_t line_cnt) {
@@ -195,13 +145,13 @@ static bool write_and_lock_data(struct atsha_handle *handle, unsigned char *data
 int main(int argc, char **argv) {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s config\n", argv[0]);
-		return 1;
+		return ERR_INIT;
 	}
 
 	FILE *conf = fopen(argv[1], "r");
 	if (conf == NULL) {
 		fprintf(stderr, "Couldn't open config file %s\n", argv[1]);
-		return 1;
+		return ERR_INIT;
 	}
 	//init LIBATSHA204
 	atsha_set_verbose();
@@ -211,13 +161,7 @@ int main(int argc, char **argv) {
 	struct atsha_handle *handle = atsha_open_i2c_dev();
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
-		return 1;
-	}
-
-	if (create_and_lock_config(handle)) {
-		printf("Configuration is locked\n");
-	} else {
-		printf("Configuration is NOT locked\n");
+		return ERR_INIT;
 	}
 
 	//Prepare data structures
@@ -227,13 +171,20 @@ int main(int argc, char **argv) {
 	//Read keys
 	if (!read_config(conf, data, BYTESIZE_KEY)) {
 		fprintf(stderr, "Couldn't read config data (keys).\n");
-		return 1;
+		return ERR_CNF_READ;
 	}
 
 	//Read OTP items
 	if (!read_config(conf, otp, BYTESIZE_OTP)) {
 		fprintf(stderr, "Couldn't read config data (OTP).\n");
-		return 1;
+		return ERR_CNF_READ;
+	}
+
+	if (create_and_lock_config(handle)) {
+		printf("Configuration is locked\n");
+	} else {
+		printf("Configuration is NOT locked\n");
+		return ERR_LOCK;
 	}
 
 	//Write data
@@ -241,10 +192,8 @@ int main(int argc, char **argv) {
 		printf("Data and OTP zones are locked\n");
 	} else {
 		printf("Data and OTP zones are NOT locked\n");
+		return ERR_LOCK;
 	}
-
-	dump_config(handle);
-	dump_otp(handle);
 
 	fclose(conf);
 	atsha_close(handle);
