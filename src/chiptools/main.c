@@ -66,9 +66,9 @@ static void dump_otp(struct atsha_handle *handle) {
 
 static void print_abi(atsha_big_int abi) {
 	for (size_t i = 0; i < abi.bytes; i++) {
-		fprintf(stderr, "%02X ", abi.data[i]);
+		printf("%02X ", abi.data[i]);
 	}
-	fprintf(stderr, "\n");
+	printf("\n");
 }
 
 int main(int argc, char **argv) {
@@ -100,20 +100,29 @@ int main(int argc, char **argv) {
 		dump_data(handle);
 
 	} else if (strcmp(cmd, "sn") == 0) {
-		atsha_serial_number(handle, &abi);
-		print_abi(abi);
+		if (atsha_serial_number(handle, &abi) == ATSHA_ERR_OK) {
+			print_abi(abi);
+		} else {
+			return 2;
+		}
 
 	} else if (strcmp(cmd, "random") == 0) {
-		atsha_random(handle, &abi);
-		print_abi(abi);
+		if (atsha_random(handle, &abi) == ATSHA_ERR_OK) {
+			print_abi(abi);
+		} else {
+			return 2;
+		}
 
 	} else if (strcmp(cmd, "compiled") == 0) {
 		if (atsha_raw_slot_read(handle, 0, &abi) == ATSHA_ERR_OK) {
 			print_abi(abi);
+		} else {
+			return 2;
 		}
 
 	} else {
 		fprintf(stderr, "Undefined command\n");
+		return 2;
 	}
 
 	atsha_close(handle);
