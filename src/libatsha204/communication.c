@@ -148,6 +148,10 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				} else if (atsha204_status == ATSHA204_STATUS_COMMUNICATION_ERROR) {
 					log_message("communication: command: Bad ATSHA204 status: Communication error.");
 					go_trough = false;
+				} else if (atsha204_status == ATSHA204_STATUS_WAKE_OK) {
+					log_message("communication: command: Bad ATSHA204 status: Wake OK (undocumented; inadmissible in common communication).");
+					tries = -1; //Kill immediately
+					go_trough = false;
 				} //The rest of status codes are distributed
 
 				if (!go_trough) {
