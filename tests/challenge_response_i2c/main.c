@@ -9,15 +9,20 @@ void testing_log_callback(const char *msg) {
 }
 
 int main(int argc, char **argv) {
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s [emulation config file]\n", argv[0]);
+		return 1;
+	}
+
 	struct atsha_handle *handle_i2c = atsha_open_i2c_dev();
 	if (handle_i2c == NULL) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
 		return 1;
 	}
 
-	struct atsha_handle *handle_emul = atsha_open_emulation("atsha204.sw");
+	struct atsha_handle *handle_emul = atsha_open_emulation(argv[1]);
 	if (handle_emul == NULL) {
-		fprintf(stderr, "Couldn't open configuration handler.\n");
+		fprintf(stderr, "Couldn't open emulation handler.\n");
 		return 1;
 	}
 

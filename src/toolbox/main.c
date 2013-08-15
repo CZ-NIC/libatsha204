@@ -15,12 +15,15 @@ static void dump_config(struct atsha_handle *handle) {
 
 	printf("Config zone (0x00 - 0x15):\n");
 	for (unsigned char addr = 0x00; addr <= 0x15; addr++) {
-		atsha_raw_conf_read(handle, addr, &data);
 		printf("0x%02X: ", addr);
-		for (size_t i = 0; i < data.bytes; i++) {
-			printf("%02X ", data.data[i]);
+		if (atsha_raw_conf_read(handle, addr, &data) == ATSHA_ERR_OK) {
+			for (size_t i = 0; i < data.bytes; i++) {
+				printf("%02X ", data.data[i]);
+			}
+			printf("\n");
+		} else {
+			printf("ERROR\n");
 		}
-		printf("\n");
 	}
 	printf("\n");
 }
@@ -30,13 +33,17 @@ static void dump_data(struct atsha_handle *handle) {
 
 	printf("Data zone (slot 0 - 15):\n");
 	for (unsigned char slot = 0; slot <= 15; slot++) {
-		atsha_raw_slot_read(handle, slot, &data);
 		printf("%2u: ", slot);
-		for (size_t i = 0; i < data.bytes; i++) {
-			printf("%02X ", data.data[i]);
+		if (atsha_raw_slot_read(handle, slot, &data) == ATSHA_ERR_OK) {
+			for (size_t i = 0; i < data.bytes; i++) {
+				printf("%02X ", data.data[i]);
+			}
+			printf("\n");
+		} else {
+			printf("ERROR\n");
 		}
-		printf("\n");
 	}
+	printf("\n");
 }
 
 static void dump_otp(struct atsha_handle *handle) {
@@ -44,12 +51,15 @@ static void dump_otp(struct atsha_handle *handle) {
 
 	printf("OTP zone (0x00 - 0x0F):\n");
 	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
-		atsha_raw_otp_read(handle, addr, &data);
 		printf("0x%02X: ", addr);
-		for (size_t i = 0; i < data.bytes; i++) {
-			printf("%02X ", data.data[i]);
+		if (atsha_raw_otp_read(handle, addr, &data) == ATSHA_ERR_OK) {
+			for (size_t i = 0; i < data.bytes; i++) {
+				printf("%02X ", data.data[i]);
+			}
+			printf("\n");
+		} else {
+			printf("ERROR\n");
 		}
-		printf("\n");
 	}
 	printf("\n");
 }
@@ -96,6 +106,11 @@ int main(int argc, char **argv) {
 	} else if (strcmp(cmd, "random") == 0) {
 		atsha_random(handle, &abi);
 		print_abi(abi);
+
+	} else if (strcmp(cmd, "compiled") == 0) {
+		if (atsha_raw_slot_read(handle, 0, &abi) == ATSHA_ERR_OK) {
+			print_abi(abi);
+		}
 
 	} else {
 		fprintf(stderr, "Undefined command\n");

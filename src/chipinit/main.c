@@ -27,12 +27,15 @@ static void dump_config(struct atsha_handle *handle) {
 
 	printf("Config zone (0x00 - 0x15):\n");
 	for (unsigned char addr = 0x00; addr <= 0x15; addr++) {
-		atsha_raw_conf_read(handle, addr, &data);
 		printf("0x%02X: ", addr);
-		for (size_t i = 0; i < data.bytes; i++) {
-			printf("%02X ", data.data[i]);
+		if (atsha_raw_conf_read(handle, addr, &data) == ATSHA_ERR_OK) {
+			for (size_t i = 0; i < data.bytes; i++) {
+				printf("%02X ", data.data[i]);
+			}
+			printf("\n");
+		} else {
+			printf("ERROR\n");
 		}
-		printf("\n");
 	}
 	printf("\n");
 }
@@ -42,13 +45,17 @@ static void dump_data(struct atsha_handle *handle) {
 
 	printf("Data zone (slot 0 - 15):\n");
 	for (unsigned char slot = 0; slot <= 15; slot++) {
-		atsha_raw_slot_read(handle, slot, &data);
 		printf("%2u: ", slot);
-		for (size_t i = 0; i < data.bytes; i++) {
-			printf("%02X ", data.data[i]);
+		if (atsha_raw_slot_read(handle, slot, &data) == ATSHA_ERR_OK) {
+			for (size_t i = 0; i < data.bytes; i++) {
+				printf("%02X ", data.data[i]);
+			}
+			printf("\n");
+		} else {
+			printf("ERROR\n");
 		}
-		printf("\n");
 	}
+	printf("\n");
 }
 
 static void dump_otp(struct atsha_handle *handle) {
@@ -56,12 +63,15 @@ static void dump_otp(struct atsha_handle *handle) {
 
 	printf("OTP zone (0x00 - 0x0F):\n");
 	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
-		atsha_raw_otp_read(handle, addr, &data);
 		printf("0x%02X: ", addr);
-		for (size_t i = 0; i < data.bytes; i++) {
-			printf("%02X ", data.data[i]);
+		if (atsha_raw_otp_read(handle, addr, &data) == ATSHA_ERR_OK) {
+			for (size_t i = 0; i < data.bytes; i++) {
+				printf("%02X ", data.data[i]);
+			}
+			printf("\n");
+		} else {
+			printf("ERROR\n");
 		}
-		printf("\n");
 	}
 	printf("\n");
 }
@@ -203,12 +213,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
 		return 1;
 	}
-/*
-	dump_config(handle);
-	dump_otp(handle);
-	dump_data(handle);
-	return 0;
-//*/
+
 	if (create_and_lock_config(handle)) {
 		printf("Configuration is locked\n");
 	} else {
@@ -224,6 +229,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Couldn't read config data (keys).\n");
 		return 1;
 	}
+
 	//Read OTP items
 	if (!read_config(conf, otp, BYTESIZE_OTP)) {
 		fprintf(stderr, "Couldn't read config data (OTP).\n");
