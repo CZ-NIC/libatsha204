@@ -23,10 +23,10 @@ typedef struct {
 void atsha_set_verbose();
 void atsha_set_log_callback(void (*clb)(const char* msg));
 struct atsha_handle *atsha_open();
-struct atsha_handle *atsha_open_usb_dev(char *path);
+struct atsha_handle *atsha_open_usb_dev(const char *path);
 struct atsha_handle *atsha_open_i2c_dev();
-struct atsha_handle *atsha_open_emulation(char *path);
-struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, unsigned char *key);
+struct atsha_handle *atsha_open_emulation(const char *path);
+struct atsha_handle *atsha_open_server_emulation(const unsigned char *serial_number, const unsigned char *key);
 void atsha_close(struct atsha_handle *handle);
 
 //Special
@@ -49,8 +49,8 @@ int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsh
 int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
 int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data);
 int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
-int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc);
-int atsha_lock_data(struct atsha_handle *handle, unsigned char *crc);
+int atsha_lock_config(struct atsha_handle *handle, const unsigned char *crc);
+int atsha_lock_data(struct atsha_handle *handle, const unsigned char *crc);
 
 //Error management
 #define ATSHA_ERR_OK 0

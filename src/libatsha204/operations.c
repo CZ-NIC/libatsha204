@@ -179,7 +179,7 @@ int op_serial_number_recv(unsigned char *packet, unsigned char *data) {
 	return size;
 }
 
-unsigned char *op_lock(unsigned char lock_config, unsigned char *crc) {
+unsigned char *op_lock(unsigned char lock_config, const unsigned char *crc) {
 	uint16_t crc_int = 0; //clear
 	crc_int |= crc[1]; crc_int <<= (1 * 8);
 	crc_int |= crc[0];

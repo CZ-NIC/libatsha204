@@ -57,7 +57,7 @@ struct atsha_handle *atsha_open() {
 	return handle;
 }
 
-struct atsha_handle *atsha_open_usb_dev(char *path) {
+struct atsha_handle *atsha_open_usb_dev(const char *path) {
 	if (path == NULL) return NULL;
 
 	int try_fd = open(path, O_RDWR);
@@ -118,7 +118,7 @@ struct atsha_handle *atsha_open_i2c_dev() {
 	return handle;
 }
 
-struct atsha_handle *atsha_open_emulation(char *path) {
+struct atsha_handle *atsha_open_emulation(const char *path) {
 	if (path == NULL) return NULL;
 
 	FILE *try_file = fopen(path, "r");
@@ -164,7 +164,7 @@ struct atsha_handle *atsha_open_emulation(char *path) {
 	return handle;
 }
 
-struct atsha_handle *atsha_open_server_emulation(unsigned char *serial_number, unsigned char *key) {
+struct atsha_handle *atsha_open_server_emulation(const unsigned char *serial_number, const unsigned char *key) {
 	if (serial_number == NULL || key == NULL) return NULL;
 
 	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
@@ -741,7 +741,7 @@ int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsh
 	return ATSHA_ERR_OK;
 }
 
-int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc) {
+int atsha_lock_config(struct atsha_handle *handle, const unsigned char *crc) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -777,7 +777,7 @@ int atsha_lock_config(struct atsha_handle *handle, unsigned char *crc) {
 	return ATSHA_ERR_OK;
 }
 
-int atsha_lock_data(struct atsha_handle *handle, unsigned char *crc) {
+int atsha_lock_data(struct atsha_handle *handle, const unsigned char *crc) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;

@@ -69,7 +69,7 @@ unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data, bo
 int op_mac_recv(unsigned char *packet, unsigned char *data);
 unsigned char *op_serial_number();
 int op_serial_number_recv(unsigned char *packet, unsigned char *data);
-unsigned char *op_lock(unsigned char lock_config, unsigned char *crc);
+unsigned char *op_lock(unsigned char lock_config, const unsigned char *crc);
 int op_lock_recv(unsigned char *packet);
 
 #endif //OPERATIONS_H
