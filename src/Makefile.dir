@@ -6,3 +6,4 @@ include $(S)/src/atsha204cmd/Makefile.dir
 include $(S)/src/chipinit/Makefile.dir
 include $(S)/src/i2ctest/Makefile.dir
 include $(S)/src/toolbox/Makefile.dir
+include $(S)/src/chiptest/Makefile.dir

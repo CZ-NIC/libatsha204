@@ -1,2 +1,1 @@
 include $(S)/tests/challenge_response/Makefile.dir
-include $(S)/tests/challenge_response_i2c/Makefile.dir

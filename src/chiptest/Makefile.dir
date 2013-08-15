@@ -1,0 +1,7 @@
+BINARIES += src/chiptest/chiptest
+
+chiptest_MODULES := main
+chiptest_LOCAL_LIBS := atsha204
+
+chiptest_SYSTEM_LIBS := crypto unbound ftdi mpsse
+#DOCS += src/ucollect/ucollect
