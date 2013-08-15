@@ -1,6 +1,7 @@
 #include<stdlib.h>
 #include<unistd.h> //close()
 #include<fcntl.h>
+#include<sys/file.h>
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
@@ -40,6 +41,31 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
+static int atsha_try_lock_file() {
+	int lock;
+	lock = open(LOCK_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+	if (lock == -1) {
+		log_message("api: try_lock: open lock file failed");
+	}
+
+	return lock;
+}
+
+static bool atsha_lock(int lockfile) {
+	int lock = flock(lockfile, LOCK_EX | LOCK_NB);
+	if (lock == -1) {
+		log_message("api: atsha_lock: operation lock failed");
+		return false;
+	}
+
+	return true;
+}
+
+static void atsha_unlock(int lockfile) {
+	//Return value of flock is not important - OS release it anyway
+	flock(lockfile, LOCK_UN);
+}
+
 struct atsha_handle *atsha_open() {
 	struct atsha_handle *handle;
 
@@ -60,6 +86,16 @@ struct atsha_handle *atsha_open() {
 struct atsha_handle *atsha_open_usb_dev(const char *path) {
 	if (path == NULL) return NULL;
 
+	int try_lockfile = atsha_try_lock_file();
+	if (try_lockfile == -1) {
+		return NULL;
+	}
+
+	if (!atsha_lock(try_lockfile)) {
+		close(try_lockfile);
+		return NULL;
+	}
+
 	int try_fd = open(path, O_RDWR);
 	if (try_fd == -1) {
 		log_message("api: open_usb_dev: Couldn't open usb devidce.");
@@ -73,6 +109,7 @@ struct atsha_handle *atsha_open_usb_dev(const char *path) {
 	handle->is_srv_emulation = false;
 	handle->fd = try_fd;
 	handle->file = NULL;
+	handle->lockfile = try_lockfile;
 	handle->i2c = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
@@ -91,6 +128,16 @@ struct atsha_handle *atsha_open_usb_dev(const char *path) {
 }
 
 struct atsha_handle *atsha_open_i2c_dev() {
+	int try_lockfile = atsha_try_lock_file();
+	if (try_lockfile == -1) {
+		return NULL;
+	}
+
+	if (!atsha_lock(try_lockfile)) {
+		close(try_lockfile);
+		return NULL;
+	}
+
 	struct mpsse_context *try_i2c = MPSSE(I2C, FOUR_HUNDRED_KHZ, MSB); //# Initialize libmpsse for I2C operations at 400kHz
 	if (try_i2c == NULL) return NULL;
 	SendAcks(try_i2c);
@@ -101,6 +148,7 @@ struct atsha_handle *atsha_open_i2c_dev() {
 	handle->bottom_layer = BOTTOM_LAYER_I2C;
 	handle->is_srv_emulation = false;
 	handle->file = NULL;
+	handle->lockfile = try_lockfile;
 	handle->i2c = try_i2c;
 	handle->sn = NULL;
 	handle->key = NULL;
@@ -133,6 +181,7 @@ struct atsha_handle *atsha_open_emulation(const char *path) {
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = false;
 	handle->file = try_file;
+	handle->lockfile = -1;
 	handle->i2c = NULL;
 	handle->sn = NULL;
 	handle->key = NULL;
@@ -173,6 +222,7 @@ struct atsha_handle *atsha_open_server_emulation(const unsigned char *serial_num
 	handle->bottom_layer = BOTTOM_LAYER_EMULATION;
 	handle->is_srv_emulation = true;
 	handle->file = NULL;
+	handle->lockfile = -1;
 	handle->i2c = NULL;
 	handle->key_origin = 0;
 
@@ -200,6 +250,11 @@ void atsha_close(struct atsha_handle *handle) {
 
 	if (handle->i2c != NULL) {
 		Close(handle->i2c); //Deinitialize libmpsse
+	}
+
+	if (handle->lockfile != -1) {
+		atsha_unlock(handle->lockfile);
+		close(handle->lockfile);
 	}
 
 	free(handle->sn);

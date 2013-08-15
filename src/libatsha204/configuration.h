@@ -17,6 +17,7 @@
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "use_key.extremehost.cz"
+#define LOCK_FILE "/tmp/libatsha204.lock"
 
 #define USE_LAYER_EMULATION 0
 #define USE_LAYER_I2C 1
