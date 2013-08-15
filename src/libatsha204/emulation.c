@@ -245,8 +245,15 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			SN[3] = handle->sn[3]; SN[8] = handle->sn[4]; SN[9] = handle->sn[5];
 			SN[10] = handle->sn[6]; SN[11] = handle->sn[7]; SN[12] = handle->sn[8];
 		} else {
-			//Serial number is first line
 			rewind(handle->file);
+			//Serial number is LAST line - skip all keys and OTP records
+			for (size_t i = 0; i < (2*16); i++) {
+				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
+					log_message("emulation: emul_read: skip keys (bad file format)");
+					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
+				}
+			}
+
 			if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
 				log_message("emulation: emul_read: read SN (bad file format)");
 				return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
@@ -288,8 +295,8 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			if ((*answer) == NULL) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
 		} else {
 			rewind(handle->file);
-			//Adresses starts at multiples of 8; first line is SN
-			size_t skip_lines = (raw_packet[POSITION_ADDRESS] / 8) + 1;
+			//Adresses starts at multiples of 8
+			size_t skip_lines = (raw_packet[POSITION_ADDRESS] / 8);
 			for (size_t i = 0; i < skip_lines; i++) {
 				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
 					log_message("emulation: emul_read: skip keys (bad file format)");
@@ -334,14 +341,13 @@ static int emul_read(struct atsha_handle *handle, unsigned char *raw_packet, uns
 			rewind(handle->file);
 
 			//Skip SN and All key slotss
-			for (size_t i = 0; i < 17; i++) {
+			for (size_t i = 0; i < 16; i++) {
 				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
 					log_message("emulation: emul_read: skip keys (bad file format)");
 					return ATSHA_ERR_CONFIG_FILE_BAD_FORMAT;
 				}
 			}
 
-			//Skip SN and All key slotss
 			for (size_t i = 0; i < raw_packet[POSITION_ADDRESS]; i++) {
 				if (fgets(line, BUFFSIZE_LINE, handle->file) == NULL) {
 					log_message("emulation: emul_read: skip OTP records (bad file format)");
