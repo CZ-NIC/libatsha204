@@ -5,6 +5,7 @@
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
+#include<time.h>
 #include<mpsse.h>
 
 #include "configuration.h"
@@ -52,10 +53,24 @@ static int atsha_try_lock_file() {
 }
 
 static bool atsha_lock(int lockfile) {
-	int lock = flock(lockfile, LOCK_EX | LOCK_NB);
-	if (lock == -1) {
-		log_message("api: atsha_lock: operation lock failed");
-		return false;
+	int lock;
+	double seconds;
+	time_t now;
+	time_t start = time(NULL);
+
+	while (1) {
+		lock = flock(lockfile, LOCK_EX | LOCK_NB);
+		if (lock == -1) {
+			now = time(NULL);
+			seconds = difftime(now, start);
+			if (seconds > LOCK_TRY_MAX) {
+				log_message("api: atsha_lock: operation lock failed");
+				return false;
+			}
+			usleep(LOCK_TRY_TOUT);
+		} else {
+			return true;
+		}
 	}
 
 	return true;
