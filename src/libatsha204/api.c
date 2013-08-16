@@ -48,7 +48,7 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 
 static int atsha_try_lock_file() {
 	int lock;
-	lock = open(LOCK_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+	lock = open(LOCK_FILE, O_RDWR | O_CREAT, 0600 /* S_IRUSR | S_IWUSR, but these are not available on OpenWRT */);
 	if (lock == -1) {
 		log_message("api: try_lock: open lock file failed");
 	}
