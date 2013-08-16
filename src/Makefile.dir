@@ -3,7 +3,10 @@ include $(S)/src/dev/Makefile.dir
 include $(S)/src/hmactest/Makefile.dir
 include $(S)/src/ucollect_example/Makefile.dir
 include $(S)/src/atsha204cmd/Makefile.dir
+
+ifeq ($(USE_LAYER),USE_LAYER_I2C)
 include $(S)/src/chipinit/Makefile.dir
 include $(S)/src/i2ctest/Makefile.dir
 include $(S)/src/chiptools/Makefile.dir
 include $(S)/src/chiptest/Makefile.dir
+endif

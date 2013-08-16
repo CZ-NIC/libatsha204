@@ -3,5 +3,4 @@ BINARIES += src/chiptools/chiptools
 chiptools_MODULES := main
 chiptools_LOCAL_LIBS := atsha204
 
-chiptools_SYSTEM_LIBS := crypto unbound ftdi mpsse
-#DOCS += src/ucollect/ucollect
+chiptools_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)

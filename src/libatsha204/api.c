@@ -6,16 +6,20 @@
 #include<stdint.h>
 #include<stdbool.h>
 #include<time.h>
-#include<mpsse.h>
+#include<assert.h>
 
 #include "configuration.h"
+
+#if USE_LAYER == USE_LAYER_I2C
+#include<mpsse.h>
+#endif
+
 #include "atsha204consts.h"
 #include "atsha204.h"
 #include "api.h"
 #include "communication.h"
 #include "tools.h"
 #include "operations.h"
-#include "mpsse.h"
 
 /**
  * Global variable with configuration and some initial config values.
@@ -142,6 +146,7 @@ struct atsha_handle *atsha_open_usb_dev(const char *path) {
 	return handle;
 }
 
+#if USE_LAYER == USE_LAYER_I2C
 struct atsha_handle *atsha_open_i2c_dev() {
 	int try_lockfile = atsha_try_lock_file();
 	if (try_lockfile == -1) {
@@ -180,6 +185,7 @@ struct atsha_handle *atsha_open_i2c_dev() {
 */
 	return handle;
 }
+#endif
 
 struct atsha_handle *atsha_open_emulation(const char *path) {
 	if (path == NULL) return NULL;
@@ -264,7 +270,11 @@ void atsha_close(struct atsha_handle *handle) {
 	}
 
 	if (handle->i2c != NULL) {
+#if USE_LAYER == USE_LAYER_I2C
 		Close(handle->i2c); //Deinitialize libmpsse
+#else
+		assert(0); // I2C not compiled in!
+#endif
 	}
 
 	if (handle->lockfile != -1) {

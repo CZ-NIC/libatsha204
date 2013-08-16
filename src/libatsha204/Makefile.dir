@@ -1,3 +1,10 @@
 LIBRARIES += src/libatsha204/libatsha204
 
-libatsha204_MODULES := api communication dnsmagic emulation error layer_i2c layer_usb operations tools
+ifeq ($(USE_LAYER),USE_LAYER_I2C)
+I2C_MODULES := layer_i2c
+I2C_LIBS := ftdi mpsse
+else
+I2C_MODULES :=
+I2C_LIBS :=
+endif
+libatsha204_MODULES := api communication dnsmagic emulation error $(I2C_MODULES) layer_usb operations tools

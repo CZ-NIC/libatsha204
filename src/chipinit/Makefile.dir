@@ -3,5 +3,4 @@ BINARIES += src/chipinit/chipinit
 chipinit_MODULES := main
 chipinit_LOCAL_LIBS := atsha204
 
-chipinit_SYSTEM_LIBS := crypto unbound ftdi mpsse
-#DOCS += src/ucollect/ucollect
+chipinit_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)

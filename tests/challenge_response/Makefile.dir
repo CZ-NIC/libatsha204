@@ -3,5 +3,4 @@ BINARIES += tests/challenge_response/challenge_response
 challenge_response_MODULES := main
 challenge_response_LOCAL_LIBS := atsha204
 
-challenge_response_SYSTEM_LIBS := crypto unbound ftdi mpsse
-#DOCS += src/ucollect/ucollect
+challenge_response_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)

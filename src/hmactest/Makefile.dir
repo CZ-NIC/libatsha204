@@ -3,5 +3,4 @@ BINARIES += src/hmactest/hmactest
 hmactest_MODULES := main
 hmactest_LOCAL_LIBS := atsha204
 
-hmactest_SYSTEM_LIBS := crypto unbound ftdi mpsse
-#DOCS += src/ucollect/ucollect
+hmactest_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)
