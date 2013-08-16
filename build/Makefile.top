@@ -34,7 +34,7 @@ ifeq ($(LUA_COMPILE),yes)
 	CFLAGS += -DLUA_COMPILE
 endif
 ifndef USE_LAYER
-	USE_LAYER := USE_LAYER_USB
+	USE_LAYER := USE_LAYER_I2C
 endif
 ifndef CONFIG_PATH
 	CONFIG_PATH := atsha204.sw
