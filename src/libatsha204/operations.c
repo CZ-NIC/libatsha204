@@ -136,7 +136,11 @@ int op_nonce_recv(unsigned char *packet) {
 unsigned char *op_hmac(unsigned char address, bool use_sn_in_digest) {
 	unsigned char USE_MODE = 0x04; //0x04 3rd bit must match TempKey.SourceFlag
 	if (use_sn_in_digest) {
-		USE_MODE |= 0x40; //6th bit is 1 == use SN
+		if (USE_OUR_SN) {
+			USE_MODE |= 0x20; //5th bit is 1 == use OTP 0-7
+		} else {
+			USE_MODE |= 0x40; //6th bit is 1 == use SN
+		}
 	}
 
 	return generate_command_packet(ATSHA204_OPCODE_HMAC, USE_MODE, (uint16_t)address, NULL, 0);
@@ -149,7 +153,11 @@ int op_hmac_recv(unsigned char *packet, unsigned char *data) {
 unsigned char *op_mac(unsigned char address, size_t cnt, unsigned char *data, bool use_sn_in_digest) {
 	unsigned char USE_MODE = 0x00; //use key slot; read message from input
 	if (use_sn_in_digest) {
-		USE_MODE |= 0x40; //6th bit is 1 == use SN
+		if (USE_OUR_SN) {
+			USE_MODE |= 0x20; //5th bit is 1 == use OTP 0-7
+		} else {
+			USE_MODE |= 0x40; //6th bit is 1 == use SN
+		}
 	}
 
 	return generate_command_packet(ATSHA204_OPCODE_MAC, USE_MODE, (uint16_t)address, data, cnt);

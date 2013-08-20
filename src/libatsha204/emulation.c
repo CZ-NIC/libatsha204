@@ -36,10 +36,18 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	unsigned char message[message_len];
 
 	bool use_sn;
-	if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
-		use_sn = false;
+	if (USE_OUR_SN) {
+		if ((raw_packet[POSITION_PARAM1] & 0x20) == 0) {
+			use_sn = false;
+		} else {
+			use_sn = true;
+		}
 	} else {
-		use_sn = true;
+		if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
+			use_sn = false;
+		} else {
+			use_sn = true;
+		}
 	}
 	//Start of message
 	//////////////////
@@ -56,22 +64,34 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 	message[66] = raw_packet[POSITION_PARAM1 + 1]; //param2 alias slotID
 	message[67] = raw_packet[POSITION_PARAM1 + 2]; //param2 alias slotID
 	//////////////////
-	message[68] = 0x00; //8bytes OTP[0:7] - we will never use it!!
-	message[69] = 0x00;
-	message[70] = 0x00;
-	message[71] = 0x00;
-	message[72] = 0x00;
-	message[73] = 0x00;
-	message[74] = 0x00;
-	message[75] = 0x00;
+	//8bytes OTP[0:7]
+	if (USE_OUR_SN && use_sn) {
+		message[68] = handle->sn[0];
+		message[69] = handle->sn[1];
+		message[70] = handle->sn[2];
+		message[71] = handle->sn[3];
+		message[72] = handle->sn[4];
+		message[73] = handle->sn[5];
+		message[74] = handle->sn[6];
+		message[75] = handle->sn[7];
+	} else {
+		message[68] = 0x00;
+		message[69] = 0x00;
+		message[70] = 0x00;
+		message[71] = 0x00;
+		message[72] = 0x00;
+		message[73] = 0x00;
+		message[74] = 0x00;
+		message[75] = 0x00;
+	}
 	//////////////////
 	message[76] = 0x00; //8bytes OTP[8:10] - we will never use it!!
 	message[77] = 0x00;
 	message[78] = 0x00;
 	//////////////////
-	message[79] = handle->sn[8]; //0xEE constant
+	message[79] = 0xEE;
 	//////////////////
-	if (use_sn) {
+	if (!USE_OUR_SN && use_sn) {
 		message[80] = handle->sn[4];
 		message[81] = handle->sn[5];
 		message[82] = handle->sn[6];
@@ -83,10 +103,10 @@ static int emul_hmac(struct atsha_handle *handle, unsigned char *raw_packet, uns
 		message[83] = 0x00;
 	}
 	//////////////////
-	message[84] = handle->sn[0]; //0x01 constant
-	message[85] = handle->sn[1]; //0x02 constant
+	message[84] = 0x01;
+	message[85] = 0x23;
 	//////////////////
-	if (use_sn) {
+	if (!USE_OUR_SN && use_sn) {
 		message[86] = handle->sn[2];
 		message[87] = handle->sn[3];
 	} else {
@@ -129,10 +149,18 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	}
 
 	bool use_sn;
-	if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
-		use_sn = false;
+	if (USE_OUR_SN) {
+		if ((raw_packet[POSITION_PARAM1] & 0x20) == 0) {
+			use_sn = false;
+		} else {
+			use_sn = true;
+		}
 	} else {
-		use_sn = true;
+		if ((raw_packet[POSITION_PARAM1] & 0x40) == 0) {
+			use_sn = false;
+		} else {
+			use_sn = true;
+		}
 	}
 	//Start of message
 	//////////////////
@@ -149,22 +177,34 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 	message[66] = raw_packet[POSITION_PARAM1 + 1]; //param2 alias slotID
 	message[67] = raw_packet[POSITION_PARAM1 + 2]; //param2 alias slotID
 	//////////////////
-	message[68] = 0x00; //8bytes OTP[0:7] - we will never use it!!
-	message[69] = 0x00;
-	message[70] = 0x00;
-	message[71] = 0x00;
-	message[72] = 0x00;
-	message[73] = 0x00;
-	message[74] = 0x00;
-	message[75] = 0x00;
+	//8bytes OTP[0:7]
+	if (USE_OUR_SN && use_sn) {
+		message[68] = handle->sn[0];
+		message[69] = handle->sn[1];
+		message[70] = handle->sn[2];
+		message[71] = handle->sn[3];
+		message[72] = handle->sn[4];
+		message[73] = handle->sn[5];
+		message[74] = handle->sn[6];
+		message[75] = handle->sn[7];
+	} else {
+		message[68] = 0x00;
+		message[69] = 0x00;
+		message[70] = 0x00;
+		message[71] = 0x00;
+		message[72] = 0x00;
+		message[73] = 0x00;
+		message[74] = 0x00;
+		message[75] = 0x00;
+	}
 	//////////////////
 	message[76] = 0x00; //8bytes OTP[8:10] - we will never use it!!
 	message[77] = 0x00;
 	message[78] = 0x00;
 	//////////////////
-	message[79] = handle->sn[8]; //0xEE constant
+	message[79] = 0xEE;
 	//////////////////
-	if (use_sn) {
+	if (!USE_OUR_SN && use_sn) {
 		message[80] = handle->sn[4];
 		message[81] = handle->sn[5];
 		message[82] = handle->sn[6];
@@ -176,10 +216,10 @@ static int emul_mac(struct atsha_handle *handle, unsigned char *raw_packet, unsi
 		message[83] = 0x00;
 	}
 	//////////////////
-	message[84] = handle->sn[0]; //0x01 constant
-	message[85] = handle->sn[1]; //0x02 constant
+	message[84] = 0x01;
+	message[85] = 0x23;
 	//////////////////
-	if (use_sn) {
+	if (!USE_OUR_SN && use_sn) {
 		message[86] = handle->sn[2];
 		message[87] = handle->sn[3];
 	} else {

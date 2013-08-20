@@ -44,6 +44,7 @@ int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challeng
 int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest);
 int atsha_challenge_response_mac(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response);
 int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest);
+int atsha_chip_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data);
 int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);

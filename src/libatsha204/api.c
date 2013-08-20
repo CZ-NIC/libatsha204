@@ -639,7 +639,7 @@ int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char 
 	return ATSHA_ERR_OK;
 }
 
-int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
+int atsha_chip_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
 	int status;
 	unsigned char *packet;
 	unsigned char *answer = NULL;
@@ -675,6 +675,28 @@ int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
 	free(answer);
 
 	return ATSHA_ERR_OK;
+}
+
+int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
+	if (USE_OUR_SN) {
+		int status;
+		atsha_big_int part;
+		status = atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_REV_NUMBER, &part);
+		if (status != ATSHA_ERR_OK) return status;
+		number->data[0] = part.data[0]; number->data[1] = part.data[1];
+		number->data[2] = part.data[2]; number->data[3] = part.data[3];
+
+		status = atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_SERIAL_NUMBER, &part);
+		if (status != ATSHA_ERR_OK) return status;
+		number->data[4] = part.data[0]; number->data[5] = part.data[1];
+		number->data[6] = part.data[2]; number->data[7] = part.data[3];
+
+		number->bytes = 8;
+
+		return ATSHA_ERR_OK;
+	} else {
+		return atsha_chip_serial_number(handle, number);
+	}
 }
 
 int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data) {
