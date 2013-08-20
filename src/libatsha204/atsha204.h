@@ -26,7 +26,7 @@ struct atsha_handle *atsha_open();
 struct atsha_handle *atsha_open_usb_dev(const char *path);
 struct atsha_handle *atsha_open_i2c_dev();
 struct atsha_handle *atsha_open_emulation(const char *path);
-struct atsha_handle *atsha_open_server_emulation(const unsigned char *serial_number, const unsigned char *key);
+struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const unsigned char *serial_number, const unsigned char *key);
 void atsha_close(struct atsha_handle *handle);
 
 //Special

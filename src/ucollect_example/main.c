@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 	atsha_set_log_callback(log_callback);
 
 	//Create new server-side emulation handler with obtained data
-	struct atsha_handle *handle = atsha_open_server_emulation(sn_data, key_data);
+	struct atsha_handle *handle = atsha_open_server_emulation(8, sn_data, key_data);
 	if (handle == NULL) {
 		//There is just one reason of error - memory allocation failed
 		fprintf(stderr, "Couldn't create server emulation handler.\n");

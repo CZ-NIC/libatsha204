@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
 		0x01, 0x23, 0x43, 0x39, 0xB5, 0x36, 0xA7, 0xC9, 0xEE
 	};
 
-	handle = atsha_open_server_emulation(ssesn, ssekey);
+	handle = atsha_open_server_emulation(8, ssesn, ssekey);
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't create server emulation handler.\n");
 		return 1;

@@ -23,6 +23,7 @@ struct atsha_handle {
 	unsigned char *sn;
 	unsigned char *key;
 	uint32_t key_origin;
+	unsigned char slot_id;
 	unsigned char nonce[32];
 };
 

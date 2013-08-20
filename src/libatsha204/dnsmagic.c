@@ -65,11 +65,7 @@ static bool resolve_key(uint32_t *offset) {
 
 unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 	if (handle->is_srv_emulation == true) {
-		/**
-		 * It is not important what is the returned value.
-		 * This line is just saving server resources
-		 */
-		return 0;
+		return handle->slot_id;
 	}
 
 	uint32_t offset;
