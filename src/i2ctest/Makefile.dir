@@ -3,5 +3,4 @@ BINARIES += src/i2ctest/i2ctest
 i2ctest_MODULES := main
 i2ctest_LOCAL_LIBS := atsha204
 
-i2ctest_SYSTEM_LIBS := crypto unbound ftdi mpsse
-#DOCS += src/ucollect/ucollect
+i2ctest_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)

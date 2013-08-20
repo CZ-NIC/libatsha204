@@ -1,6 +1,7 @@
 #include<unistd.h> //close()
 #include<stdint.h>
 #include<stdbool.h>
+#include<assert.h>
 
 #include "atsha204.h"
 #include "tools.h"
@@ -17,7 +18,9 @@ static void try_send_and_recv_sleep(struct atsha_handle *handle) {
 	if (handle->bottom_layer == BOTTOM_LAYER_USB) {
 		usleep(TRY_SEND_RECV_ON_COMM_ERROR_TOUT);
 	} else {
+#if USE_LAYER == USE_LAYER_I2C
 		i2c_wait();
+#endif
 	}
 }
 
@@ -34,7 +37,11 @@ int wake(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
+#if USE_LAYER == USE_LAYER_I2C
 				status = i2c_wake(handle, &answer); //do not check - there are no data
+#else
+				assert(0);
+#endif
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_wake(handle->fd, &answer);
@@ -84,7 +91,11 @@ int idle(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_I2C:
+#if USE_LAYER == USE_LAYER_I2C
 				status = i2c_idle(handle);
+#else
+				assert(0);
+#endif
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_idle(handle->fd);
@@ -108,7 +119,11 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				return emul_command(handle, raw_packet, answer);
 				break;
 			case BOTTOM_LAYER_I2C:
+#if USE_LAYER == USE_LAYER_I2C
 				status = i2c_command(handle, raw_packet, answer);
+#else
+				assert(0);
+#endif
 				break;
 			case BOTTOM_LAYER_USB:
 				status = usb_command(handle->fd, raw_packet, answer);

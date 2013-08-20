@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #include "../libatsha204/atsha204.h"
-//#include "../libatsha204/mpsse.h"
 
 void testing_log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
