@@ -134,7 +134,7 @@ void print_buffer_content(unsigned char *buff, ssize_t len) {
 	fprintf(stderr, "%zd bytes:\n", len);
 	for (ssize_t i = 0; i < len; i++) {
 		if (!(i%10)) fprintf(stderr, "\n");
-		fprintf(stderr, "0x%02X (%c) ", buff[i], buff[i]);
+		fprintf(stderr, "%02X ", buff[i]);
 	}
 	fprintf(stderr, "\n");
 }
