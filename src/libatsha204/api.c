@@ -170,7 +170,7 @@ struct atsha_handle *atsha_open_i2c_dev() {
 	handle->key = NULL;
 	handle->key_origin = 0;
 	handle->slot_id = 0;
-/*
+
 	atsha_big_int number;
 	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
 		log_message("api: open_usb_dev: Couldn't read key origin");
@@ -179,7 +179,7 @@ struct atsha_handle *atsha_open_i2c_dev() {
 	}
 
 	handle->key_origin = uint32_from_4_bytes(number.data);
-*/
+
 	return handle;
 }
 
