@@ -15,7 +15,7 @@
 #define DEFAULT_EMULATION_CONFIG_PATH "atsha204.sw"
 #endif
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
-#define DEFAULT_USE_SN_IN_DIGEST true
+#define DEFAULT_USE_SN_IN_DIGEST false
 #define DEFAULT_DNS_RECORD_FIND_KEY "use_key.extremehost.cz"
 #define LOCK_FILE "/tmp/libatsha204.lock"
 #define LOCK_TRY_TOUT 10000
