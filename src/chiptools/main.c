@@ -106,6 +106,13 @@ int main(int argc, char **argv) {
 			return 2;
 		}
 
+	} else if (strcmp(cmd, "chipsn") == 0) {
+		if (atsha_chip_serial_number(handle, &abi) == ATSHA_ERR_OK) {
+			print_abi(abi);
+		} else {
+			return 2;
+		}
+
 	} else if (strcmp(cmd, "random") == 0) {
 		if (atsha_random(handle, &abi) == ATSHA_ERR_OK) {
 			print_abi(abi);

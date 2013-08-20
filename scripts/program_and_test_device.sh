@@ -27,7 +27,7 @@ else
 	exit 1
 fi
 
-CHIPTOOLS_STDOUT=$(chiptools sn)
+CHIPTOOLS_STDOUT=$(chiptools chipsn)
 if [ $? -eq 0 ]; then
 	echo $CHIPTOOLS_STDOUT >> $1
 else
