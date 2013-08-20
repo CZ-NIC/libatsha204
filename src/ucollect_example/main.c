@@ -78,5 +78,14 @@ int main(int argc, char **argv) {
 	//Close all files, free allocated memory etc.
 	atsha_close(handle);
 
+	handle = atsha_open();
+	printf("Challenge response:\n");
+	status = atsha_challenge_response(handle, challenge, &response);
+	if (status != ATSHA_ERR_OK) {
+		printf("Operation failed: %s\n", atsha_error_name(status));
+	}
+	printf("Response is %u bytes long number:\n", (unsigned)response.bytes);
+	print_number(response.bytes, response.data);
+
 	return 0;
 }
