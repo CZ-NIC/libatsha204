@@ -9,24 +9,67 @@
  ******** THIS FILE REPRESENTS PUBLIC INTERFACE OF LIBATSHA204 *********
 ***********************************************************************/
 
-//Internal structure
+/**
+ * \file atsha204.h
+ *
+ * \brief This file represents public interface of libatsh204
+ */
+
+/*
+ * \brief Internal data structure representing library instance.
+ */
 struct atsha_handle;
 
-//Structure for data exchange
+/**
+ * \brief Maximum data size that could be used for communication with the chip.
+ */
 #define ATSHA_MAX_DATA_SIZE 32
+
+/**
+ * \brief Data structure for long numbers
+ */
 typedef struct {
-	size_t bytes;
-	unsigned char data[ATSHA_MAX_DATA_SIZE];
+	size_t bytes; ///<Length of transfered numbers
+	unsigned char data[ATSHA_MAX_DATA_SIZE]; ///<Static buffer for data
 } atsha_big_int;
 
 //Library settings and initialization
+/**
+ * \brief Enable verbose mode
+ */
 void atsha_set_verbose();
+/**
+ * \brief Set callback for reporting errors and warnings from library
+ */
 void atsha_set_log_callback(void (*clb)(const char* msg));
+/**
+ * \brief Create instance of library. Let library to decide what kind of device is in the system.
+ */
 struct atsha_handle *atsha_open();
+/**
+ * \brief Create instance of library with USB device
+ * \path Path to hidraw device
+ */
 struct atsha_handle *atsha_open_usb_dev(const char *path);
+/**
+ * \brief Create instance of library with chip on I2C bus.
+ */
 struct atsha_handle *atsha_open_i2c_dev();
+/**
+ * \brief Create instance of library that emulates device
+ * \param path Path to config file
+ */
 struct atsha_handle *atsha_open_emulation(const char *path);
+/**
+ * \brief Create instance of library that emulates device for server-sice purposes
+ * \param slot_id Slot ID of actual key of simulated device
+ * \param serial_number Serial number of simulated device
+ * \param key Actual key of simulated device
+ */
 struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const unsigned char *serial_number, const unsigned char *key);
+/**
+ * \brief Release all memory that library has allocated
+ */
 void atsha_close(struct atsha_handle *handle);
 
 //Special
