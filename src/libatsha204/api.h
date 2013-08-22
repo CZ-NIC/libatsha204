@@ -8,7 +8,6 @@
  * Struct for global configuration of library
  */
 typedef struct {
-	int device_fd;
 	bool verbose;
 	void (*log_callback)(const char* msg);
 } atsha_configuration;

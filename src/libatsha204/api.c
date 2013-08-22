@@ -25,7 +25,6 @@
  * Global variable with configuration and some initial config values.
  */
 atsha_configuration g_config = {
-	.device_fd = 0,
 	.verbose = false,
 	.log_callback = NULL
 };
