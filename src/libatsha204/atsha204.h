@@ -223,7 +223,10 @@ int atsha_lock_data(struct atsha_handle *handle, const unsigned char *crc);
 #define ATSHA_ERR_DNS_GET_KEY 8
 #define ATSHA_ERR_USBCMD_NOT_CONFIRMED 9
 
-
+/**
+ * \brief Get text description of error status code
+ * \param err Status code
+ */
 const char *atsha_error_name(int err);
 
 #endif //LIBATSHA204_H

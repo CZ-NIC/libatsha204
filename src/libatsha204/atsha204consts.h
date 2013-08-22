@@ -1,6 +1,11 @@
 #ifndef ATSHA204CONSTS_H
 #define ATSHA204CONSTS_H
 
+/**
+ * \file atsha204consts.h
+ * \brief Constants that describe the device
+ */
+
 #define ATSHA204_I2C_ADDRESS 0xC8
 #define ATSHA204_I2C_WAKE_CLOCK 10000
 #define ATSHA204_I2C_CMD_TOUT 100000
