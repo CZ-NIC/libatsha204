@@ -45,6 +45,9 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
+/*
+ * Try to open or create lockfile
+ */
 static int atsha_try_lock_file() {
 	int lock;
 	lock = open(LOCK_FILE, O_RDWR | O_CREAT, 0600 /* S_IRUSR | S_IWUSR, but these are not available on OpenWRT */);
@@ -55,6 +58,10 @@ static int atsha_try_lock_file() {
 	return lock;
 }
 
+/*
+ * Attempts periodically to get lock. Time is limited.
+ * When the time expires the operation fails.
+ */
 static bool atsha_lock(int lockfile) {
 	int lock;
 	double seconds;

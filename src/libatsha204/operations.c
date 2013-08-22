@@ -9,7 +9,7 @@
 #include "tools.h"
 #include "api.h"
 
-/**
+/*
  * Constants enabling addressing
  */
 static const unsigned char SLOT_ADDRESSES[] = {

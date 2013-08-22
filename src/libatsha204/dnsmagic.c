@@ -9,7 +9,7 @@
 #include "atsha204.h"
 #include "api.h"
 
-/**
+/*
  * viz IANA
  * This is not documented in unbound
  * Unbound refers to IANA too
@@ -17,11 +17,14 @@
 #define CLASS_INET 1
 #define TYPE_TXT 16
 
-/**
+/*
  * Global variable with configuration and some initial config values.
  */
 atsha_configuration g_config;
 
+/*
+ * Get decimal number from its string representation
+ */
 static uint32_t number_from_string(size_t len, char *str) {
 	uint32_t res = 0;
 	unsigned char digit = 0;
@@ -35,6 +38,9 @@ static uint32_t number_from_string(size_t len, char *str) {
 	return res;
 }
 
+/*
+ * Use linunbound for DNS resolving of TXT record
+ */
 static bool resolve_key(uint32_t *offset) {
 	struct ub_result* result;
     struct ub_ctx *ctx = ub_ctx_create();

@@ -15,9 +15,6 @@
  * \brief This file represents public interface of libatsh204
  */
 
-/*
- * \brief Internal data structure representing library instance.
- */
 struct atsha_handle;
 
 /**
@@ -48,16 +45,19 @@ void atsha_set_log_callback(void (*clb)(const char* msg));
 struct atsha_handle *atsha_open();
 /**
  * \brief Create instance of library with USB device
- * \path Path to hidraw device
+ * \param path Path to hidraw device
+ * \return library instance hadler
  */
 struct atsha_handle *atsha_open_usb_dev(const char *path);
 /**
  * \brief Create instance of library with chip on I2C bus.
+ * \return library instance hadler
  */
 struct atsha_handle *atsha_open_i2c_dev();
 /**
  * \brief Create instance of library that emulates device
  * \param path Path to config file
+ * \return library instance hadler
  */
 struct atsha_handle *atsha_open_emulation(const char *path);
 /**
@@ -65,6 +65,7 @@ struct atsha_handle *atsha_open_emulation(const char *path);
  * \param slot_id Slot ID of actual key of simulated device
  * \param serial_number Serial number of simulated device
  * \param key Actual key of simulated device
+ * \return library instance hadler
  */
 struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const unsigned char *serial_number, const unsigned char *key);
 /**
@@ -76,6 +77,7 @@ void atsha_close(struct atsha_handle *handle);
 /**
  * \brief Use DNS-Magic and find slot number for this device
  * \param handle Library instance
+ * \return slot number of actual key-set specified for this device
  */
 unsigned char atsha_find_slot_number(struct atsha_handle *handle);
 
@@ -83,12 +85,14 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle);
  * \brief Get chip DevRev number
  * \param handle Library instance
  * \param [out] revision revision number
+ * \return status code
  */
 int atsha_dev_rev(struct atsha_handle *handle, uint32_t *revision);
 /**
  * \brief Let chip generate random number
  * \param handle Library instance
  * \param [out] random random number
+ * \return status code
  */
 int atsha_random(struct atsha_handle *handle, atsha_big_int *number);
 /**
@@ -96,6 +100,7 @@ int atsha_random(struct atsha_handle *handle, atsha_big_int *number);
  * \warning Success of this operation depends on actual state of the device and configuration of the slot
  * \param handle Library instance
  * \param [out] number returned key
+ * \return status code
  */
 int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number);
 /**
@@ -104,6 +109,7 @@ int atsha_slot_read(struct atsha_handle *handle, atsha_big_int *number);
  * \param handle Library instance
  * \param slot_number Number of required slot
  * \param [out] number returned key
+ * \return status code
  */
 int atsha_raw_slot_read(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int *number);
 /**
@@ -111,6 +117,7 @@ int atsha_raw_slot_read(struct atsha_handle *handle, unsigned char slot_number, 
  * \warning Success of this operation depends on actual state of the device and configuration of the slot
  * \param handle Library instance
  * \param number data to write
+ * \return status code
  */
 int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number);
 /**
@@ -119,6 +126,7 @@ int atsha_slot_write(struct atsha_handle *handle, atsha_big_int number);
  * \param handle Library instance
  * \param slot_number Number of required slot
  * \param number data to write
+ * \return status code
  */
 int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int number);
 //int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word);
@@ -127,6 +135,7 @@ int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number,
  * \param handle Library instance
  * \param challenge Challenge data
  * \param [out] response Computed response
+ * \return status code
  */
 int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response);
 /**
@@ -136,6 +145,7 @@ int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challeng
  * \param challenge Challenge data
  * \param [out] response Computed response
  * \param use_sn_in_digest Combine challenge with serial number
+ * \return status code
  */
 int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest);
 /**
@@ -143,6 +153,7 @@ int atsha_low_challenge_response(struct atsha_handle *handle, unsigned char slot
  * \param handle Library instance
  * \param challenge Challenge data
  * \param [out] response Computed response
+ * \return status code
  */
 int atsha_challenge_response_mac(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response);
 /**
@@ -152,12 +163,14 @@ int atsha_challenge_response_mac(struct atsha_handle *handle, atsha_big_int chal
  * \param challenge Challenge data
  * \param [out] response Computed response
  * \param use_sn_in_digest Combine challenge with serial number
+ * \return status code
  */
 int atsha_low_challenge_response_mac(struct atsha_handle *handle, unsigned char slot_number, atsha_big_int challenge, atsha_big_int *response, bool use_sn_in_digest);
 /**
  * \brief Get chip serial number defined by manufacturer
  * \param handle Library instance
  * \param [out] number serial number
+ * \return status code
  */
 int atsha_chip_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 /**
@@ -165,6 +178,7 @@ int atsha_chip_serial_number(struct atsha_handle *handle, atsha_big_int *number)
  * \warning Success of this operation depends on actual state of the device and configuration of the slot
  * \param handle Library instance
  * \param [out] number serial number
+ * \return status code
  */
 int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 /**
@@ -172,6 +186,7 @@ int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number);
  * \param handle Library instance
  * \param address address in memory for applicable operation
  * \param [out] data retrieved data
+ * \return status code
  */
 int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data);
 /**
@@ -180,6 +195,7 @@ int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsh
  * \param handle Library instance
  * \param address address in memory for applicable operation
  * \param [out] data data to write
+ * \return status code
  */
 int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
 /**
@@ -188,6 +204,7 @@ int atsha_raw_conf_write(struct atsha_handle *handle, unsigned char address, ats
  * \param handle Library instance
  * \param address address in memory for applicable operation
  * \param [out] data retrieved data
+ * \return status code
  */
 int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data);
 /**
@@ -196,18 +213,21 @@ int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha
  * \param handle Library instance
  * \param address address in memory for applicable operation
  * \param [out] data data to write
+ * \return status code
  */
 int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
 /**
  * \brief Get chip DevRev number
  * \param handle Library instance
  * \param [out] revision number
+ * \return status code
  */
 int atsha_lock_config(struct atsha_handle *handle, const unsigned char *crc);
 /**
  * \brief Get chip DevRev number
  * \param handle Library instance
  * \param [out] revision number
+ * \return status code
  */
 int atsha_lock_data(struct atsha_handle *handle, const unsigned char *crc);
 
@@ -226,6 +246,7 @@ int atsha_lock_data(struct atsha_handle *handle, const unsigned char *crc);
 /**
  * \brief Get text description of error status code
  * \param err Status code
+ * \return text description of error
  */
 const char *atsha_error_name(int err);
 
