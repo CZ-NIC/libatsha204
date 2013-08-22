@@ -459,50 +459,7 @@ int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number,
 
 	return ATSHA_ERR_OK;
 }
-/*
-int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word) {
-	int status;
-	unsigned char *packet;
-	unsigned char *answer = NULL;
-	atsha_big_int number;
 
-	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
-
-	//Wakeup device
-	status = wake(handle);
-	if (status != ATSHA_ERR_OK) return status;
-
-	packet = op_raw_read(get_zone_config(IO_MEM_CONFIG, IO_RW_NON_ENC, IO_RW_4_BYTES), get_slot_config_address(slot_number));
-	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-
-	status = command(handle, packet, &answer);
-	if (status != ATSHA_ERR_OK) {
-		free(packet);
-		free(answer);
-		return status;
-	}
-
-	number.bytes = op_raw_read_recv(answer, number.data);
-	if (number.bytes == 0) {
-		free(packet);
-		free(answer);
-		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-	}
-
-	*config_word = decode_slot_config(slot_number, number.data);
-
-	//Let device sleep
-	status = idle(handle);
-	if (status != ATSHA_ERR_OK) {
-		log_message(WARNING_WAKE_NOT_CONFIRMED);
-	}
-
-	free(packet);
-	free(answer);
-
-	return ATSHA_ERR_OK;
-}
-*/
 int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response) {
 	unsigned char slot_number = atsha_find_slot_number(handle);
 	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;

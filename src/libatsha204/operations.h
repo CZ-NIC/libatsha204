@@ -31,18 +31,6 @@ unsigned char get_lock_config(unsigned char lock_what);
  */
 unsigned char get_slot_address(unsigned char slot_number);
 /**
- * Get slot config address according to slot number.
- * Slot number is in range 0--15.
- */
-unsigned char get_slot_config_address(unsigned char slot_number);
-unsigned char get_serial_number_address();
-/**
- * Decode and get slot config word from raw data.
- * Slot number is in range 0--15.
- */
-uint16_t decode_slot_config(unsigned char slot_number, unsigned char *data);
-
-/**
  * Get device revision
  */
 unsigned char *op_dev_rev();
