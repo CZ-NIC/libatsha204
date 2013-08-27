@@ -1,6 +1,6 @@
 #include <Python.h>
 #include <dlfcn.h>
-#include <atsha204.h>
+#include "../libatsha204/atsha204.h"
 
 /*
  * As linking to other libraries from python extensions is tricky,
@@ -34,6 +34,6 @@ static PyMethodDef atsha_methods[] = {
 	{NULL}
 };
 
-PyMODINIT_FUNC initlibatsha204(void) {
-	Py_InitModule("libatsha204", atsha_methods);
+PyMODINIT_FUNC initatsha204(void) {
+	Py_InitModule("atsha204", atsha_methods);
 }
