@@ -120,6 +120,10 @@ int main(int argc, char **argv) {
 			return 2;
 		}
 
+	} else if (strcmp(cmd, "slot") == 0) {
+		printf("%d\n", atsha_find_slot_number(handle));
+
+
 	} else if (strcmp(cmd, "compiled") == 0) {
 		if (atsha_raw_slot_read(handle, 0, &abi) == ATSHA_ERR_OK) {
 			print_abi(abi);
