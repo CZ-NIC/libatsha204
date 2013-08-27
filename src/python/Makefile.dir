@@ -1,0 +1,20 @@
+# Execute only when PYTHON is set
+ifdef PYTHON
+
+# Append python include path
+ifndef PYTHON_VERSION
+	PYTHON_VERSION := 2.7
+endif
+ifndef PYTHON_INCLUDE
+	PYTHON_INCLUDE := /usr/include/python$(PYTHON_VERSION)
+endif
+CFLAGS += $(addprefix -I,$(PYTHON_INCLUDE))
+
+LIBRARIES += src/python/atsha204
+
+atsha204_MODULES := atsha204
+
+atsha204_SO_LOCAL_LIBS := atsha204
+atsha204_SO_LIBS := crypto unbound $(I2C_LIBS)
+
+endif
