@@ -139,16 +139,8 @@ struct atsha_handle *atsha_open_usb_dev(const char *path) {
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = 0;
-
-	atsha_big_int number;
-	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
-		log_message("api: open_usb_dev: Couldn't read key origin");
-		atsha_close(handle);
-		return NULL;
-	}
-
-	handle->key_origin = uint32_from_4_bytes(number.data);
 
 	return handle;
 }
@@ -180,16 +172,8 @@ struct atsha_handle *atsha_open_i2c_dev() {
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = 0;
-
-	atsha_big_int number;
-	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
-		log_message("api: open_usb_dev: Couldn't read key origin");
-		atsha_close(handle);
-		return NULL;
-	}
-
-	handle->key_origin = uint32_from_4_bytes(number.data);
 
 	return handle;
 }
@@ -215,6 +199,7 @@ struct atsha_handle *atsha_open_emulation(const char *path) {
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = 0;
 
 	atsha_big_int number;
@@ -239,6 +224,7 @@ struct atsha_handle *atsha_open_emulation(const char *path) {
 	}
 
 	handle->key_origin = uint32_from_4_bytes(number.data);
+	handle->key_origin_cached = true;
 
 	return handle;
 }
@@ -255,6 +241,7 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const un
 	handle->lockfile = -1;
 	handle->i2c = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = slot_id;
 
 	handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
