@@ -15,6 +15,5 @@ LIBRARIES += src/python/atsha204
 atsha204_MODULES := atsha204
 
 atsha204_SO_LOCAL_LIBS := atsha204
-atsha204_SO_LIBS := crypto unbound $(I2C_LIBS)
 
 endif
