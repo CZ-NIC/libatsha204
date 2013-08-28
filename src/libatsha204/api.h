@@ -32,6 +32,7 @@ struct atsha_handle {
 	unsigned char *sn; ///<Serial number for server-side emulation and for caching
 	unsigned char *key; ///<Key for server-side emulation
 	uint32_t key_origin; ///<Cached key origin value
+	bool key_origin_cached; ///<It key origin value cached?
 	unsigned char slot_id; ///<Cached key origin value that is read from OTP memory
 	unsigned char nonce[32]; ///<Emulation of TempKey memory slot
 };

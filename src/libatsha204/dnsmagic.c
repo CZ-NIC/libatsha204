@@ -7,6 +7,7 @@
 #include "configuration.h"
 #include "atsha204consts.h"
 #include "atsha204.h"
+#include "tools.h"
 #include "api.h"
 
 /*
@@ -78,6 +79,18 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 	if (!resolve_key(&offset)) {
 		return DNS_ERR_CONST;
 	}
+
+	if (!handle->key_origin_cached) {
+		atsha_big_int number;
+		if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
+			log_message("dnsmagic: find_slot_number: read key origin from OTP memory");
+			return DNS_ERR_CONST;
+		}
+
+		handle->key_origin = uint32_from_4_bytes(number.data);
+		handle->key_origin_cached = true;
+	}
+
 
 	return (unsigned char)(offset - handle->key_origin);
 }

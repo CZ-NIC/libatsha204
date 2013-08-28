@@ -40,11 +40,6 @@ static int i2c_read(struct atsha_handle *handle, unsigned char **answer) {
 		}
 
 		data = (unsigned char *)Read(handle->i2c, BUFFSIZE_I2C);
-		if (status != MPSSE_OK) {
-			log_message("layer_i2c: i2c_read: Read");
-			return ATSHA_ERR_COMMUNICATION;
-		}
-
 		if (data == NULL) {
 			log_message("layer_i2c: i2c_command: No data read");
 			return ATSHA_ERR_COMMUNICATION;
