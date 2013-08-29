@@ -251,12 +251,20 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const un
 	handle->key_origin = 0;
 	handle->slot_id = slot_id;
 
-	handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
+	if (USE_OUR_SN) {
+		handle->sn = (unsigned char *)calloc(2*ATSHA204_OTP_BYTE_LEN, sizeof(unsigned char));
+	} else {
+		handle->sn = (unsigned char *)calloc(ATSHA204_SN_BYTE_LEN, sizeof(unsigned char));
+	}
 	if (handle->sn == NULL) return NULL;
 	handle->key = (unsigned char *)calloc(ATSHA204_SLOT_BYTE_LEN, sizeof(unsigned char));
 	if (handle->key == NULL) return NULL;
 
-	memcpy(handle->sn, serial_number, ATSHA204_SN_BYTE_LEN);
+	if (USE_OUR_SN) {
+		memcpy(handle->sn, serial_number, 2*ATSHA204_OTP_BYTE_LEN);
+	} else {
+		memcpy(handle->sn, serial_number, ATSHA204_SN_BYTE_LEN);
+	}
 	memcpy(handle->key, key, ATSHA204_SLOT_BYTE_LEN);
 
 	return handle;
