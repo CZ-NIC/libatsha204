@@ -7,9 +7,10 @@
 #include "configuration.h"
 #include "atsha204consts.h"
 #include "atsha204.h"
+#include "tools.h"
 #include "api.h"
 
-/**
+/*
  * viz IANA
  * This is not documented in unbound
  * Unbound refers to IANA too
@@ -17,11 +18,14 @@
 #define CLASS_INET 1
 #define TYPE_TXT 16
 
-/**
+/*
  * Global variable with configuration and some initial config values.
  */
 atsha_configuration g_config;
 
+/*
+ * Get decimal number from its string representation
+ */
 static uint32_t number_from_string(size_t len, char *str) {
 	uint32_t res = 0;
 	unsigned char digit = 0;
@@ -35,6 +39,9 @@ static uint32_t number_from_string(size_t len, char *str) {
 	return res;
 }
 
+/*
+ * Use linunbound for DNS resolving of TXT record
+ */
 static bool resolve_key(uint32_t *offset) {
 	struct ub_result* result;
     struct ub_ctx *ctx = ub_ctx_create();
@@ -72,6 +79,18 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 	if (!resolve_key(&offset)) {
 		return DNS_ERR_CONST;
 	}
+
+	if (!handle->key_origin_cached) {
+		atsha_big_int number;
+		if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
+			log_message("dnsmagic: find_slot_number: read key origin from OTP memory");
+			return DNS_ERR_CONST;
+		}
+
+		handle->key_origin = uint32_from_4_bytes(number.data);
+		handle->key_origin_cached = true;
+	}
+
 
 	return (unsigned char)(offset - handle->key_origin);
 }

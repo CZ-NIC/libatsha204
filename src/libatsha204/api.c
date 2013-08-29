@@ -25,7 +25,6 @@
  * Global variable with configuration and some initial config values.
  */
 atsha_configuration g_config = {
-	.device_fd = 0,
 	.verbose = false,
 	.log_callback = NULL
 };
@@ -46,6 +45,9 @@ void atsha_set_log_callback(void (*clb)(const char* msg)) {
 	g_config.log_callback = clb;
 }
 
+/*
+ * Try to open or create lockfile
+ */
 static int atsha_try_lock_file() {
 	int lock;
 	lock = open(LOCK_FILE, O_RDWR | O_CREAT, 0600 /* S_IRUSR | S_IWUSR, but these are not available on OpenWRT */);
@@ -56,6 +58,10 @@ static int atsha_try_lock_file() {
 	return lock;
 }
 
+/*
+ * Attempts periodically to get lock. Time is limited.
+ * When the time expires the operation fails.
+ */
 static bool atsha_lock(int lockfile) {
 	int lock;
 	double seconds;
@@ -133,16 +139,8 @@ struct atsha_handle *atsha_open_usb_dev(const char *path) {
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = 0;
-
-	atsha_big_int number;
-	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
-		log_message("api: open_usb_dev: Couldn't read key origin");
-		atsha_close(handle);
-		return NULL;
-	}
-
-	handle->key_origin = uint32_from_4_bytes(number.data);
 
 	return handle;
 }
@@ -174,16 +172,8 @@ struct atsha_handle *atsha_open_i2c_dev() {
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = 0;
-
-	atsha_big_int number;
-	if (atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_ORIGIN_KEY_SET, &number) != ATSHA_ERR_OK) {
-		log_message("api: open_usb_dev: Couldn't read key origin");
-		atsha_close(handle);
-		return NULL;
-	}
-
-	handle->key_origin = uint32_from_4_bytes(number.data);
 
 	return handle;
 }
@@ -209,6 +199,7 @@ struct atsha_handle *atsha_open_emulation(const char *path) {
 	handle->sn = NULL;
 	handle->key = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = 0;
 
 	atsha_big_int number;
@@ -233,6 +224,7 @@ struct atsha_handle *atsha_open_emulation(const char *path) {
 	}
 
 	handle->key_origin = uint32_from_4_bytes(number.data);
+	handle->key_origin_cached = true;
 
 	return handle;
 }
@@ -249,6 +241,7 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const un
 	handle->lockfile = -1;
 	handle->i2c = NULL;
 	handle->key_origin = 0;
+	handle->key_origin_cached = false;
 	handle->slot_id = slot_id;
 
 	if (USE_OUR_SN) {
@@ -468,50 +461,7 @@ int atsha_raw_slot_write(struct atsha_handle *handle, unsigned char slot_number,
 
 	return ATSHA_ERR_OK;
 }
-/*
-int atsha_slot_conf_read(struct atsha_handle *handle, unsigned char slot_number, uint16_t *config_word) {
-	int status;
-	unsigned char *packet;
-	unsigned char *answer = NULL;
-	atsha_big_int number;
 
-	if (slot_number > ATSHA204_MAX_SLOT_NUMBER) return ATSHA_ERR_INVALID_INPUT;
-
-	//Wakeup device
-	status = wake(handle);
-	if (status != ATSHA_ERR_OK) return status;
-
-	packet = op_raw_read(get_zone_config(IO_MEM_CONFIG, IO_RW_NON_ENC, IO_RW_4_BYTES), get_slot_config_address(slot_number));
-	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-
-	status = command(handle, packet, &answer);
-	if (status != ATSHA_ERR_OK) {
-		free(packet);
-		free(answer);
-		return status;
-	}
-
-	number.bytes = op_raw_read_recv(answer, number.data);
-	if (number.bytes == 0) {
-		free(packet);
-		free(answer);
-		return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
-	}
-
-	*config_word = decode_slot_config(slot_number, number.data);
-
-	//Let device sleep
-	status = idle(handle);
-	if (status != ATSHA_ERR_OK) {
-		log_message(WARNING_WAKE_NOT_CONFIRMED);
-	}
-
-	free(packet);
-	free(answer);
-
-	return ATSHA_ERR_OK;
-}
-*/
 int atsha_challenge_response(struct atsha_handle *handle, atsha_big_int challenge, atsha_big_int *response) {
 	unsigned char slot_number = atsha_find_slot_number(handle);
 	if (slot_number == DNS_ERR_CONST) return ATSHA_ERR_DNS_GET_KEY;

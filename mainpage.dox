@@ -1,0 +1,43 @@
+
+/**
+ * \mainpage About
+ * libatsha204 is library that implements communication with ATSHA204 cryptographic chip by Atmel.
+ *
+ * Libatsha204 provides:
+ * - communication on different layers (USB, I2C)
+ * - several chip emulation methods
+ * - easy and abstract implementation of atsha204's commands
+ * - several abstract commands that are useful for standart chip operations
+ * - several tools that represent
+ * - several tools for chip manipulation
+ *
+ * ## Architecture ##
+ * Library is composed from 3 layers.
+ *
+ * Bottom layer presents communication with bus-specific encoding. E.g. from hexadecimal number to string representing hexadedimal number in case of USB layer; sending start/stop I2C commands and clock synchronization in case of I2C layer.
+ *
+ * Middle layer presents implementation of chip commands. Typical function in bottom layer gets abstract arguments, converts them to applicable bit representation and builds whole command packet.
+ *
+ * Top layer is user interface that implements useful functionality. Typical function from top layer is using commands from bottom layer. The best example is challenge-response function. This function is using atsha204's commands Nonce and HMAC.
+ *
+ * Read more in appropriate sections of documentation.
+ *
+ * ## Emulation ##
+ * Emulation is just one more bottom layer. This layer doesn't send or recieve anything. Emulation layer parse command packet, calculate/generate/read appropriate data, generate answer packet and return it back to middle layer.
+ *
+ * Memory storage is emulated as text file. First 16 lines are 32bytes keys, next 16 lines of 4bytes numbers are 16 slots of OTP memory and next line is serial number.
+ *
+ * Chip serial number is in a format: 01 23 XX XX XX XX XX XX EE. Constants 01, 23 and EE are hard-coded in chip.
+ *
+ * ## OTP memory map ##
+ *
+ * Slots in OTP memory are mapped by this way.
+ *
+ * -# Device revision number
+ * -# Serial number
+ * -# Key set origin
+ *
+ * For MAC and HMAC operations use both numbers, Device revision number and Serial number.
+ *
+ */
+

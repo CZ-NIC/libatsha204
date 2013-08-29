@@ -9,17 +9,12 @@
 #include "tools.h"
 #include "api.h"
 
-/**
+/*
  * Constants enabling addressing
  */
 static const unsigned char SLOT_ADDRESSES[] = {
 	0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 	0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78
-};
-
-static const unsigned char SLOT_CONFIG_ADDRESSES[] = {
-	0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08, 0x08,
-	0x09, 0x09, 0x0A, 0x0A, 0x0B, 0x0B, 0x0C, 0x0C
 };
 
 //internal function
@@ -89,23 +84,6 @@ unsigned char get_slot_address(unsigned char slot_number) {
 	unsigned char address = 0;
 	address |= SLOT_ADDRESSES[slot_number];
 	return address;
-}
-
-unsigned char get_slot_config_address(unsigned char slot_number) {
-	unsigned char address = 0;
-	address |= SLOT_CONFIG_ADDRESSES[slot_number];
-	return address;
-}
-
-uint16_t decode_slot_config(unsigned char slot_number, unsigned char *data) {
-	uint16_t config_word = 0;
-	size_t offset = (slot_number%2 == 0) ? 0 : 2;
-
-	config_word |= data[0 + offset];
-	config_word <<= 8;
-	config_word |= data[1 + offset];
-
-	return config_word;
 }
 
 unsigned char *op_raw_read(unsigned char zone_config, unsigned char address) {
