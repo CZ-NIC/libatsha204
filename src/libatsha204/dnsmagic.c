@@ -51,22 +51,45 @@ static bool resolve_key(uint32_t *offset) {
 		return false;
 	}
 
+	/*
+	 * Set resolvconf to NULL and libunbound will respect settings of OS
+	 * Eventually: ub_ctx_set_fwd(ctx, "8.8.8.8") set address of requested resolver/forwarder
+	 */
+	if (ub_ctx_resolvconf(ctx, NULL) != 0)  {
+		log_message("dnsmagic: libunbound: reset configuration error");
+		return false;
+	}
+
+	//read public keys for DNSSEC verification
+	if (ub_ctx_add_ta_file(ctx, DEFAULT_DNSSEC_ROOT_KEY) != 0) {
+		log_message("dnsmagic: libunbound: adding keys failed");
+		return false;
+	}
+
 	if (ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result) != 0) {
 		log_message("dnsmagic: libunbound: resolve error");
 		ub_ctx_delete(ctx);
 		return false;
 	}
 
-	if (result->havedata) {
+	if (result->havedata && result->secure) {
 		*offset = (unsigned char) number_from_string(result->data[0][0], (result->data[0] + 1));
 		ub_resolve_free(result);
 		ub_ctx_delete(ctx);
 		return true;
 	}
 
+	if (!result->havedata) {
+		log_message("dnsmagic: libunbound: no data in answer");
+	}
+
+	if (!result->secure) {
+		log_message("dnsmagic: libunbound: answer couldn't be validated");
+	}
+
 	ub_resolve_free(result);
 	ub_ctx_delete(ctx);
-	log_message("dnsmagic: libunbound: no data in answer");
+
 	return false;
 }
 

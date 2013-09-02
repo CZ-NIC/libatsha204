@@ -19,6 +19,7 @@
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "use_key.extremehost.cz"
+#define DEFAULT_DNSSEC_ROOT_KEY "/etc/dnssec-root.key"
 #define LOCK_FILE "/tmp/libatsha204.lock"
 #define LOCK_TRY_TOUT 10000
 #define LOCK_TRY_MAX 2.2
