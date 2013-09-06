@@ -2,6 +2,7 @@
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
+#include <openssl/sha.h>
 
 #include "../libatsha204/atsha204.h"
 
@@ -81,6 +82,29 @@ bool get_challenge_from_input(char *buff, atsha_big_int *challenge) {
 	return true;
 }
 
+bool get_file_sha256(atsha_big_int *abi, FILE *stream) {
+	if (stream == NULL) {
+		return false;
+	}
+	abi->bytes = 32;
+
+	unsigned char buff[BUFFSIZE];
+	size_t cnt = 0;
+
+	//Init SHA256
+	SHA256_CTX sha_context;
+	SHA256_Init(&sha_context);
+
+	do {
+		cnt = fread(buff, 1, BUFFSIZE, stream);
+		SHA256_Update(&sha_context, buff, cnt);
+	} while (cnt != 0);
+
+	SHA256_Final(abi->data, &sha_context);
+
+	return true;
+}
+
 int main(int argc, char **argv) {
 	if (argc != 2) {
 		help(argv[0]);
@@ -136,6 +160,25 @@ int main(int argc, char **argv) {
 
 		if (!get_challenge_from_input(buff, &challenge)) {
 			fprintf(stderr, "Input couldn't be converted.\n");
+			atsha_close(handle);
+			return 2;
+		}
+
+		status = atsha_challenge_response(handle, challenge, &response);
+		if (status != ATSHA_ERR_OK) {
+			fprintf(stderr, "Challenge response error: %s\n", atsha_error_name(status));
+			atsha_close(handle);
+			return 3;
+		}
+
+		print_number(response.bytes, response.data);
+
+	} else if (strcmp(argv[1], CMD_FILEHMAC) == 0) {
+		atsha_big_int challenge;
+		atsha_big_int response;
+
+		if (!get_file_sha256(&challenge, stdin)) {
+			fprintf(stderr, "Input couldn't be read.\n");
 			atsha_close(handle);
 			return 2;
 		}
