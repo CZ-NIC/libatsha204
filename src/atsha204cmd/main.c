@@ -7,6 +7,8 @@
 
 static const char *CMD_SN = "serial-number";
 static const char *CMD_HMAC = "challenge-response";
+static const char *CMD_HWREV = "hw-rev";
+static const char *CMD_FILEHMAC = "file-challenge-response";
 
 #define BUFFSIZE 512
 
@@ -26,7 +28,9 @@ void help(char *prgname) {
 		"Usage: %s [command]\n"
 		"Available [command] options:\n"
 			"\t%s\t\tprint serial number to stdout\n"
+			"\t%s\t\t\tprint hw revision number to stdout\n"
 			"\t%s\tprint HMAC response to stdout\n"
+			"\t%s\tprint HMAC response to stdout with challenge from file\n"
 		"Input/Output on stdin/stdout is in format:\n"
 			"\t00112233...\tor\n"
 			"\t00 11 22 33...\tor\n"
@@ -34,7 +38,7 @@ void help(char *prgname) {
 			"\t00;11;22;33...\tor\n"
 			"\t00,11,22,33...\t\n"
 		"\n"
-		, prgname, CMD_SN, CMD_HMAC
+		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC
 	);
 }
 
@@ -104,6 +108,20 @@ int main(int argc, char **argv) {
 		}
 
 		print_number(sn.bytes, sn.data);
+	} else if (strcmp(argv[1], CMD_HWREV) == 0) {
+		atsha_big_int sn;
+		status = atsha_serial_number(handle, &sn);
+		if (status != ATSHA_ERR_OK) {
+			fprintf(stderr, "HW revision number error: %s\n", atsha_error_name(status));
+			atsha_close(handle);
+			return 3;
+		}
+		/*
+		Serial number has 8bytes
+		4bytes of HW revision number and 4bytes unique number.
+		So... use only first 4 bytes.
+		*/
+		print_number(4, sn.data);
 
 	} else if (strcmp(argv[1], CMD_HMAC) == 0) {
 		char buff[BUFFSIZE];
