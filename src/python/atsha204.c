@@ -1,6 +1,6 @@
 #include <Python.h>
 #include <dlfcn.h>
-#include "../libatsha204/atsha204.h"
+#include <atsha204.h>
 
 /*
  * As linking to other libraries from python extensions is tricky,
@@ -57,9 +57,9 @@ static PyObject *atsha_do_hmac(PyObject *self, PyObject *args) {
 
 	struct atsha_handle *crypto = atsha_open();
 	if (NULL == crypto) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to initialize crypto library");
-        return NULL;
-    }
+		PyErr_SetString(PyExc_RuntimeError, "failed to initialize crypto library");
+		return NULL;
+	}
 	atsha_big_int challenge_s, response_s;
 	challenge_s.bytes = 32;
 	memcpy(challenge_s.data, challenge, 32);
@@ -70,6 +70,28 @@ static PyObject *atsha_do_hmac(PyObject *self, PyObject *args) {
 	}
 	atsha_close(crypto);
 	return Py_BuildValue("s#", response_s.data, (int) response_s.bytes);
+}
+
+static PyObject *get_serial(PyObject *self, PyObject *args) {
+	(void) self;
+
+	if (!PyArg_ParseTuple(args, "")) {
+		return NULL;
+	}
+
+	struct atsha_handle *crypto = atsha_open();
+	if (NULL == crypto) {
+		PyErr_SetString(PyExc_RuntimeError, "failed to initialize crypto library");
+		return NULL;
+	}
+	atsha_big_int abi_serial;
+	if (ATSHA_ERR_OK != atsha_serial_number(crypto, &abi_serial)) {
+		atsha_close(crypto);
+		PyErr_SetString(PyExc_RuntimeError, "failed to get serial number");
+		return NULL;
+	}
+	atsha_close(crypto);
+	return Py_BuildValue("s#", abi_serial.data, (int) abi_serial.bytes);
 }
 
 static PyMethodDef atsha_methods[] = {
@@ -88,6 +110,12 @@ static PyMethodDef atsha_methods[] = {
 		"hmac(challenge) where len(challenge)=32\n"
 		"\n"
 		"Note than internet connection is required to obtain a slot_id from DNS"
+	},
+	{
+		"get_serial",
+		get_serial,
+		METH_VARARGS,
+		"Get serial number of the atsh204 cryptographic chip.\n"
 	},
 	{NULL}
 };
