@@ -7,6 +7,6 @@ else
 I2C_MODULES :=
 I2C_LIBS :=
 endif
-libatsha204_MODULES := api communication dnsmagic emulation error $(I2C_MODULES) layer_usb operations tools
+libatsha204_MODULES := api communication dnsmagic emulation error $(I2C_MODULES) layer_ni2c layer_usb operations tools
 
 libatsha204_SO_LIBS := crypto unbound $(I2C_LIBS)

@@ -36,6 +36,9 @@ int wake(struct atsha_handle *handle) {
 			case BOTTOM_LAYER_EMULATION:
 				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
+			case BOTTOM_LAYER_NI2C:
+				status = ni2c_wake(handle, &answer);
+				break;
 			case BOTTOM_LAYER_I2C:
 #if USE_LAYER == USE_LAYER_I2C
 				status = i2c_wake(handle, &answer); //do not check - there are no data
@@ -90,6 +93,9 @@ int idle(struct atsha_handle *handle) {
 			case BOTTOM_LAYER_EMULATION:
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
+			case BOTTOM_LAYER_NI2C:
+				status = ni2c_idle(handler);
+				break;
 			case BOTTOM_LAYER_I2C:
 #if USE_LAYER == USE_LAYER_I2C
 				status = i2c_idle(handle);
@@ -118,6 +124,8 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 			case BOTTOM_LAYER_EMULATION:
 				return emul_command(handle, raw_packet, answer);
 				break;
+			case BOTTOM_LAYER_NI2C:
+				status = ni2c_command(handle, raw_packet, answer);
 			case BOTTOM_LAYER_I2C:
 #if USE_LAYER == USE_LAYER_I2C
 				status = i2c_command(handle, raw_packet, answer);

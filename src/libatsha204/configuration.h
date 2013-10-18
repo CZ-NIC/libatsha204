@@ -8,6 +8,7 @@
 										//in microseconds (2s)
 #define BUFFSIZE_USB 1024
 #define BUFFSIZE_I2C ATSHA204_IO_BUFFER
+#define BUFFSIZE_NI2C ATSHA204_IO_BUFFER
 #define BUFFSIZE_DNS 512
 #define BUFFSIZE_LINE 128
 
@@ -17,6 +18,7 @@
 #define DEFAULT_EMULATION_CONFIG_PATH "atsha204.sw"
 #endif
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
+#define DEFAULT_NI2C_DEV_PATH "/dev/i2c-0"
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "use_key.extremehost.cz"
 #define DEFAULT_DNSSEC_ROOT_KEY "/etc/dnssec-root.key"
@@ -25,8 +27,9 @@
 #define LOCK_TRY_MAX 2.2
 
 #define USE_LAYER_EMULATION 0
-#define USE_LAYER_I2C 1
-#define USE_LAYER_USB 2
+#define USE_LAYER_NI2C 1
+#define USE_LAYER_I2C 2
+#define USE_LAYER_USB 3
 #ifndef USE_LAYER
 #define USE_LAYER USE_LAYER_USB
 #endif
