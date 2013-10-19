@@ -7,7 +7,7 @@
 #include<stdbool.h>
 #include<time.h>
 #include<assert.h>
-#include <linux/i2c.h>
+//#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 
@@ -167,7 +167,7 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path) {
 		return NULL;
 	}
 
-	if (ioctl(fd, I2C_SLAVE, ATSHA204_NI2C_ADDRESS) < 0) {
+	if (ioctl(try_fd, I2C_SLAVE, ATSHA204_NI2C_ADDRESS) < 0) {
 		log_message("api: open_ni2c_dev: Couldn't bind address.");
 		return NULL;
 	}

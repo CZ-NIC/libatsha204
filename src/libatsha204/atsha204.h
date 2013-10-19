@@ -50,6 +50,11 @@ struct atsha_handle *atsha_open();
  */
 struct atsha_handle *atsha_open_usb_dev(const char *path);
 /**
+ * \brief Create instance of library with chip on I2C bus driven by native kernel driver.
+ * \return library instance hadler
+ */
+struct atsha_handle *atsha_open_ni2c_dev(const char *path);
+/**
  * \brief Create instance of library with chip on I2C bus.
  * \return library instance hadler
  */

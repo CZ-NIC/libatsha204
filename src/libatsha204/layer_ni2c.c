@@ -5,7 +5,7 @@
 #include<stdbool.h>
 #include<unistd.h>
 #include <errno.h>
-#include <linux/i2c.h>
+//#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -25,7 +25,6 @@ void ni2c_wait() {
 
 static int ni2c_read(struct atsha_handle *handle, unsigned char **answer) {
 	unsigned char data[BUFFSIZE_NI2C];
-	int status;
 
 	if (read(handle->fd, data, BUFFSIZE_NI2C) < 0) {
 		return ATSHA_ERR_COMMUNICATION;

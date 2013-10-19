@@ -9,6 +9,7 @@
 #include "atsha204consts.h"
 #include "layer_usb.h"
 #include "layer_i2c.h"
+#include "layer_ni2c.h"
 #include "emulation.h"
 #include "api.h"
 
@@ -94,7 +95,7 @@ int idle(struct atsha_handle *handle) {
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_NI2C:
-				status = ni2c_idle(handler);
+				status = ni2c_idle(handle);
 				break;
 			case BOTTOM_LAYER_I2C:
 #if USE_LAYER == USE_LAYER_I2C
