@@ -8,12 +8,6 @@ ASCIIDOC := asciidoc
 AR := ar
 PAGE_SIZE := $(shell getconf PAGE_SIZE)
 
-ifeq ($(USE_LAYER),USE_LAYER_I2C)
-INST_SPECIAL := bin/atsha204cmd bin/chiptools bin/chipinit bin/chiptest
-else
-INST_SPECIAL := bin/atsha204cmd
-endif
-
 include $(S)/Makefile.dir
 
 .PHONY: install
@@ -21,6 +15,9 @@ include $(S)/Makefile.dir
 install:
 	cp src/libatsha204/atsha204.h /usr/include/
 	cp lib/libatsha204.so /usr/lib
-	cp $(INST_SPECIAL) /usr/bin
+	cp bin/atsha204cmd /usr/bin
+	cp bin/chiptools /usr/bin
+	cp bin/chipinit /usr/bin
+	cp bin/chiptest /usr/bin
 	$(if $(PYTHON), cp lib/atsha204.so /usr/lib/python$(PYTHON_VERSION)/dist-packages)
 	ldconfig
