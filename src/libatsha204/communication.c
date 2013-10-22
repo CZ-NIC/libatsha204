@@ -22,6 +22,9 @@ static void try_send_and_recv_sleep(struct atsha_handle *handle) {
 #if USE_LAYER == USE_LAYER_I2C
 		i2c_wait();
 #endif
+#if USE_LAYER == USE_LAYER_NI2C
+		ni2c_wait();
+#endif
 	}
 }
 
@@ -127,6 +130,7 @@ int command(struct atsha_handle *handle, unsigned char *raw_packet, unsigned cha
 				break;
 			case BOTTOM_LAYER_NI2C:
 				status = ni2c_command(handle, raw_packet, answer);
+				break;
 			case BOTTOM_LAYER_I2C:
 #if USE_LAYER == USE_LAYER_I2C
 				status = i2c_command(handle, raw_packet, answer);
