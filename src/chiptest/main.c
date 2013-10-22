@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	struct atsha_handle *handle_i2c = atsha_open_i2c_dev();
+	struct atsha_handle *handle_i2c = atsha_open();
 	if (handle_i2c == NULL) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
 		return 1;

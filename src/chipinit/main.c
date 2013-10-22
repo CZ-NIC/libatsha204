@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 	atsha_set_log_callback(log_callback);
 
 	//Create LIBATSHA204 handler
-	struct atsha_handle *handle = atsha_open_i2c_dev();
+	struct atsha_handle *handle = atsha_open();
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
 		return ERR_INIT;
