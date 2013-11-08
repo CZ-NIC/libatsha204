@@ -12,6 +12,9 @@ bin/
 *.so
 *.o
 
+#All created .a files
+lib/*.a
+
 #Documentation output
 docs/
 
