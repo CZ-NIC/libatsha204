@@ -6,7 +6,10 @@ endif
 ifndef CONFIG_PATH
 	CONFIG_PATH := atsha204.sw
 endif
-CFLAGS_ALL += -DUSE_LAYER=$(USE_LAYER) -DDEFAULT_EMULATION_CONFIG_PATH=\"$(CONFIG_PATH)\"
+ifndef ENDPOINT
+	ENDPOINT := ENDPOINT_LOCAL
+endif
+CFLAGS_ALL += -DUSE_LAYER=$(USE_LAYER) -DDEFAULT_EMULATION_CONFIG_PATH=\"$(CONFIG_PATH)\" -DENDPOINT=\"$(ENDPOINT)\"
 LDFLAGS_ALL += $(LDFLAGS)
 
 # List of all makefiles in direct subdirectories. If a new subdirectory is

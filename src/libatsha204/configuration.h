@@ -18,7 +18,13 @@
 #define DEFAULT_EMULATION_CONFIG_PATH "atsha204.sw"
 #endif
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
-#define DEFAULT_NI2C_DEV_PATH "/dev/i2c-0"
+#define NI2C_DEV_PATH_LOCAL "/dev/i2c-0"
+#define NI2C_DEV_PATH_REMOTE "/dev/i2c-1"
+#ifdef ENDPOINT_REMOTE
+#define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_REMOTE
+#else
+#define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_LOCAL
+#endif
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "atsha-key.turris.cz"
 #define DEFAULT_DNSSEC_ROOT_KEY "/etc/unbound/root.key"
@@ -31,7 +37,7 @@
 #define USE_LAYER_I2C 2
 #define USE_LAYER_USB 3
 #ifndef USE_LAYER
-#define USE_LAYER USE_LAYER_USB
+#define USE_LAYER USE_LAYER_NI2C
 #endif
 
 #endif //CONFIGURATION_H
