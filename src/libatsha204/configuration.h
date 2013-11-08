@@ -20,11 +20,14 @@
 #define DEFAULT_USB_DEV_PATH "/dev/hidraw0"
 #define NI2C_DEV_PATH_LOCAL "/dev/i2c-0"
 #define NI2C_DEV_PATH_REMOTE "/dev/i2c-1"
-#ifdef ENDPOINT_REMOTE
-#warning "Je tam REMOTE"
+#ifndef ENDPOINT
+#define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_LOCAL
+#else
+#if ENDPOINT == ENDPOINT_REMOTE
 #define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_REMOTE
 #else
 #define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_LOCAL
+#endif
 #endif
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "atsha-key.turris.cz"
