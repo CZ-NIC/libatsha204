@@ -5,6 +5,7 @@
 #include <openssl/sha.h>
 
 #include "../libatsha204/atsha204.h"
+#include "../libatsha204/tools.h"
 
 static const char *CMD_SN = "serial-number";
 static const char *CMD_HMAC = "challenge-response";
@@ -49,17 +50,6 @@ bool read_challenge(char *buff) {
 	}
 
 	return true;
-}
-
-/**
- * This function gets two chars, that are representing hex string, and
- * return real byte value.
- */
-unsigned char get_number_from_hex_char(char high, char low) {
-	char str[3];
-	str[0] = high; str[1] = low; str[2] = '\0';
-
-	return (unsigned char)strtol(str, NULL, 16);
 }
 
 bool get_challenge_from_input(char *buff, atsha_big_int *challenge) {
