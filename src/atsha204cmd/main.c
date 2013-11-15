@@ -1,16 +1,19 @@
-#include<stdio.h>
-#include<string.h>
-#include<stdint.h>
-#include<stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <openssl/sha.h>
+#include <assert.h>
 
 #include "../libatsha204/atsha204.h"
 #include "../libatsha204/tools.h"
+#include "../libatsha204/atsha204consts.h"
 
 static const char *CMD_SN = "serial-number";
 static const char *CMD_HMAC = "challenge-response";
 static const char *CMD_HWREV = "hw-rev";
 static const char *CMD_FILEHMAC = "file-challenge-response";
+static const char *CMD_MAC = "mac";
 
 #define BUFFSIZE 512
 
@@ -33,14 +36,15 @@ void help(char *prgname) {
 			"\t%s\t\t\tprint hw revision number to stdout\n"
 			"\t%s\tprint HMAC response to stdout\n"
 			"\t%s\tprint HMAC response to stdout with challenge from file\n"
-		"Input/Output on stdin/stdout is in format:\n"
+			"\t%s n\tprint n MAC address to stdout\n"
+		"Input/Output on stdin/stdout (except MAC addresses) is in format:\n"
 			"\t00112233...\tor\n"
 			"\t00 11 22 33...\tor\n"
 			"\t00:11:22:33...\tor\n"
 			"\t00;11;22;33...\tor\n"
 			"\t00,11,22,33...\t\n"
 		"\n"
-		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC
+		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC, CMD_MAC
 	);
 }
 
@@ -96,7 +100,7 @@ bool get_file_sha256(atsha_big_int *abi, FILE *stream) {
 }
 
 int main(int argc, char **argv) {
-	if (argc != 2) {
+	if (argc < 2) {
 		help(argv[0]);
 		return 1;
 	}
@@ -182,6 +186,57 @@ int main(int argc, char **argv) {
 
 		print_number(response.bytes, response.data);
 
+
+	} else if ((strcmp(argv[1], CMD_MAC) == 0) && (argc == 3)) {
+		unsigned char n = atoi(argv[2]);
+		if (n <= 0) {
+			fprintf(stderr, "Bad MAC address count requested.\n");
+			return 1;
+		}
+
+		atsha_big_int prefix;
+		atsha_big_int addr;
+
+		status = atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_MAC_PREFIX, &prefix);
+		if (status != ATSHA_ERR_OK) {
+			fprintf(stderr, ": Get MAC address prefix failed: %s\n", atsha_error_name(status));
+			atsha_close(handle);
+			return 3;
+		}
+
+		status = atsha_raw_otp_read(handle, ATSHA204_OTP_MEMORY_MAP_MAC_ADDR, &addr);
+		if (status != ATSHA_ERR_OK) {
+			fprintf(stderr, "Get MAC address suffix failed: %s\n", atsha_error_name(status));
+			atsha_close(handle);
+			return 3;
+		}
+
+		assert(sizeof(unsigned int) >= 4);
+
+		unsigned int mac_as_number = 0, mac_as_number_orig = 0;
+		unsigned char tmp_mac[6];
+
+		memcpy(tmp_mac, (prefix.data+1), 3);
+
+		mac_as_number_orig |= (addr.data[1] << 8*2);
+		mac_as_number_orig |= (addr.data[2] << 8*1);
+		mac_as_number_orig |= addr.data[3];
+
+		if (mac_as_number_orig > (((unsigned int)0xFFFFFF)-n)) {
+			fprintf(stderr, "MAC address count is to big!\n");
+			return 4;
+		}
+
+		for (char i = 0; i < n; i++) {
+			mac_as_number = mac_as_number_orig;
+			mac_as_number_orig++;
+
+			tmp_mac[5] = mac_as_number & 0xFF; mac_as_number >>= 8;
+			tmp_mac[4] = mac_as_number & 0xFF; mac_as_number >>= 8;
+			tmp_mac[3] = mac_as_number & 0xFF; mac_as_number >>= 8;
+
+			printf("%02X:%02X:%02X:%02X:%02X:%02X\n", tmp_mac[0], tmp_mac[1], tmp_mac[2], tmp_mac[3], tmp_mac[4], tmp_mac[5]);
+		}
 
 	} else {
 		help(argv[0]);
