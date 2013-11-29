@@ -17,11 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include<stdio.h>
-#include<stdint.h>
-#include<stdbool.h>
-#include<unistd.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
 
 #include "../libatsha204/atsha204.h"
 

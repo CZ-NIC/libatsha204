@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include<stdlib.h>
-#include<unistd.h> //close()
-#include<fcntl.h>
-#include<sys/file.h>
-#include<string.h>
-#include<stdint.h>
-#include<stdbool.h>
-#include<time.h>
-#include<assert.h>
+#include <stdlib.h>
+#include <unistd.h> //close()
+#include <fcntl.h>
+#include <sys/file.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
+#include <assert.h>
 //#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
@@ -33,7 +33,7 @@
 #include "configuration.h"
 
 #if USE_LAYER == USE_LAYER_I2C
-#include<mpsse.h>
+#include <mpsse.h>
 #endif
 
 #include "atsha204consts.h"

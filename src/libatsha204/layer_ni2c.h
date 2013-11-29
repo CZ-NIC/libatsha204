@@ -20,7 +20,7 @@
 #ifndef LAYER_NI2C_H
 #define LAYER_NI2C_H
 
-#include<stdbool.h>
+#include <stdbool.h>
 
 void ni2c_wait();
 int ni2c_wake(struct atsha_handle *handle, unsigned char **answer);

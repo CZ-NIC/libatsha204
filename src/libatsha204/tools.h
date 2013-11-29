@@ -20,8 +20,8 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
-#include<stdint.h>
-#include<stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 /**
  * \file tools.h

@@ -20,7 +20,7 @@
 #ifndef LAYER_I2C_H
 #define LAYER_I2C_H
 
-#include<stdbool.h>
+#include <stdbool.h>
 
 void i2c_wait();
 int i2c_wake(struct atsha_handle *handle, unsigned char **answer);
