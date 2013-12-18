@@ -1,0 +1,23 @@
+libatsha204
+===========
+
+Libatsha204 is a library providing easy communication with Atmel ATSHA204
+cryptography chip.
+
+ATSHA204 is safe storage for 32 bytes long keys that can be stored without
+permission to read any data. These keys could be used only for
+challenge-response authentication operations. The second part of ATSHA204 is OTP
+(One Time Programmeable) memory for some vendor-specific informations.
+
+Libatsha204 is implementing API for basic and most important features (but not
+all of them) of ATSHA204 chip. Typical API function presents one chip's command
+and provides abstraction from bit flags, packet's composition and communication
+protocol. You probably will not be able to use libatsha204 without knowleadge of
+basic properties of ATSHA204 and studying of the datasheet is still required.
+
+The architecture of libatsha204 is multilayer. The most important bottom layers
+are:
+
+	- NI2C - I2C communication through native Linux kernel driver (production)
+	- Emulation - The ATSHA204 chip is emulated by software (server part)
+	- USB - Layer for USB dongle with ATSHA204  (AT88CK454BLACK Kit) (testing)
