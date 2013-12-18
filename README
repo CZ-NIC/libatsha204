@@ -15,6 +15,22 @@ and provides abstraction from bit flags, packet's composition and communication
 protocol. You probably will not be able to use libatsha204 without knowleadge of
 basic properties of ATSHA204 and studying of the datasheet is still required.
 
+Libatsha204 is part of Project Turris and some project relevant tools are
+included to this repository:
+
+	- atsha204cmd - Command line tool for interaction with ATSHA204. Main
+	  features are: challenge-response operation from stdin and from file; print
+	  some formatted informations from OTP memory
+
+	- chiptools - program that enables dump informations and some basic commands
+	  (mainly for debug purposes)
+
+	- chipinit - program that loads configuration file with crypto keys and OTP
+	  memory items, stores it to the chip and locks the memory slots
+
+	- chiptest - compare expected responses based on the configuration file
+	  computed by emulation layer and responses computed by ATSHA204
+
 The architecture of libatsha204 is multilayer. The most important bottom layers
 are:
 
