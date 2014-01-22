@@ -14,6 +14,7 @@ static const char *CMD_HMAC = "challenge-response";
 static const char *CMD_HWREV = "hw-rev";
 static const char *CMD_FILEHMAC = "file-challenge-response";
 static const char *CMD_MAC = "mac";
+static const char *CMD_RND = "random";
 
 #define BUFFSIZE 512
 
@@ -37,6 +38,7 @@ void help(char *prgname) {
 			"\t%s\tprint HMAC response to stdout\n"
 			"\t%s\tprint HMAC response to stdout with challenge from file\n"
 			"\t%s n\tprint n MAC address to stdout\n"
+			"\t%s\tprint 32 raw random bytes to stdout\n"
 		"Input/Output on stdin/stdout (except MAC addresses) is in format:\n"
 			"\t00112233...\tor\n"
 			"\t00 11 22 33...\tor\n"
@@ -44,7 +46,7 @@ void help(char *prgname) {
 			"\t00;11;22;33...\tor\n"
 			"\t00,11,22,33...\t\n"
 		"\n"
-		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC, CMD_MAC
+		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC, CMD_MAC, CMD_RND
 	);
 }
 
@@ -140,6 +142,18 @@ int main(int argc, char **argv) {
 		So... use only first 4 bytes.
 		*/
 		print_number(4, sn.data);
+
+	} else if (strcmp(argv[1], CMD_RND) == 0) {
+		atsha_big_int sn;
+		status = atsha_random(handle, &sn);
+		if (status != ATSHA_ERR_OK) {
+			fprintf(stderr, "Random numer generation error: %s\n", atsha_error_name(status));
+			atsha_close(handle);
+			return 3;
+		}
+		for(int i = 0; i < sn.bytes; i++) {
+		    putchar(sn.data[i]);
+		}
 
 	} else if (strcmp(argv[1], CMD_HMAC) == 0) {
 		char buff[BUFFSIZE];
