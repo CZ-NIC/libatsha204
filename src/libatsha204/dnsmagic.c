@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <errno.h>
+#include <string.h>
 
 //DNS Resolving
 #include <unbound.h>
@@ -64,6 +66,8 @@ static uint32_t number_from_string(size_t len, char *str) {
 static bool resolve_key(uint32_t *offset) {
 	struct ub_result* result;
     struct ub_ctx *ctx = ub_ctx_create();
+	int retval;
+	char strbuff[BUFFSIZE_DNSMAGIC_ERRSTRLEN];
 
     if (!ctx) {
 		log_message("dnsmagic: libunbound: create context error");
@@ -74,19 +78,29 @@ static bool resolve_key(uint32_t *offset) {
 	 * Set resolvconf to NULL and libunbound will respect settings of OS
 	 * Eventually: ub_ctx_set_fwd(ctx, "8.8.8.8") set address of requested resolver/forwarder
 	 */
-	if (ub_ctx_resolvconf(ctx, NULL) != 0)  {
+	retval = ub_ctx_resolvconf(ctx, NULL);
+	if (retval != 0)  {
 		log_message("dnsmagic: libunbound: reset configuration error");
+		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s and errno: %s\n", retval, ub_strerror(retval), strerror(errno));
+		log_message(strbuff);
+
 		return false;
 	}
 
 	//read public keys for DNSSEC verification
-	if (ub_ctx_add_ta_file(ctx, DEFAULT_DNSSEC_ROOT_KEY) != 0) {
+	retval = ub_ctx_add_ta_file(ctx, DEFAULT_DNSSEC_ROOT_KEY);
+	if (retval != 0) {
 		log_message("dnsmagic: libunbound: adding keys failed");
+		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s\n", retval, ub_strerror(retval));
+		log_message(strbuff);
 		return false;
 	}
 
-	if (ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result) != 0) {
+	retval = ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result);
+	if (retval != 0) {
 		log_message("dnsmagic: libunbound: resolve error");
+		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s\n", retval, ub_strerror(retval));
+		log_message(strbuff);
 		ub_ctx_delete(ctx);
 		return false;
 	}
