@@ -20,6 +20,7 @@
 #include <Python.h>
 #include <dlfcn.h>
 #include <atsha204.h>
+#include <stdio.h>
 
 /*
  * As linking to other libraries from python extensions is tricky,
@@ -103,10 +104,16 @@ static PyObject *get_serial(PyObject *self, PyObject *args) {
 		PyErr_SetString(PyExc_RuntimeError, "failed to initialize crypto library");
 		return NULL;
 	}
+
 	atsha_big_int abi_serial;
-	if (ATSHA_ERR_OK != atsha_serial_number(crypto, &abi_serial)) {
+	int result = atsha_serial_number(crypto, &abi_serial);
+	if (ATSHA_ERR_OK != result) {
+		const char *err_msg = atsha_error_name(result);
+		char *first_msg = "failed to get serial number";
+		char msg[strlen(first_msg) + 3 + strlen(err_msg) + 1];
+		sprintf(msg, "%s - %s", first_msg, err_msg);
 		atsha_close(crypto);
-		PyErr_SetString(PyExc_RuntimeError, "failed to get serial number");
+		PyErr_SetString(PyExc_RuntimeError, msg);
 		return NULL;
 	}
 	atsha_close(crypto);
