@@ -19,7 +19,7 @@
 
 #include <Python.h>
 #include <dlfcn.h>
-#include <atsha204.h>
+#include "../libatsha204/atsha204.h"
 #include <stdio.h>
 
 /*
