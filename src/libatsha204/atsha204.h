@@ -63,21 +63,10 @@ void atsha_set_log_callback(void (*clb)(const char* msg));
  */
 struct atsha_handle *atsha_open();
 /**
- * \brief Create instance of library with USB device
- * \param path Path to hidraw device
- * \return library instance hadler
- */
-struct atsha_handle *atsha_open_usb_dev(const char *path);
-/**
  * \brief Create instance of library with chip on I2C bus driven by native kernel driver.
  * \return library instance hadler
  */
 struct atsha_handle *atsha_open_ni2c_dev(const char *path);
-/**
- * \brief Create instance of library with chip on I2C bus.
- * \return library instance hadler
- */
-struct atsha_handle *atsha_open_i2c_dev();
 /**
  * \brief Create instance of library that emulates device
  * \param path Path to config file
@@ -265,7 +254,6 @@ int atsha_lock_data(struct atsha_handle *handle, const unsigned char *crc);
 #define ATSHA_ERR_NOT_IMPLEMENTED 6
 #define ATSHA_ERR_CONFIG_FILE_BAD_FORMAT 7
 #define ATSHA_ERR_DNS_GET_KEY 8
-#define ATSHA_ERR_USBCMD_NOT_CONFIRMED 9
 
 /**
  * \brief Get text description of error status code

@@ -32,10 +32,6 @@
 
 #include "configuration.h"
 
-#if USE_LAYER == USE_LAYER_I2C
-#include <mpsse.h>
-#endif
-
 #include "atsha204consts.h"
 #include "atsha204.h"
 #include "api.h"
@@ -116,55 +112,14 @@ static void atsha_unlock(int lockfile) {
 struct atsha_handle *atsha_open() {
 	struct atsha_handle *handle;
 
-#if USE_LAYER == USE_LAYER_USB
-	handle = atsha_open_usb_dev((char *)DEFAULT_USB_DEV_PATH);
-#elif USE_LAYER == USE_LAYER_NI2C
+#if USE_LAYER == USE_LAYER_NI2C
 	handle = atsha_open_ni2c_dev((char *)DEFAULT_NI2C_DEV_PATH);
-#elif USE_LAYER == USE_LAYER_I2C
-	handle = atsha_open_i2c_dev();
 #elif USE_LAYER == USE_LAYER_EMULATION
 	handle = atsha_open_emulation((char *)DEFAULT_EMULATION_CONFIG_PATH);
 #else
 	fprintf(stderr, "Library was compiled without definition of bottom layer.\n");
 	exit(1);
 #endif
-
-	return handle;
-}
-
-struct atsha_handle *atsha_open_usb_dev(const char *path) {
-	if (path == NULL) return NULL;
-
-	int try_lockfile = atsha_try_lock_file();
-	if (try_lockfile == -1) {
-		return NULL;
-	}
-
-	if (!atsha_lock(try_lockfile)) {
-		close(try_lockfile);
-		return NULL;
-	}
-
-	int try_fd = open(path, O_RDWR);
-	if (try_fd == -1) {
-		log_message("api: open_usb_dev: Couldn't open usb device.");
-		return NULL;
-	}
-
-	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
-	if (handle == NULL) return NULL;
-
-	handle->bottom_layer = BOTTOM_LAYER_USB;
-	handle->is_srv_emulation = false;
-	handle->fd = try_fd;
-	handle->file = NULL;
-	handle->lockfile = try_lockfile;
-	handle->i2c = NULL;
-	handle->sn = NULL;
-	handle->key = NULL;
-	handle->key_origin = 0;
-	handle->key_origin_cached = false;
-	handle->slot_id = 0;
 
 	return handle;
 }
@@ -208,40 +163,6 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path) {
 
 	return handle;
 }
-
-#if USE_LAYER == USE_LAYER_I2C
-struct atsha_handle *atsha_open_i2c_dev() {
-	int try_lockfile = atsha_try_lock_file();
-	if (try_lockfile == -1) {
-		return NULL;
-	}
-
-	if (!atsha_lock(try_lockfile)) {
-		close(try_lockfile);
-		return NULL;
-	}
-
-	struct mpsse_context *try_i2c = MPSSE(I2C, FOUR_HUNDRED_KHZ, MSB); //# Initialize libmpsse for I2C operations at 400kHz
-	if (try_i2c == NULL) return NULL;
-	SendAcks(try_i2c);
-
-	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
-	if (handle == NULL) return NULL;
-
-	handle->bottom_layer = BOTTOM_LAYER_I2C;
-	handle->is_srv_emulation = false;
-	handle->file = NULL;
-	handle->lockfile = try_lockfile;
-	handle->i2c = try_i2c;
-	handle->sn = NULL;
-	handle->key = NULL;
-	handle->key_origin = 0;
-	handle->key_origin_cached = false;
-	handle->slot_id = 0;
-
-	return handle;
-}
-#endif
 
 struct atsha_handle *atsha_open_emulation(const char *path) {
 	if (path == NULL) return NULL;
@@ -330,20 +251,12 @@ struct atsha_handle *atsha_open_server_emulation(unsigned char slot_id, const un
 void atsha_close(struct atsha_handle *handle) {
 	if (handle == NULL) return;
 
-	if (handle->bottom_layer == BOTTOM_LAYER_USB || handle->bottom_layer == BOTTOM_LAYER_NI2C) {
+	if (handle->bottom_layer == BOTTOM_LAYER_NI2C) {
 		close(handle->fd);
 	}
 
 	if (handle->file != NULL) {
 		fclose(handle->file);
-	}
-
-	if (handle->i2c != NULL) {
-#if USE_LAYER == USE_LAYER_I2C
-		Close(handle->i2c); //Deinitialize libmpsse
-#else
-		assert(0); // I2C not compiled in!
-#endif
 	}
 
 	if (handle->lockfile != -1) {

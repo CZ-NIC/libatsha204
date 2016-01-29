@@ -58,8 +58,6 @@ struct atsha_handle {
 
 #define BOTTOM_LAYER_EMULATION 0
 #define BOTTOM_LAYER_NI2C 1
-#define BOTTOM_LAYER_I2C 2
-#define BOTTOM_LAYER_USB 3
 #define DNS_ERR_CONST 255
 
 /**
