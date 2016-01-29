@@ -28,13 +28,11 @@ void testing_log_callback(const char *msg) {
 }
 
 int main(int argc, char **argv) {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s hidraw device path\n", argv[0]);
-		return 1;
-	}
+	(void) argc;
+	(void) argv;
 
-	struct atsha_handle *handle_usb = atsha_open_usb_dev(argv[1]);
-	if (handle_usb == NULL) {
+	struct atsha_handle *handle_hw = atsha_open();
+	if (handle_hw == NULL) {
 		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
 		return 1;
 	}
@@ -69,12 +67,12 @@ int main(int argc, char **argv) {
 	};
 
 	//Store key to device - this is the same key
-	if (atsha_slot_write(handle_usb, key) != ATSHA_ERR_OK) return 1;
+	if (atsha_slot_write(handle_hw, key) != ATSHA_ERR_OK) return 1;
 
 	atsha_big_int response_usb;
 	atsha_big_int response_emul;
 
-	if (atsha_serial_number(handle_usb, &response_usb) != ATSHA_ERR_OK) return 1;
+	if (atsha_serial_number(handle_hw, &response_usb) != ATSHA_ERR_OK) return 1;
 	if (atsha_serial_number(handle_emul, &response_emul) != ATSHA_ERR_OK) return 1;
 
 	printf("SN HW: ");
@@ -89,7 +87,7 @@ int main(int argc, char **argv) {
 	}
 	printf("\n");
 
-	if (atsha_slot_read(handle_usb, &response_usb) != ATSHA_ERR_OK) return 1;
+	if (atsha_slot_read(handle_hw, &response_usb) != ATSHA_ERR_OK) return 1;
 	if (atsha_slot_read(handle_emul, &response_emul) != ATSHA_ERR_OK) return 1;
 
 	printf("KEY HW: ");
@@ -104,7 +102,7 @@ int main(int argc, char **argv) {
 	}
 	printf("\n");
 
-	if (atsha_low_challenge_response(handle_usb, atsha_find_slot_number(handle_usb), challenge, &response_usb, true) != ATSHA_ERR_OK) return 1;
+	if (atsha_low_challenge_response(handle_hw, atsha_find_slot_number(handle_hw), challenge, &response_usb, true) != ATSHA_ERR_OK) return 1;
 	if (atsha_low_challenge_response(handle_emul, atsha_find_slot_number(handle_emul), challenge, &response_emul, true) != ATSHA_ERR_OK) return 1;
 
 	printf("HMAC HW: ");
@@ -119,7 +117,7 @@ int main(int argc, char **argv) {
 	}
 	printf("\n");
 
-	if (atsha_low_challenge_response(handle_usb, atsha_find_slot_number(handle_usb), challenge, &response_usb, false) != ATSHA_ERR_OK) return 1;
+	if (atsha_low_challenge_response(handle_hw, atsha_find_slot_number(handle_hw), challenge, &response_usb, false) != ATSHA_ERR_OK) return 1;
 	if (atsha_low_challenge_response(handle_emul, atsha_find_slot_number(handle_emul), challenge, &response_emul, false) != ATSHA_ERR_OK) return 1;
 
 	printf("HMAC HW: ");
@@ -134,7 +132,7 @@ int main(int argc, char **argv) {
 	}
 	printf("\n");
 
-	if (atsha_low_challenge_response_mac(handle_usb, atsha_find_slot_number(handle_usb), challenge, &response_usb, true) != ATSHA_ERR_OK) return 1;
+	if (atsha_low_challenge_response_mac(handle_hw, atsha_find_slot_number(handle_hw), challenge, &response_usb, true) != ATSHA_ERR_OK) return 1;
 	if (atsha_low_challenge_response_mac(handle_emul, atsha_find_slot_number(handle_emul), challenge, &response_emul, true) != ATSHA_ERR_OK) return 1;
 
 	printf("MAC HW: ");
@@ -149,7 +147,7 @@ int main(int argc, char **argv) {
 	}
 	printf("\n");
 
-	if (atsha_low_challenge_response_mac(handle_usb, atsha_find_slot_number(handle_usb), challenge, &response_usb, false) != ATSHA_ERR_OK) return 1;
+	if (atsha_low_challenge_response_mac(handle_hw, atsha_find_slot_number(handle_hw), challenge, &response_usb, false) != ATSHA_ERR_OK) return 1;
 	if (atsha_low_challenge_response_mac(handle_emul, atsha_find_slot_number(handle_emul), challenge, &response_emul, false) != ATSHA_ERR_OK) return 1;
 
 	printf("MAC HW: ");
@@ -164,7 +162,7 @@ int main(int argc, char **argv) {
 	}
 	printf("\n");
 
-	atsha_close(handle_usb);
+	atsha_close(handle_hw);
 	atsha_close(handle_emul);
 
 	return 0;

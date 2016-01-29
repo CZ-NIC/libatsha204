@@ -212,14 +212,11 @@ int mac(struct atsha_handle *handle) {
 }
 
 int main(int argc, char **argv) {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s hidraw device path\n", argv[0]);
-		return 1;
-	}
-
-	struct atsha_handle *handle = atsha_open_usb_dev(argv[1]);
+	(void) argc;
+	(void) argv;
+	struct atsha_handle *handle = atsha_open(argv[1]);
 	if (handle == NULL) {
-		fprintf(stderr, "Couldn't open %s devidce.\n", argv[1]);
+		fprintf(stderr, "Couldn't open devidce.\n");
 		return 1;
 	}
 
