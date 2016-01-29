@@ -35,10 +35,12 @@
 #ifndef DEFAULT_EMULATION_CONFIG_PATH
 #define DEFAULT_EMULATION_CONFIG_PATH "atsha204.sw"
 #endif
-#define NI2C_DEV_PATH_LOCAL "/dev/i2c-0"
-#define NI2C_DEV_PATH_REMOTE "/dev/i2c-1"
+
+#define NI2C_DEV_PATH_TURRIS "/dev/i2c-0"
+#define NI2C_DEV_PATH_OMNIA "/dev/i2c-6"
+
 #ifndef DEFAULT_NI2C_DEV_PATH
-#define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_LOCAL
+#define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_TURRIS
 #endif
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "atsha-key.turris.cz"
