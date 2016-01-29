@@ -42,6 +42,11 @@
 #ifndef DEFAULT_NI2C_DEV_PATH
 #define DEFAULT_NI2C_DEV_PATH NI2C_DEV_PATH_TURRIS
 #endif
+
+#ifndef DEFAULT_NI2C_ADDRESS
+#define DEFAULT_NI2C_ADDRESS 0x64
+#endif
+
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "atsha-key.turris.cz"
 #define DEFAULT_DNSSEC_ROOT_KEY "/etc/unbound/root.key"

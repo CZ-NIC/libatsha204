@@ -25,8 +25,6 @@
  * \brief Constants that describe the device
  */
 
-#define ATSHA204_NI2C_ADDRESS 0x64
-
 #define ATSHA204_I2C_ADDRESS 0xC8
 #define ATSHA204_I2C_WAKE_CLOCK 10000
 #define ATSHA204_I2C_CMD_TOUT 100000

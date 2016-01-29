@@ -113,7 +113,7 @@ struct atsha_handle *atsha_open() {
 	struct atsha_handle *handle;
 
 #if USE_LAYER == USE_LAYER_NI2C
-	handle = atsha_open_ni2c_dev((char *)DEFAULT_NI2C_DEV_PATH);
+	handle = atsha_open_ni2c_dev((char *)DEFAULT_NI2C_DEV_PATH, DEFAULT_NI2C_ADDRESS);
 #elif USE_LAYER == USE_LAYER_EMULATION
 	handle = atsha_open_emulation((char *)DEFAULT_EMULATION_CONFIG_PATH);
 #else
@@ -124,7 +124,7 @@ struct atsha_handle *atsha_open() {
 	return handle;
 }
 
-struct atsha_handle *atsha_open_ni2c_dev(const char *path) {
+struct atsha_handle *atsha_open_ni2c_dev(const char *path, int address) {
 	int try_lockfile = atsha_try_lock_file();
 	if (try_lockfile == -1) {
 		return NULL;
@@ -141,7 +141,7 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path) {
 		return NULL;
 	}
 
-	if (ioctl(try_fd, I2C_SLAVE, ATSHA204_NI2C_ADDRESS) < 0) {
+	if (ioctl(try_fd, I2C_SLAVE, address) < 0) {
 		log_message("api: open_ni2c_dev: Couldn't bind address.");
 		return NULL;
 	}

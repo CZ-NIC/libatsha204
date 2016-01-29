@@ -66,7 +66,7 @@ struct atsha_handle *atsha_open();
  * \brief Create instance of library with chip on I2C bus driven by native kernel driver.
  * \return library instance hadler
  */
-struct atsha_handle *atsha_open_ni2c_dev(const char *path);
+struct atsha_handle *atsha_open_ni2c_dev(const char *path, int address);
 /**
  * \brief Create instance of library that emulates device
  * \param path Path to config file
