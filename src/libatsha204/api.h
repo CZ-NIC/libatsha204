@@ -45,6 +45,8 @@ struct atsha_handle {
 	int bottom_layer; ///<What kind of bottom layer is used
 	bool is_srv_emulation; ///<Server-side or client-side emulation?
 	int fd;  ///<File descriptor of binary file (e.g. USB layer file)
+	int addr;
+	const char *path;
 	FILE *file; ///<Text file handler, mainly for emulation
 	int lockfile; ///<File descriptor of lock file
 	struct mpsse_context *i2c; ///<Instance of libmpsse library

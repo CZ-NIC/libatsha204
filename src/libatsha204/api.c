@@ -152,6 +152,8 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path, int address) {
 	handle->bottom_layer = BOTTOM_LAYER_NI2C;
 	handle->is_srv_emulation = false;
 	handle->fd = try_fd;
+	handle->path = path;
+	handle->addr = address;
 	handle->file = NULL;
 	handle->lockfile = try_lockfile;
 	handle->i2c = NULL;

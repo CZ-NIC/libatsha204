@@ -61,8 +61,20 @@ int ni2c_wake(struct atsha_handle *handle, unsigned char **answer) {
 	unsigned char wr_wake[] = { 0x00 };
 	int status;
 
+	int tmpfd = open(handle->path, O_RDWR);
+	if (tmpfd == -1) {
+		log_message("layer_ni2c: ni2c_wake: Couldn't open bus.");
+		return ATSHA_ERR_COMMUNICATION;
+	}
+
+	if (ioctl(tmpfd, I2C_SLAVE, 0) < 0) {
+		log_message("layer_ni2c: ni2c_wake: Couldn't bind address.");
+		return ATSHA_ERR_COMMUNICATION;
+	}
+
 	//OK, I know, this is weird. But we really need to not check error status
-	write(handle->fd, wr_wake, 1);
+	write(tmpfd, wr_wake, 1);
+	close(tmpfd);
 
 	ni2c_wait();
 
