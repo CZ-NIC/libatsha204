@@ -30,10 +30,28 @@
 #include "commands.h"
 
 struct arguments {
+	bool no_command_ok;
 	bool use_default;
+	bool commands_help;
 	const char* path;
 	int address;
 	int commands_from;
+};
+
+enum command {
+	DUMP_CONFIG = 0,
+	DUMP_OTP,
+	DUMP_DATA,
+	SN,
+	CHIPSN,
+	RANDOM,
+	GET_SLOT
+};
+
+struct commands_item {
+	enum command command;
+	const char *name;
+	const char *help;
 };
 
 void log_callback(const char *msg) {
@@ -46,8 +64,28 @@ static struct argp_option options[] = {
 	{"default",				'd', 0, 0, "Use default values for bus and address", 0},
 	{"address",				'a', "ADDR", 0, "Set address of ATSHA204(A)", 0},
 	{"bus",					'b', "STR", 0, "Set path of I2C BUS", 0},
+	{"commands",			'c', 0, 0, "Show help for available commands", 0},
 	{ 0, 0, 0, 0, 0, 0 }
 };
+
+static struct commands_item commands[] = {
+	{ DUMP_CONFIG, "dump-config", "Dump content of configuration." },
+	{ DUMP_OTP, "dump-otp", "Dump content of OTP memory." },
+	{ DUMP_DATA, "dump-data", "Dump content of main memory (fails on locked slots)." },
+	{ SN, "sn", "Get serial number of device." },
+	{ CHIPSN, "chipsn", "Get serial number of ATSHA204." },
+	{ RANDOM, "random", "Generate random number in ATSHA204." },
+	{ GET_SLOT, "get-slot", "Get current slot from DNS record." },
+	{ 0, 0, 0 }
+};
+
+static void print_commands_help()
+{
+	printf("Available commands:\n");
+	for (size_t i = 0; commands[i].name != NULL; i++) {
+		printf("%s - %s\n", commands[i].name, commands[i].help);
+	}
+}
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
@@ -66,8 +104,14 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		args->path = arg;
 		args->use_default = false;
 		break;
+	case 'c':
+		args->commands_help = true;
+		args->no_command_ok = true;
+		break;
 	case ARGP_KEY_NO_ARGS:
-		argp_usage(state);
+		if (!args->no_command_ok) {
+			argp_usage(state);
+		}
 		break;
 	case ARGP_KEY_ARG:
 		if (args->commands_from == 0) {
@@ -93,7 +137,9 @@ static void print_abi(atsha_big_int abi) {
 
 int main(int argc, char **argv) {
 	struct arguments args = (struct arguments) {
+		.no_command_ok = false,
 		.use_default = true,
+		.commands_help = false,
 		.address = 0,
 		.path = NULL,
 		.commands_from = 0
@@ -103,6 +149,11 @@ int main(int argc, char **argv) {
 	argp_parse(&argp, argc, argv, 0, 0, &args);
 	int cmdi = args.commands_from;
 	const char *cmd = argv[cmdi];
+
+	if (args.commands_help) {
+		print_commands_help();
+		return 0;
+	}
 
 	//init LIBATSHA204
 	atsha_set_verbose();
