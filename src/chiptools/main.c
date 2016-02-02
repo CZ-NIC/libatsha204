@@ -39,7 +39,8 @@ struct arguments {
 };
 
 enum command {
-	DUMP_CONFIG = 0,
+	UNDEFINED = 0,
+	DUMP_CONFIG,
 	DUMP_OTP,
 	DUMP_DATA,
 	SN,
@@ -79,9 +80,9 @@ static struct commands_item commands[] = {
 	{ 0, 0, 0 }
 };
 
-static void print_commands_help()
+static void print_commands_help(FILE *file)
 {
-	printf("Available commands:\n");
+	fprintf(file, "Available commands:\n");
 	for (size_t i = 0; commands[i].name != NULL; i++) {
 		printf("%s - %s\n", commands[i].name, commands[i].help);
 	}
@@ -128,6 +129,17 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 
 static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
+static enum command get_command(const char *name)
+{
+	for (size_t i = 0; commands[i].name != NULL; i++) {
+		if (strcmp(commands[i].name, name) == 0) {
+			return commands[i].command;
+		}
+	}
+
+	return UNDEFINED;
+}
+
 static void print_abi(atsha_big_int abi) {
 	for (size_t i = 0; i < abi.bytes; i++) {
 		printf("%02X ", abi.data[i]);
@@ -148,10 +160,10 @@ int main(int argc, char **argv) {
 	// Parse arguments
 	argp_parse(&argp, argc, argv, 0, 0, &args);
 	int cmdi = args.commands_from;
-	const char *cmd = argv[cmdi];
+	const char *cmd_name = argv[cmdi];
 
 	if (args.commands_help) {
-		print_commands_help();
+		print_commands_help(stdout);
 		return 0;
 	}
 
@@ -166,60 +178,59 @@ int main(int argc, char **argv) {
 	} else {
 		handle = atsha_open_ni2c_dev(args.path, args.address);
 	}
+
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open I2C devidce.\n");
 		return 1;
 	}
 
+	// Process command
 	atsha_big_int abi;
-
-	if (strcmp(cmd, "dump-config") == 0) {
+	int errcode = ATSHA_ERR_OK;
+	enum command command = get_command(cmd_name);
+	switch (command) {
+	case DUMP_CONFIG:
 		dump_config(handle);
-
-	} else if (strcmp(cmd, "dump-otp") == 0) {
+		break;
+	case DUMP_OTP:
 		dump_otp(handle);
-
-	} else if (strcmp(cmd, "dump-data") == 0) {
+		break;
+	case DUMP_DATA:
 		dump_data(handle);
-
-	} else if (strcmp(cmd, "sn") == 0) {
-		if (atsha_serial_number(handle, &abi) == ATSHA_ERR_OK) {
+		break;
+	case SN:
+		errcode = atsha_serial_number(handle, &abi);
+		if (errcode == ATSHA_ERR_OK) {
 			print_abi(abi);
-		} else {
-			return 2;
 		}
-
-	} else if (strcmp(cmd, "chipsn") == 0) {
-		if (atsha_chip_serial_number(handle, &abi) == ATSHA_ERR_OK) {
+		break;
+	case CHIPSN:
+		errcode = atsha_chip_serial_number(handle, &abi);
+		if (errcode == ATSHA_ERR_OK) {
 			print_abi(abi);
-		} else {
-			return 2;
 		}
-
-	} else if (strcmp(cmd, "random") == 0) {
-		if (atsha_random(handle, &abi) == ATSHA_ERR_OK) {
+		break;
+	case RANDOM:
+		errcode = atsha_random(handle, &abi);
+		if (errcode == ATSHA_ERR_OK) {
 			print_abi(abi);
-		} else {
-			return 2;
 		}
-
-	} else if (strcmp(cmd, "slot") == 0) {
+		break;
+	case GET_SLOT:
 		printf("%d\n", atsha_find_slot_number(handle));
-
-
-	} else if (strcmp(cmd, "compiled") == 0) {
-		if (atsha_raw_slot_read(handle, 0, &abi) == ATSHA_ERR_OK) {
-			print_abi(abi);
-		} else {
-			return 2;
-		}
-
-	} else {
-		fprintf(stderr, "Undefined command\n");
+		break;
+	default:
+		fprintf(stderr, "Undefined command\n\n");
+		print_commands_help(stderr);
 		return 2;
 	}
 
 	atsha_close(handle);
+
+	if (errcode != ATSHA_ERR_OK) {
+		fprintf(stderr, "Command failed\n");
+		return 2;
+	}
 
 	return 0;
 }
