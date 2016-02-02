@@ -52,6 +52,7 @@ enum command {
 struct commands_item {
 	enum command command;
 	const char *name;
+	const char *usage;
 	const char *help;
 };
 
@@ -70,21 +71,25 @@ static struct argp_option options[] = {
 };
 
 static struct commands_item commands[] = {
-	{ DUMP_CONFIG, "dump-config", "Dump content of configuration." },
-	{ DUMP_OTP, "dump-otp", "Dump content of OTP memory." },
-	{ DUMP_DATA, "dump-data", "Dump content of main memory (fails on locked slots)." },
-	{ SN, "sn", "Get serial number of device." },
-	{ CHIPSN, "chipsn", "Get serial number of ATSHA204." },
-	{ RANDOM, "random", "Generate random number in ATSHA204." },
-	{ GET_SLOT, "get-slot", "Get current slot from DNS record." },
-	{ 0, 0, 0 }
+	{ DUMP_CONFIG, "dump-config", NULL, "Dump content of configuration." },
+	{ DUMP_OTP, "dump-otp", NULL, "Dump content of OTP memory." },
+	{ DUMP_DATA, "dump-data", NULL, "Dump content of main memory (fails on locked slots)." },
+	{ SN, "sn", NULL, "Get serial number of device." },
+	{ CHIPSN, "chipsn", NULL, "Get serial number of ATSHA204." },
+	{ RANDOM, "random", NULL, "Generate random number in ATSHA204." },
+	{ GET_SLOT, "get-slot", NULL, "Get current slot from DNS record." },
+	{ 0, 0, 0, 0 }
 };
 
 static void print_commands_help(FILE *file)
 {
 	fprintf(file, "Available commands:\n");
 	for (size_t i = 0; commands[i].name != NULL; i++) {
-		printf("%s - %s\n", commands[i].name, commands[i].help);
+		if (commands[i].usage) {;
+			printf("%s %s - %s\n", commands[i].name, commands[i].usage, commands[i].help);
+		} else {
+			printf("%s - %s\n", commands[i].name, commands[i].help);
+		}
 	}
 }
 
