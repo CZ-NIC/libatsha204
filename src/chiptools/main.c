@@ -45,7 +45,7 @@ static char args_doc[] = "COMMAND";
 static struct argp_option options[] = {
 	{"default",				'd', 0, 0, "Use default values for bus and address", 0},
 	{"address",				'a', "ADDR", 0, "Set address of ATSHA204(A)", 0},
-	{"path",				'p', "STR", 0, "Set path of I2C BUS", 0},
+	{"bus",					'b', "STR", 0, "Set path of I2C BUS", 0},
 	{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -62,7 +62,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		args->address = strtol(arg, &endptr, 0);
 		args->use_default = false;
 		break;
-	case 'p':
+	case 'b':
 		args->path = arg;
 		args->use_default = false;
 		break;
