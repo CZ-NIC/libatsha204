@@ -1,7 +1,7 @@
 /*
  * libatsha204 is small library and set of tools for Amel ATSHA204 crypto chip
  *
- * Copyright (C) 2013 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+ * Copyright (C) 2013, 2016 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
