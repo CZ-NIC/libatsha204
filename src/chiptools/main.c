@@ -56,6 +56,10 @@ struct commands_item {
 	const char *help;
 };
 
+struct cleanup_data {
+	struct atsha_handle *handle;
+};
+
 void log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
 }
@@ -152,6 +156,18 @@ static void print_abi(atsha_big_int abi) {
 	printf("\n");
 }
 
+static struct cleanup_data cleanup;
+
+static void cleanup_on_exit(int status, void *arg)
+{
+	struct cleanup_data *data = (struct cleanup_data *) arg;
+
+	// For better readability: in case of normal exit keep standard cleanup in main()
+	if (status != 0) {
+		atsha_close(data->handle);
+	}
+}
+
 int main(int argc, char **argv) {
 	struct arguments args = (struct arguments) {
 		.no_command_ok = false,
@@ -189,6 +205,9 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	cleanup.handle = handle;
+	on_exit(cleanup_on_exit, &cleanup);
+
 	// Process command
 	atsha_big_int abi;
 	int errcode = ATSHA_ERR_OK;
@@ -204,20 +223,17 @@ int main(int argc, char **argv) {
 		dump_data(handle);
 		break;
 	case SN:
-		errcode = atsha_serial_number(handle, &abi);
-		if (errcode == ATSHA_ERR_OK) {
+		if ((errcode = atsha_serial_number(handle, &abi)) == ATSHA_ERR_OK) {
 			print_abi(abi);
 		}
 		break;
 	case CHIPSN:
-		errcode = atsha_chip_serial_number(handle, &abi);
-		if (errcode == ATSHA_ERR_OK) {
+		if ((errcode = atsha_chip_serial_number(handle, &abi)) == ATSHA_ERR_OK) {
 			print_abi(abi);
 		}
 		break;
 	case RANDOM:
-		errcode = atsha_random(handle, &abi);
-		if (errcode == ATSHA_ERR_OK) {
+		if ((errcode = atsha_random(handle, &abi)) == ATSHA_ERR_OK) {
 			print_abi(abi);
 		}
 		break;
@@ -230,12 +246,13 @@ int main(int argc, char **argv) {
 		return 2;
 	}
 
-	atsha_close(handle);
-
 	if (errcode != ATSHA_ERR_OK) {
 		fprintf(stderr, "Command failed\n");
 		return 2;
 	}
+
+	// This is automatically closed in case of failure
+	atsha_close(handle);
 
 	return 0;
 }
