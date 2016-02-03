@@ -29,6 +29,7 @@
 
 #include "commands.h"
 #include "init.h"
+#include "test.h"
 
 struct arguments {
 	bool no_command_ok;
@@ -48,7 +49,8 @@ enum command {
 	CHIPSN,
 	RANDOM,
 	GET_SLOT,
-	INIT
+	INIT,
+	TEST
 };
 
 struct commands_item {
@@ -85,6 +87,7 @@ static struct commands_item commands[] = {
 	{ RANDOM, "random", NULL, "Generate random number in ATSHA204." },
 	{ GET_SLOT, "get-slot", NULL, "Get current slot from DNS record." },
 	{ INIT, "init", "[FILE]", "Initialize ATSHA204 with memory content defined FILE." },
+	{ TEST, "test", "[FILE]", "Test content of ATSHA204 with expected values." },
 	{ 0, 0, 0, 0 }
 };
 
@@ -252,11 +255,21 @@ int main(int argc, char **argv) {
 		break;
 	case INIT:
 		if (cmdi > argc - 2) {
-			fprintf(stderr, "Bad argument cound for command init\n\n");
+			fprintf(stderr, "Bad argument count for command init\n\n");
 			print_commands_help(stderr);
 			return 2;
 		}
 		if (!init(handle, argv[cmdi + 1])) {
+			command_failed = true;
+		}
+		break;
+	case TEST:
+		if (cmdi > argc - 2) {
+			fprintf(stderr, "Bad argument count for command test\n\n");
+			print_commands_help(stderr);
+			return 2;
+		}
+		if (!test(handle, argv[cmdi + 1])) {
 			command_failed = true;
 		}
 		break;
