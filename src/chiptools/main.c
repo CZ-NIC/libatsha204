@@ -211,16 +211,23 @@ int main(int argc, char **argv) {
 	// Process command
 	atsha_big_int abi;
 	int errcode = ATSHA_ERR_OK;
+	bool command_failed = false;
 	enum command command = get_command(cmd_name);
 	switch (command) {
 	case DUMP_CONFIG:
-		dump_config(handle);
+		if (!dump_config(handle)) {
+			command_failed = true;
+		}
 		break;
 	case DUMP_OTP:
-		dump_otp(handle);
+		if (!dump_otp(handle)) {
+			command_failed = true;
+		}
 		break;
 	case DUMP_DATA:
-		dump_data(handle);
+		if (!dump_data(handle)) {
+			command_failed = true;
+		}
 		break;
 	case SN:
 		if ((errcode = atsha_serial_number(handle, &abi)) == ATSHA_ERR_OK) {
@@ -246,7 +253,7 @@ int main(int argc, char **argv) {
 		return 2;
 	}
 
-	if (errcode != ATSHA_ERR_OK) {
+	if (errcode != ATSHA_ERR_OK || command_failed) {
 		fprintf(stderr, "Command failed\n");
 		return 2;
 	}

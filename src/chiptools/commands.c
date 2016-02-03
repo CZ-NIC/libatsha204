@@ -22,7 +22,7 @@
 #include "commands.h"
 #include "../libatsha204/atsha204.h"
 
-void dump_config(struct atsha_handle *handle)
+bool dump_config(struct atsha_handle *handle)
 {
 	atsha_big_int data;
 
@@ -35,13 +35,15 @@ void dump_config(struct atsha_handle *handle)
 			}
 			printf("\n");
 		} else {
-			printf("ERROR\n");
+			return false;
 		}
 	}
 	printf("\n");
+
+	return true;
 }
 
-void dump_data(struct atsha_handle *handle)
+bool dump_data(struct atsha_handle *handle)
 {
 	atsha_big_int data;
 
@@ -54,13 +56,15 @@ void dump_data(struct atsha_handle *handle)
 			}
 			printf("\n");
 		} else {
-			printf("ERROR\n");
+			return false;
 		}
 	}
 	printf("\n");
+
+	return true;
 }
 
-void dump_otp(struct atsha_handle *handle)
+bool dump_otp(struct atsha_handle *handle)
 {
 	atsha_big_int data;
 
@@ -73,9 +77,11 @@ void dump_otp(struct atsha_handle *handle)
 			}
 			printf("\n");
 		} else {
-			printf("ERROR\n");
+			return false;
 		}
 	}
 	printf("\n");
+
+	return true;
 }
 
