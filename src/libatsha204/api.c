@@ -636,6 +636,23 @@ int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number) {
 	}
 }
 
+int atsha_change_address(struct atsha_handle *handle, unsigned char address) {
+	if (address < 1 && address > 0x7E) {
+		return ATSHA_ERR_INVALID_INPUT;
+	}
+
+	int status;
+	atsha_big_int config_line;
+
+	status = atsha_raw_conf_read(handle, ATSHA204_CNF_MEMORY_MAP_I2C_ADDRESS, &config_line);
+	if (status != ATSHA_ERR_OK) return status;
+
+	config_line.data[0] = address << 1;
+	status = atsha_raw_conf_write(handle, ATSHA204_CNF_MEMORY_MAP_I2C_ADDRESS, config_line);
+
+	return status;
+}
+
 int atsha_raw_conf_read(struct atsha_handle *handle, unsigned char address, atsha_big_int *data) {
 	int status;
 	unsigned char *packet;

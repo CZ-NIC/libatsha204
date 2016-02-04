@@ -195,6 +195,13 @@ int atsha_chip_serial_number(struct atsha_handle *handle, atsha_big_int *number)
  */
 int atsha_serial_number(struct atsha_handle *handle, atsha_big_int *number);
 /**
+ * \brief Change address of ATSHA204 device
+ * \param handle Library instance
+ * \param address New address that will be written to configuration
+ * \return status code
+ */
+int atsha_change_address(struct atsha_handle *handle, unsigned char address);
+/**
  * \brief Read data from configuration according to address
  * \param handle Library instance
  * \param address address in memory for applicable operation
