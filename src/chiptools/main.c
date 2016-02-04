@@ -50,7 +50,8 @@ enum command {
 	RANDOM,
 	GET_SLOT,
 	INIT,
-	TEST
+	TEST,
+	SET_ADDRESS
 };
 
 struct commands_item {
@@ -88,6 +89,7 @@ static struct commands_item commands[] = {
 	{ GET_SLOT, "get-slot", NULL, "Get current slot from DNS record." },
 	{ INIT, "init", "[FILE]", "Initialize ATSHA204 with memory content defined FILE." },
 	{ TEST, "test", "[FILE]", "Test content of ATSHA204 with expected values." },
+	{ SET_ADDRESS, "set-address", "[NUMBER]", "Change address of ATSHA204 to NUMBER." },
 	{ 0, 0, 0, 0 }
 };
 
@@ -160,6 +162,14 @@ static void print_abi(atsha_big_int abi) {
 		printf("%02X ", abi.data[i]);
 	}
 	printf("\n");
+}
+
+static long int parse_number(const char *str)
+{
+	char *endptr = (char *)str;
+	long int tmp_number = strtol(str, &endptr, 0);
+
+	return tmp_number;
 }
 
 static struct cleanup_data cleanup;
@@ -271,6 +281,23 @@ int main(int argc, char **argv) {
 		}
 		if (!test(handle, argv[cmdi + 1])) {
 			command_failed = true;
+		}
+		break;
+	case SET_ADDRESS:
+		if (cmdi > argc - 2) {
+			fprintf(stderr, "Bad argument count for command set-address\n\n");
+			print_commands_help(stderr);
+			return 2;
+		}
+		long int new_addr = parse_number(argv[cmdi + 1]);
+		if (new_addr < 1 && new_addr > 0x7E) {
+			fprintf(stderr, "Requested address is out of range\n");
+			return 1;
+		}
+
+		errcode = atsha_change_address(handle, new_addr);
+		if (errcode == ATSHA_ERR_OK) {
+			printf("Address changed successfully\n");
 		}
 		break;
 	default:
