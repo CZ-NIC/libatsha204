@@ -43,11 +43,16 @@ int wake(struct atsha_handle *handle) {
 	int tries = TRY_SEND_RECV_ON_COMM_ERROR + 1; //+1 will be eliminated after first iteration
 	unsigned char *answer = NULL;
 
+	if (handle->wake_is_expected) {
+		return ATSHA_ERR_OK;
+	}
+
 	while (tries >= 0) {
 		tries--;
 
 		switch (handle->bottom_layer) {
 			case BOTTOM_LAYER_EMULATION:
+				handle->wake_is_expected = true;
 				return ATSHA_ERR_OK; //Wake is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_NI2C:
@@ -73,6 +78,8 @@ int wake(struct atsha_handle *handle) {
 		}
 	}
 
+	handle->wake_is_expected = true;
+
 	free(answer);
 	return status;
 }
@@ -85,6 +92,7 @@ int idle(struct atsha_handle *handle) {
 		switch (handle->bottom_layer) {
 
 			case BOTTOM_LAYER_EMULATION:
+				handle->wake_is_expected = false;
 				return ATSHA_ERR_OK; //Idle is dummy in implementation. Always is successful.
 				break;
 			case BOTTOM_LAYER_NI2C:
@@ -92,7 +100,10 @@ int idle(struct atsha_handle *handle) {
 				break;
 		}
 
-		if (status == ATSHA_ERR_OK) return status;
+		if (status == ATSHA_ERR_OK) {
+			handle->wake_is_expected = false;
+			return status;
+		}
 		if (tries < 0) return status;
 	}
 }

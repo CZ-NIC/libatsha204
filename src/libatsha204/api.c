@@ -162,6 +162,7 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path, int address) {
 	handle->key_origin = 0;
 	handle->key_origin_cached = false;
 	handle->slot_id = 0;
+	handle->wake_is_expected = false;
 
 	return handle;
 }
@@ -188,6 +189,7 @@ struct atsha_handle *atsha_open_emulation(const char *path) {
 	handle->key_origin = 0;
 	handle->key_origin_cached = false;
 	handle->slot_id = 0;
+	handle->wake_is_expected = false;
 
 	atsha_big_int number;
 	if (atsha_serial_number(handle, &number) != ATSHA_ERR_OK) {

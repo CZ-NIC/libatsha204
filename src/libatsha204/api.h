@@ -56,6 +56,7 @@ struct atsha_handle {
 	bool key_origin_cached; ///<It key origin value cached?
 	unsigned char slot_id; ///<Cached key origin value that is read from OTP memory
 	unsigned char nonce[32]; ///<Emulation of TempKey memory slot
+	bool wake_is_expected; ///<Double wake is failing operation
 };
 
 #define BOTTOM_LAYER_EMULATION 0
