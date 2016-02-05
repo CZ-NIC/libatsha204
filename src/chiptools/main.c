@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
@@ -51,7 +52,8 @@ enum command {
 	GET_SLOT,
 	INIT,
 	TEST,
-	SET_ADDRESS
+	SET_ADDRESS,
+	DEV_REV
 };
 
 struct commands_item {
@@ -90,6 +92,7 @@ static struct commands_item commands[] = {
 	{ INIT, "init", "[FILE]", "Initialize ATSHA204 with memory content defined FILE." },
 	{ TEST, "test", "[FILE]", "Test content of ATSHA204 with expected values." },
 	{ SET_ADDRESS, "set-address", "[NUMBER]", "Change address of ATSHA204 to NUMBER." },
+	{ DEV_REV, "devrev", NULL, "Get revision number of chip." },
 	{ 0, 0, 0, 0 }
 };
 
@@ -298,6 +301,15 @@ int main(int argc, char **argv) {
 		errcode = atsha_change_address(handle, new_addr);
 		if (errcode == ATSHA_ERR_OK) {
 			printf("Address changed successfully\n");
+		}
+		break;
+	case DEV_REV:
+		// For next line thanks to compiler:
+		// "a label can only be part of a statement and a declaration is not a statement"
+		errcode = 0;
+		uint32_t rev;
+		if ((errcode = atsha_dev_rev(handle, &rev)) == ATSHA_ERR_OK) {
+			printf("%" PRIu32 "\n", rev);
 		}
 		break;
 	default:
