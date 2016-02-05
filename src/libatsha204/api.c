@@ -803,6 +803,46 @@ int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsh
 	return ATSHA_ERR_OK;
 }
 
+int atsha_raw_otp32_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data) {
+	int status;
+	unsigned char *packet;
+	unsigned char *answer = NULL;
+
+	if (data.bytes != 32) {
+		return ATSHA_ERR_INVALID_INPUT;
+	}
+
+	//Wakeup device
+	status = wake(handle);
+	if (status != ATSHA_ERR_OK) return status;
+
+	packet = op_raw_write(get_zone_config(IO_MEM_OTP, IO_RW_NON_ENC, IO_RW_32_BYTES), address, data.bytes, data.data);
+	if (!packet) return ATSHA_ERR_MEMORY_ALLOCATION_ERROR;
+
+	status = command(handle, packet, &answer);
+	if (status != ATSHA_ERR_OK) {
+		free(packet);
+		free(answer);
+		return status;
+	}
+
+	status = op_raw_write_recv(answer);
+	if (status != ATSHA_ERR_OK) {
+		return status;
+	}
+
+	//Let device sleep
+	status = idle(handle);
+	if (status != ATSHA_ERR_OK) {
+		log_message(WARNING_WAKE_NOT_CONFIRMED);
+	}
+
+	free(packet);
+	free(answer);
+
+	return ATSHA_ERR_OK;
+}
+
 int atsha_lock_config(struct atsha_handle *handle, const unsigned char *crc) {
 	int status;
 	unsigned char *packet;

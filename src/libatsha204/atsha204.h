@@ -236,6 +236,7 @@ int atsha_raw_otp_read(struct atsha_handle *handle, unsigned char address, atsha
  * \return status code
  */
 int atsha_raw_otp_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
+int atsha_raw_otp32_write(struct atsha_handle *handle, unsigned char address, atsha_big_int data);
 /**
  * \brief Get chip DevRev number
  * \param handle Library instance
