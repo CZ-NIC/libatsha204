@@ -135,12 +135,13 @@ static bool write_and_lock_data(struct atsha_handle *handle, unsigned char *data
 	}
 
 	//Write OTP items into chip
-	size_t item = 0;
-	number.bytes = BYTESIZE_OTP;
-	for (unsigned char addr = 0x00; addr <= 0x0F; addr++) {
-		memcpy(number.data, (otp + (item * BYTESIZE_OTP)), number.bytes);
-		item++;
-		if (atsha_raw_otp_write(handle, addr, number) != ATSHA_ERR_OK) return false;
+	number.bytes = BYTESIZE_KEY;
+	for (size_t base = 0; base < 64; base += 32) {
+		for (size_t i = 0; i < 32; i++) {
+			number.data[i] = otp[base + i];
+		}
+		char address = base / 4;
+		if (atsha_raw_otp32_write(handle, address, number) != ATSHA_ERR_OK) return false;
 	}
 
 	unsigned char crc[2];
