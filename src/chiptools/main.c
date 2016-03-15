@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _POSIX_C_SOURCE, defined to 200809L
+#define _XOPEN_SOURCE 700
+
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
