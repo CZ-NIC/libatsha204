@@ -17,7 +17,5 @@ install:
 	cp lib/libatsha204.so /usr/lib
 	cp bin/atsha204cmd /usr/bin
 	cp bin/chiptools /usr/bin
-	cp bin/chipinit /usr/bin
-	cp bin/chiptest /usr/bin
 	$(if $(PYTHON), cp lib/atsha204.so /usr/lib/python$(PYTHON_VERSION)/dist-packages)
 	ldconfig
