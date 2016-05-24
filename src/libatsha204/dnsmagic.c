@@ -87,15 +87,6 @@ static bool resolve_key(uint32_t *offset) {
 		return false;
 	}
 
-	//read public keys for DNSSEC verification
-	retval = ub_ctx_add_ta_file(ctx, DEFAULT_DNSSEC_ROOT_KEY);
-	if (retval != 0) {
-		log_message("dnsmagic: libunbound: adding keys failed");
-		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s\n", retval, ub_strerror(retval));
-		log_message(strbuff);
-		return false;
-	}
-
 	retval = ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result);
 	if (retval != 0) {
 		log_message("dnsmagic: libunbound: resolve error");
@@ -105,20 +96,14 @@ static bool resolve_key(uint32_t *offset) {
 		return false;
 	}
 
-	if (result->havedata && result->secure) {
+	if (result->havedata) {
 		*offset = (unsigned char) number_from_string(result->data[0][0], (result->data[0] + 1));
 		ub_resolve_free(result);
 		ub_ctx_delete(ctx);
 		return true;
 	}
 
-	if (!result->havedata) {
-		log_message("dnsmagic: libunbound: no data in answer");
-	}
-
-	if (!result->secure) {
-		log_message("dnsmagic: libunbound: answer couldn't be validated");
-	}
+	log_message("dnsmagic: libunbound: no data in answer");
 
 	ub_resolve_free(result);
 	ub_ctx_delete(ctx);
