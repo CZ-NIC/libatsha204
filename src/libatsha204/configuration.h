@@ -49,7 +49,6 @@
 
 #define DEFAULT_USE_SN_IN_DIGEST true
 #define DEFAULT_DNS_RECORD_FIND_KEY "atsha-key.turris.cz"
-#define DEFAULT_DNSSEC_ROOT_KEY "/etc/unbound/root.key"
 #define LOCK_FILE "/tmp/libatsha204.lock"
 #define LOCK_TRY_TOUT 10000
 #define LOCK_TRY_MAX 2.2
