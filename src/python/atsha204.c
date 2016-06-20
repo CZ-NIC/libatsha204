@@ -56,6 +56,7 @@ static PyObject *atsha_emulate_hmac(PyObject *self, PyObject *args) {
 	int result = atsha_challenge_response(crypto, challenge_s, &response_s);
 	if (ATSHA_ERR_OK != result) {
 		PyErr_SetString(PyExc_ValueError, atsha_error_name(result));
+		atsha_close(crypto);
 		return NULL;
 	}
 	atsha_close(crypto);
@@ -86,6 +87,7 @@ static PyObject *atsha_do_hmac(PyObject *self, PyObject *args) {
 	int result = atsha_challenge_response(crypto, challenge_s, &response_s);
 	if (ATSHA_ERR_OK != result) {
 		PyErr_SetString(PyExc_ValueError, atsha_error_name(result));
+		atsha_close(crypto);
 		return NULL;
 	}
 	atsha_close(crypto);
@@ -112,8 +114,8 @@ static PyObject *get_serial(PyObject *self, PyObject *args) {
 		char *first_msg = "failed to get serial number";
 		char msg[strlen(first_msg) + 3 + strlen(err_msg) + 1];
 		sprintf(msg, "%s - %s", first_msg, err_msg);
-		atsha_close(crypto);
 		PyErr_SetString(PyExc_RuntimeError, msg);
+		atsha_close(crypto);
 		return NULL;
 	}
 	atsha_close(crypto);
