@@ -25,6 +25,8 @@
 #define TRY_SEND_RECV_ON_COMM_ERROR 5
 #define TRY_SEND_RECV_ON_COMM_ERROR_TOUT 2000000
 										//in microseconds (2s)
+#define KILL_UNRELEASED_LOCK_AFTER 10
+										//in seconds
 #define BUFFSIZE_NI2C ATSHA204_IO_BUFFER
 #define BUFFSIZE_DNS 512
 #define BUFFSIZE_LINE 128

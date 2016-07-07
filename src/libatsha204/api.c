@@ -29,6 +29,7 @@
 //#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
+#include <signal.h>
 
 #include "configuration.h"
 
@@ -113,6 +114,16 @@ static bool atsha_lock(int lockfile) {
 	return true;
 }
 
+static void sanitize_lock(struct atsha_handle *handle) {
+	sigaction(SIGALRM, &(struct sigaction) { .sa_handler = SIG_DFL }, &(handle->orig_sigact));
+	handle->orig_alarm = alarm(KILL_UNRELEASED_LOCK_AFTER);
+}
+
+static void restore_lock(struct atsha_handle *handle) {
+	sigaction(SIGALRM, &(handle->orig_sigact), NULL);
+	alarm(handle->orig_alarm);
+}
+
 static void atsha_unlock(int lockfile) {
 	//Return value of flock is not important - OS release it anyway
 	flock(lockfile, LOCK_UN);
@@ -172,6 +183,8 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path, int address) {
 	handle->key_origin_cached = false;
 	handle->slot_id = 0;
 	handle->wake_is_expected = false;
+
+	sanitize_lock(handle);
 
 	return handle;
 }
@@ -274,6 +287,7 @@ void atsha_close(struct atsha_handle *handle) {
 
 	if (handle->lockfile != -1) {
 		atsha_unlock(handle->lockfile);
+		restore_lock(handle);
 		close(handle->lockfile);
 	}
 

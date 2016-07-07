@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <signal.h>
 
 /**
  * \file api.h
@@ -57,6 +58,8 @@ struct atsha_handle {
 	unsigned char slot_id; ///<Cached key origin value that is read from OTP memory
 	unsigned char nonce[32]; ///<Emulation of TempKey memory slot
 	bool wake_is_expected; ///<Double wake is failing operation
+	unsigned int orig_alarm; ///<Stores the original value of alarm() timeout while we set our own in atsha_open
+	struct sigaction orig_sigact; ///<The original signal handler for SIGALRM
 };
 
 #define BOTTOM_LAYER_EMULATION 0
