@@ -53,7 +53,8 @@ enum command {
 	INIT,
 	TEST,
 	SET_ADDRESS,
-	DEV_REV
+	DEV_REV,
+	SLEEP
 };
 
 struct commands_item {
@@ -93,6 +94,7 @@ static struct commands_item commands[] = {
 	{ TEST, "test", "[FILE]", "Test content of ATSHA204 with expected values." },
 	{ SET_ADDRESS, "set-address", "[NUMBER]", "Change address of ATSHA204 to NUMBER." },
 	{ DEV_REV, "devrev", NULL, "Get revision number of chip." },
+	{ SLEEP, "sleep", "[NUMBER]", "Open ATSHA204 and sleep for NUMBER seconds. For debug purpose only." },
 	{ 0, 0, 0, 0 }
 };
 
@@ -311,6 +313,20 @@ int main(int argc, char **argv) {
 		if ((errcode = atsha_dev_rev(handle, &rev)) == ATSHA_ERR_OK) {
 			printf("%" PRIu32 "\n", rev);
 		}
+		break;
+	case SLEEP:
+		if (cmdi > argc - 2) {
+			fprintf(stderr, "Bad argument count for command sleep\n\n");
+			print_commands_help(stderr);
+			return 2;
+		}
+		long int seconds = parse_number(argv[cmdi + 1]);
+		if (seconds < 1) {
+			fprintf(stderr, "Sleep time should be a positive integer\n");
+			return 1;
+		}
+
+		sleep(seconds);
 		break;
 	default:
 		fprintf(stderr, "Undefined command\n\n");
