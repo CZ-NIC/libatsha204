@@ -97,6 +97,15 @@ static bool atsha_lock(int lockfile) {
 			}
 			usleep(LOCK_TRY_TOUT);
 		} else {
+			// Store PID of lock owner
+			FILE *lockfile_stream = fdopen(lockfile, "w");
+			if (!lockfile_stream) {
+				log_message("api: try_lock: Could not open stream from lockfile");
+				return false;
+			}
+			fprintf(lockfile_stream, "%d\n", getpid());
+			fclose(lockfile_stream);
+
 			return true;
 		}
 	}
