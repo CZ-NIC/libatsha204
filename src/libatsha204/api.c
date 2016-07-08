@@ -115,12 +115,14 @@ static bool atsha_lock(int lockfile) {
 }
 
 static void sanitize_lock(struct atsha_handle *handle) {
-	sigaction(SIGALRM, &(struct sigaction) { .sa_handler = SIG_DFL }, &(handle->orig_sigact));
+	int status = sigaction(SIGALRM, &(struct sigaction) { .sa_handler = SIG_DFL }, &(handle->orig_sigact));
+	assert(status == 0);
 	handle->orig_alarm = alarm(KILL_UNRELEASED_LOCK_AFTER);
 }
 
 static void restore_lock(struct atsha_handle *handle) {
-	sigaction(SIGALRM, &(handle->orig_sigact), NULL);
+	int status = sigaction(SIGALRM, &(handle->orig_sigact), NULL);
+	assert(status == 0);
 	alarm(handle->orig_alarm);
 }
 
