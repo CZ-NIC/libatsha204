@@ -106,13 +106,15 @@ static bool atsha_lock(int lockfile) {
 			usleep(LOCK_TRY_TOUT);
 		} else {
 			// Store PID of lock owner
-			FILE *lockfile_stream = fdopen(lockfile, "w");
-			if (!lockfile_stream) {
-				log_message("api: try_lock: Could not open stream from lockfile");
-				return false;
+			char *pid_str = aprintf("%d\n", getpid());
+			int ret = write(lockfile, pid_str, strlen(pid_str));
+			if (ret == -1) {
+				log_message("api: atsha_lock: write of PID failed\n");
+			} // Do not care about short reads. It is not common this code is just for debug purpose only.
+			ret = fsync(lockfile);
+			if (ret == -1) {
+				log_message("api: atsha_lock: fsync failed\n");
 			}
-			fprintf(lockfile_stream, "%d\n", getpid());
-			fclose(lockfile_stream);
 
 			return true;
 		}
