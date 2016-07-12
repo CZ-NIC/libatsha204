@@ -169,16 +169,21 @@ struct atsha_handle *atsha_open_ni2c_dev(const char *path, int address) {
 	int try_fd = open(path, O_RDWR);
 	if (try_fd == -1) {
 		log_message("api: open_ni2c_dev: Couldn't open native I2C device.");
+		close(try_lockfile);
 		return NULL;
 	}
 
 	if (ioctl(try_fd, I2C_SLAVE, address) < 0) {
 		log_message("api: open_ni2c_dev: Couldn't bind address.");
+		close(try_lockfile);
 		return NULL;
 	}
 
 	struct atsha_handle *handle = (struct atsha_handle *)calloc(1, sizeof(struct atsha_handle));
-	if (handle == NULL) return NULL;
+	if (handle == NULL) {
+		close(try_lockfile);
+		return NULL;
+	}
 
 	handle->bottom_layer = BOTTOM_LAYER_NI2C;
 	handle->is_srv_emulation = false;
