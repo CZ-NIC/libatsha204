@@ -30,6 +30,7 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <signal.h>
+#include <stdarg.h>
 
 #include "configuration.h"
 
@@ -39,6 +40,7 @@
 #include "communication.h"
 #include "tools.h"
 #include "operations.h"
+#include "tools.h"
 
 /**
  * Global variable with configuration and some initial config values.
@@ -50,9 +52,14 @@ atsha_configuration g_config = {
 
 static const char *WARNING_WAKE_NOT_CONFIRMED = "WARNING: Device is possibly still awake";
 
-void log_message(const char* msg) {
+void log_message(const char* msg, ...) {
 	if (g_config.log_callback != NULL) {
-		g_config.log_callback(msg);
+		va_list vargs;
+		va_start(vargs, msg);
+		char *str = vaprintf(msg, vargs);
+		va_end(vargs);
+
+		g_config.log_callback(str);
 	}
 }
 

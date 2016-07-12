@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <stdarg.h>
+#include <alloca.h>
 
 /**
  * \file tools.h
@@ -90,5 +92,15 @@ void clear_buffer(unsigned char *buff, size_t len);
  * \brief Debug method
  */
 void print_buffer_content(unsigned char *buff, ssize_t len);
+
+/*
+ * Auxiliary tools for log function
+ */
+size_t vprintf_len(const char *msg, va_list args);
+char *vprintf_into(char *dst, const char *msg, va_list args);
+size_t printf_len(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+char *printf_into(char *dst, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+#define vaprintf(MSG, VA_ARGS) vprintf_into(alloca(vprintf_len((MSG), (VA_ARGS))), (MSG), (VA_ARGS))
+#define aprintf(...) printf_into(alloca(printf_len(__VA_ARGS__)), __VA_ARGS__)
 
 #endif //TOOLS_H

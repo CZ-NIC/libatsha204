@@ -69,5 +69,5 @@ struct atsha_handle {
 /**
  * \brief Use callback (from global configuration) and send message through it
  */
-void log_message(const char* msg);
+void log_message(const char* msg, ...);
 #endif //MAIN_H

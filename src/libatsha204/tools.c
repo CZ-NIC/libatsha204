@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "tools.h"
 
@@ -156,4 +157,36 @@ void print_buffer_content(unsigned char *buff, ssize_t len) {
 		fprintf(stderr, "%02X ", buff[i]);
 	}
 	fprintf(stderr, "\n");
+}
+
+size_t vprintf_len(const char *msg, va_list args) {
+	va_list cp;
+	va_copy(cp, args); // Make a copy so we don't destroy/move the provided parameters
+	size_t result = vsnprintf(NULL, 0, msg, cp);
+	va_end(cp);
+	return result;
+}
+
+char *vprintf_into(char *dst, const char *msg, va_list args) {
+	va_list cp;
+	va_copy(cp, args); // Make a copy so we don't destroy/move the provided parameters
+	vsprintf(dst, msg, cp);
+	va_end(cp);
+	return dst;
+}
+
+size_t printf_len(const char *msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	size_t result = vsnprintf(NULL, 0, msg, args);
+	va_end(args);
+	return result + 1;
+}
+
+char *printf_into(char *dst, const char *msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	vsprintf(dst, msg, args);
+	va_end(args);
+	return dst;
 }
