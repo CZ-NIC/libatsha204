@@ -164,7 +164,7 @@ size_t vprintf_len(const char *msg, va_list args) {
 	va_copy(cp, args); // Make a copy so we don't destroy/move the provided parameters
 	size_t result = vsnprintf(NULL, 0, msg, cp);
 	va_end(cp);
-	return result;
+	return result + 1;
 }
 
 char *vprintf_into(char *dst, const char *msg, va_list args) {
