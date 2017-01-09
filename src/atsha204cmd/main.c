@@ -4,6 +4,12 @@
 #include <stdbool.h>
 #include <openssl/sha.h>
 #include <assert.h>
+#include <linux/random.h>
+#include <linux/types.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "../libatsha204/atsha204.h"
 #include "../libatsha204/tools.h"
@@ -15,6 +21,9 @@ static const char *CMD_HWREV = "hw-rev";
 static const char *CMD_FILEHMAC = "file-challenge-response";
 static const char *CMD_MAC = "mac";
 static const char *CMD_RND = "random";
+static const char *CMD_FEED = "feed-entropy";
+
+#define RANDOM_DEVICE       "/dev/random"
 
 #define BUFFSIZE 512
 
@@ -39,6 +48,7 @@ void help(char *prgname) {
 			"\t%s\tprint HMAC response to stdout with challenge from file\n"
 			"\t%s n\tprint n MAC address to stdout\n"
 			"\t%s\tprint 32 raw random bytes to stdout\n"
+			"\t%s\tfeed 32 raw random bytes to the kernel entropy source\n"
 		"Input/Output on stdin/stdout (except MAC addresses) is in format:\n"
 			"\t00112233...\tor\n"
 			"\t00 11 22 33...\tor\n"
@@ -46,7 +56,7 @@ void help(char *prgname) {
 			"\t00;11;22;33...\tor\n"
 			"\t00,11,22,33...\t\n"
 		"\n"
-		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC, CMD_MAC, CMD_RND
+		, prgname, CMD_SN, CMD_HWREV, CMD_HMAC, CMD_FILEHMAC, CMD_MAC, CMD_RND, CMD_FEED
 	);
 }
 
@@ -154,6 +164,39 @@ int main(int argc, char **argv) {
 		for(int i = 0; i < sn.bytes; i++) {
 		    putchar(sn.data[i]);
 		}
+
+	} else if (strcmp(argv[1], CMD_FEED) == 0) {
+		atsha_big_int sn;
+		status = atsha_random(handle, &sn);
+		if (status != ATSHA_ERR_OK) {
+			fprintf(stderr, "Random numer generation error: %s\n", atsha_error_name(status));
+			atsha_close(handle);
+			return 3;
+		}
+		/* Issue the ioctl to increase the entropy count */
+		int random_fd = open(RANDOM_DEVICE, O_RDWR);
+		if (random_fd < 0) {
+			fprintf(stderr, "Can't open random device %s\n", strerror(errno));
+			atsha_close(handle);
+			return 3;
+		}
+		struct rand_pool_info *rand = malloc(sizeof(struct rand_pool_info) + sn.bytes);
+		if (!rand) {
+			fprintf(stderr, "Can't allocate memory\n");
+			atsha_close(handle);
+			return 3;
+		}
+		rand->buf_size = sn.bytes;
+		rand->entropy_count = sn.bytes * 8;
+		memcpy(rand->buf, sn.data, sn.bytes);
+		if (ioctl(random_fd, RNDADDENTROPY, rand) < 0) {
+			fprintf(stderr, "RNDADDENTROPY ioctl() failed: %s\n", strerror(errno));
+			atsha_close(handle);
+			close(random_fd);
+			return 3;
+		}
+		close(random_fd);
+		free(rand);
 
 	} else if (strcmp(argv[1], CMD_HMAC) == 0) {
 		char buff[BUFFSIZE];
