@@ -18,4 +18,4 @@
 from distutils.core import setup, Extension
 
 extension = Extension('atsha204', ['atsha204.c'], libraries=['atsha204'], library_dirs=['../../lib'])
-setup(name='atsha204', version='0.1', ext_modules=[extension], provides=['atsha204'])
+setup(name='atsha204', version='0.2', ext_modules=[extension], provides=['atsha204'])
