@@ -148,6 +148,48 @@ static PyMethodDef atsha_methods[] = {
 	{NULL}
 };
 
-PyMODINIT_FUNC initatsha204(void) {
-	Py_InitModule("atsha204", atsha_methods);
+struct module_state {
+	PyObject *error;
+};
+
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int atsha_traverse(PyObject *m, visitproc visit, void *arg) {
+	Py_VISIT(GETSTATE(m)->error);
+	return 0;
+}
+
+static int atsha_clear(PyObject *m) {
+	Py_CLEAR(GETSTATE(m)->error);
+	return 0;
+}
+
+static struct PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	"atsha204",
+	NULL,
+	sizeof(struct module_state),
+	atsha_methods,
+	NULL,
+	atsha_traverse,
+	atsha_clear,
+	NULL
+};
+
+PyMODINIT_FUNC
+PyInit_atsha204(void)
+{
+	PyObject *module = PyModule_Create(&moduledef);
+	if (module == NULL) {
+		return NULL;
+	}
+	struct module_state *st = GETSTATE(module);
+
+	st->error = PyErr_NewException("atsha204.Error", NULL, NULL);
+	if (st->error == NULL) {
+		Py_DECREF(module);
+		return NULL;
+	}
+
+	return module;
 }
