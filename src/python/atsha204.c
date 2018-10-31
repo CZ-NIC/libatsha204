@@ -32,7 +32,7 @@ static PyObject *atsha_emulate_hmac(PyObject *self, PyObject *args) {
 	int size_serial, size_key, size_challenge;
 	unsigned char slot_id;
 	const uint8_t *serial, *key, *challenge;
-	if (!PyArg_ParseTuple(args, "bs#s#s#", &slot_id, &serial, &size_serial, &key, &size_key, &challenge, &size_challenge)) {
+	if (!PyArg_ParseTuple(args, "by#y#y#", &slot_id, &serial, &size_serial, &key, &size_key, &challenge, &size_challenge)) {
 		return NULL;
 	}
 
@@ -60,14 +60,14 @@ static PyObject *atsha_emulate_hmac(PyObject *self, PyObject *args) {
 		return NULL;
 	}
 	atsha_close(crypto);
-	return Py_BuildValue("s#", response_s.data, (int) response_s.bytes);
+	return Py_BuildValue("y#", response_s.data, (int) response_s.bytes);
 }
 
 static PyObject *atsha_do_hmac(PyObject *self, PyObject *args) {
 	(void) self;
 	int size_challenge;
 	const uint8_t *challenge;
-	if (!PyArg_ParseTuple(args, "s#", &challenge, &size_challenge)) {
+	if (!PyArg_ParseTuple(args, "y#", &challenge, &size_challenge)) {
 		return NULL;
 	}
 
@@ -91,7 +91,7 @@ static PyObject *atsha_do_hmac(PyObject *self, PyObject *args) {
 		return NULL;
 	}
 	atsha_close(crypto);
-	return Py_BuildValue("s#", response_s.data, (int) response_s.bytes);
+	return Py_BuildValue("y#", response_s.data, (int) response_s.bytes);
 }
 
 static PyObject *get_serial(PyObject *self, PyObject *args) {
@@ -119,7 +119,7 @@ static PyObject *get_serial(PyObject *self, PyObject *args) {
 		return NULL;
 	}
 	atsha_close(crypto);
-	return Py_BuildValue("s#", abi_serial.data, (int) abi_serial.bytes);
+	return Py_BuildValue("y#", abi_serial.data, (int) abi_serial.bytes);
 }
 
 static PyMethodDef atsha_methods[] = {
@@ -148,6 +148,48 @@ static PyMethodDef atsha_methods[] = {
 	{NULL}
 };
 
-PyMODINIT_FUNC initatsha204(void) {
-	Py_InitModule("atsha204", atsha_methods);
+struct module_state {
+	PyObject *error;
+};
+
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int atsha_traverse(PyObject *m, visitproc visit, void *arg) {
+	Py_VISIT(GETSTATE(m)->error);
+	return 0;
+}
+
+static int atsha_clear(PyObject *m) {
+	Py_CLEAR(GETSTATE(m)->error);
+	return 0;
+}
+
+static struct PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	"atsha204",
+	NULL,
+	sizeof(struct module_state),
+	atsha_methods,
+	NULL,
+	atsha_traverse,
+	atsha_clear,
+	NULL
+};
+
+PyMODINIT_FUNC
+PyInit_atsha204(void)
+{
+	PyObject *module = PyModule_Create(&moduledef);
+	if (module == NULL) {
+		return NULL;
+	}
+	struct module_state *st = GETSTATE(module);
+
+	st->error = PyErr_NewException("atsha204.Error", NULL, NULL);
+	if (st->error == NULL) {
+		Py_DECREF(module);
+		return NULL;
+	}
+
+	return module;
 }
