@@ -85,18 +85,6 @@ static int atsha_try_lock_file() {
 }
 
 /*
- * This disgusting hack is necessary to debug ATSHA204/I2C issues on Turris 1.0 and Turris 1.1
- * Please, remove it as soon as possible.
- *
- * Desperate times call for desperate measures.
- */
-static void debug_report_failed_lock() {
-	system("/bin/busybox echo Lock operation failed. Lock is held by process: >> /tmp/atsha_ps.log");
-	system("/bin/busybox cat /tmp/libatsha204.lock >> /tmp/atsha_ps.log");
-	system("/bin/busybox ps >> /tmp/atsha_ps.log");
-}
-
-/*
  * Attempts periodically to get lock. Time is limited.
  * When the time expires the operation fails.
  */
@@ -113,7 +101,6 @@ static bool atsha_lock(int lockfile) {
 			seconds = difftime(now, start);
 			if (seconds > LOCK_TRY_MAX) {
 				log_message("api: atsha_lock: operation lock failed");
-				debug_report_failed_lock();
 				return false;
 			}
 			usleep(LOCK_TRY_TOUT);
