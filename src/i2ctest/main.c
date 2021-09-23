@@ -22,6 +22,8 @@
 
 #include "../libatsha204/atsha204.h"
 
+#include "../libatsha204/configuration.h"
+
 void testing_log_callback(const char *msg) {
 	fprintf(stderr, "Log: %s\n", msg);
 }
@@ -30,8 +32,7 @@ int main(void) {
 	atsha_set_verbose();
 	atsha_set_log_callback(testing_log_callback);
 
-	//struct atsha_handle *handle = atsha_open_usb_dev(argv[1]);
-	struct atsha_handle *handle = atsha_open_i2c_dev();
+	struct atsha_handle *handle = atsha_open_ni2c_dev((char *)DEFAULT_NI2C_DEV_PATH, DEFAULT_NI2C_ADDRESS);
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open i2c devidce.\n");
 		return 1;
