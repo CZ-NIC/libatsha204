@@ -3,4 +3,4 @@ BINARIES += src/i2ctest/i2ctest
 i2ctest_MODULES := main
 i2ctest_LOCAL_LIBS := atsha204
 
-i2ctest_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)
+i2ctest_SYSTEM_LIBS := crypto $(I2C_LIBS)

@@ -23,7 +23,7 @@
 #include <string.h>
 
 //DNS Resolving
-#include <unbound.h>
+//#include <unbound.h>
 
 #include "configuration.h"
 #include "atsha204consts.h"
@@ -63,55 +63,56 @@ static uint32_t number_from_string(size_t len, char *str) {
 /*
  * Use linunbound for DNS resolving of TXT record
  */
-static bool resolve_key(uint32_t *offset) {
-	struct ub_result* result;
-    struct ub_ctx *ctx = ub_ctx_create();
-	int retval;
-	char strbuff[BUFFSIZE_DNSMAGIC_ERRSTRLEN];
-
-    if (!ctx) {
-		log_message("dnsmagic: libunbound: create context error");
-		return false;
-	}
-
-	/*
-	 * Set resolvconf to NULL and libunbound will respect settings of OS
-	 * Eventually: ub_ctx_set_fwd(ctx, "8.8.8.8") set address of requested resolver/forwarder
-	 */
-	retval = ub_ctx_resolvconf(ctx, NULL);
-	if (retval != 0)  {
-		log_message("dnsmagic: libunbound: reset configuration error");
-		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s and errno: %s\n", retval, ub_strerror(retval), strerror(errno));
-		log_message(strbuff);
-
-		return false;
-	}
-
-	retval = ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result);
-	if (retval != 0) {
-		log_message("dnsmagic: libunbound: resolve error");
-		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s\n", retval, ub_strerror(retval));
-		log_message(strbuff);
-		ub_ctx_delete(ctx);
-		return false;
-	}
-
-	if (result->havedata) {
-		*offset = (unsigned char) number_from_string(result->data[0][0], (result->data[0] + 1));
-		ub_resolve_free(result);
-		ub_ctx_delete(ctx);
-		return true;
-	}
-
-	log_message("dnsmagic: libunbound: no data in answer");
-
-	ub_resolve_free(result);
-	ub_ctx_delete(ctx);
-
-	return false;
-}
+//static bool resolve_key(uint32_t *offset) {
+//	struct ub_result* result;
+//    struct ub_ctx *ctx = ub_ctx_create();
+//	int retval;
+//	char strbuff[BUFFSIZE_DNSMAGIC_ERRSTRLEN];
+//
+//    if (!ctx) {
+//		log_message("dnsmagic: libunbound: create context error");
+//		return false;
+//	}
+//
+//	/*
+//	 * Set resolvconf to NULL and libunbound will respect settings of OS
+//	 * Eventually: ub_ctx_set_fwd(ctx, "8.8.8.8") set address of requested resolver/forwarder
+//	 */
+//	retval = ub_ctx_resolvconf(ctx, NULL);
+//	if (retval != 0)  {
+//		log_message("dnsmagic: libunbound: reset configuration error");
+//		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s and errno: %s\n", retval, ub_strerror(retval), strerror(errno));
+//		log_message(strbuff);
+//
+//		return false;
+//	}
+//
+//	retval = ub_resolve(ctx, DEFAULT_DNS_RECORD_FIND_KEY, TYPE_TXT, CLASS_INET, &result);
+//	if (retval != 0) {
+//		log_message("dnsmagic: libunbound: resolve error");
+//		snprintf(strbuff, BUFFSIZE_DNSMAGIC_ERRSTRLEN, "libunbound returned %d status code with explanation: %s\n", retval, ub_strerror(retval));
+//		log_message(strbuff);
+//		ub_ctx_delete(ctx);
+//		return false;
+//	}
+//
+//	if (result->havedata) {
+//		*offset = (unsigned char) number_from_string(result->data[0][0], (result->data[0] + 1));
+//		ub_resolve_free(result);
+//		ub_ctx_delete(ctx);
+//		return true;
+//	}
+//
+//	log_message("dnsmagic: libunbound: no data in answer");
+//
+//	ub_resolve_free(result);
+//	ub_ctx_delete(ctx);
+//
+//	return false;
+//}
 
 unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
+	/*
 	if (handle->is_srv_emulation == true) {
 		return handle->slot_id;
 	}
@@ -134,4 +135,6 @@ unsigned char atsha_find_slot_number(struct atsha_handle *handle) {
 
 
 	return (unsigned char)(offset - handle->key_origin);
+	*/
+	return 1;
 }

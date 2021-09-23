@@ -3,4 +3,4 @@ BINARIES += src/ucollect_example/ucollect_example
 ucollect_example_MODULES := main
 ucollect_example_LOCAL_LIBS := atsha204
 
-ucollect_example_SYSTEM_LIBS := crypto unbound $(I2C_LIBS)
+ucollect_example_SYSTEM_LIBS := crypto $(I2C_LIBS)

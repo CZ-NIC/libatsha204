@@ -2,4 +2,4 @@ LIBRARIES += src/libatsha204/libatsha204
 
 libatsha204_MODULES := api communication dnsmagic emulation error layer_ni2c operations tools
 
-libatsha204_SO_LIBS := crypto unbound $(I2C_LIBS)
+libatsha204_SO_LIBS := crypto $(I2C_LIBS)
